@@ -1,16 +1,27 @@
 name: Docs
 
+# 自动发布已关闭：当前仓库为 private，免费账号无法为私有仓库启用 GitHub Pages，
+# 推送到 dev/master 时会因 configure-pages 找不到 Pages site 而失败。
+#
+# 恢复方式（任选其一）：
+#   1. 仓库转为 public，然后在 Settings -> Pages 将 Source 设为 GitHub Actions；
+#   2. 升级到支持私有仓库 Pages 的套餐并启用 Pages。
+# 完成上述任一步后，取消下面 push 触发器的注释即可恢复自动部署。
+#
+# 关闭期间本地校验文档：
+#   python -m mkdocs build --strict
+
 on:
-  push:
-    branches:
-      - master
-      - main
-      - dev
-    paths:
-      - "docs/**"
-      - "mkdocs.yml"
-      - "requirements-docs.txt"
-      - ".github/workflows/docs.yml"
+  # push:
+  #   branches:
+  #     - master
+  #     - main
+  #     - dev
+  #   paths:
+  #     - "docs/**"
+  #     - "mkdocs.yml"
+  #     - "requirements-docs.txt"
+  #     - ".github/workflows/docs.yml"
   workflow_dispatch:
 
 permissions:

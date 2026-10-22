@@ -23,12 +23,24 @@ python -m mkdocs build --strict
 
 ## GitHub Pages
 
-The repository includes `.github/workflows/docs.yml`:
+**Current status: automatic deployment is disabled.**
 
-1. Open **Settings → Pages** in the repository.
-2. Set **Build and deployment → Source** to **GitHub Actions**.
-3. Push to `master`, `main`, or `dev`, or run the `Docs` workflow manually.
-4. Open the deployment URL from the workflow or Pages settings.
+This is a private repository, and free accounts cannot enable GitHub Pages for private repositories, so the `push` trigger in `.github/workflows/docs.yml` is commented out and only manual `workflow_dispatch` remains.
+
+Validate documentation locally while it is disabled:
+
+```powershell
+python -m mkdocs build --strict
+```
+
+### Restoring automatic deployment
+
+Restore it after either of the following:
+
+1. Make the repository **public**, then set **Build and deployment → Source** to **GitHub Actions** under **Settings → Pages**.
+2. Upgrade to a plan that supports Pages for private repositories and enable Pages.
+
+Then uncomment the `push:` block in `.github/workflows/docs.yml` to build and deploy on pushes to `master`, `main`, or `dev`.
 
 `site_name`, `site_description`, `repo_name`, `repo_url`, and `edit_uri` in `mkdocs.yml` already point at this project; update them if the repository or documentation branch changes.
 

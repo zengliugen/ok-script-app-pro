@@ -23,12 +23,24 @@ python -m mkdocs build --strict
 
 ## GitHub Pages
 
-仓库提供 `.github/workflows/docs.yml`：
+**当前状态：自动部署已关闭。**
 
-1. 打开仓库的 **Settings → Pages**。
-2. 将 **Build and deployment → Source** 设置为 **GitHub Actions**。
-3. 推送到 `master`、`main` 或 `dev`，或手动运行 `Docs` workflow。
-4. 在 workflow 的 deployment URL 或仓库 Pages 设置中打开网站。
+本仓库为私有仓库，免费账号无法为私有仓库启用 GitHub Pages，因此 `.github/workflows/docs.yml` 的 `push` 触发器已注释，仅保留手动 `workflow_dispatch`。
+
+关闭期间的文档校验请使用本地命令：
+
+```powershell
+python -m mkdocs build --strict
+```
+
+### 恢复自动部署
+
+满足以下任一条件后可以恢复：
+
+1. 仓库转为 **public**，然后在 **Settings → Pages** 将 **Build and deployment → Source** 设为 **GitHub Actions**。
+2. 升级到支持私有仓库 Pages 的套餐并启用 Pages。
+
+完成后取消 `.github/workflows/docs.yml` 中 `push:` 整段的注释，即可在推送到 `master`、`main` 或 `dev` 时自动构建与部署。
 
 `mkdocs.yml` 中的 `site_name`、`site_description`、`repo_name`、`repo_url` 和 `edit_uri` 已指向本项目，修改仓库或文档分支时同步更新。
 
