@@ -1,0 +1,3 @@
+[submodule ".codebuddy"]
+	path = .codebuddy
+	url = https://github.com/zengliugen/.codebuddy
