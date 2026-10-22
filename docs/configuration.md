@@ -50,10 +50,16 @@ profile，然后重新编译对应的 `requirements.txt` 或 `requirements-web.t
 
 ## 更新仓库
 
-修改 `pyappify.yml` 中应用名称、profile 名称和 `git_url`：
+本项目已将 `pyappify.yml` 的三个 profile 全部指向源码仓库 `https://github.com/zengliugen/ok-script-app-pro.git`，早期开发阶段无需维护独立更新仓库。
 
-- 正式发布建议使用独立的轻量更新仓库。
-- 前期测试可以直接使用源码仓库。
-- 使用独立更新仓库时，同步修改 `.github/workflows/build.yml` 中的同步目标和 Secrets。
+- 应用名称：`ok-script-app-pro`。
+- `git_url`：源码仓库，安装包的自动更新直接从这里拉取。
+- 后续如需减轻用户更新体积，可以另建轻量更新仓库，并同步修改 `.github/workflows/build.yml` 的同步步骤。
 
-初始化后，搜索并替换模板遗留的 `ok-script-app`、`ok-oldking`、仓库 URL、安装包名称和社区链接。
+## 上游同步后的检查
+
+本项目从 `upstream`（`ok-oldking/ok-script-app`）合并更新后，重新确认以下内容没有被上游覆盖：
+
+- `src/config.py` 中的 `gui_title` 与 `links`。
+- `pyappify.yml` 中的 `name` 与各 profile 的 `git_url`。
+- `.github/workflows/build.yml` 中的 Git 身份、安装包名称与下载链接。

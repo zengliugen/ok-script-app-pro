@@ -1,10 +1,10 @@
-# ok-script-app
+# ok-script-app-pro
 
 [English](README_en.md) | 中文
 
-ok-script-app 是一个基于 [ok-script](https://github.com/ok-oldking/ok-script) 的 Python 自动化项目模板，支持为 Windows 原生游戏、Android 模拟器和浏览器游戏创建带 GUI 的自动化应用。
+ok-script-app-pro 是基于 [ok-script-app](https://github.com/ok-oldking/ok-script-app) 模板的能力扩展项目，底层依赖 [ok-script](https://github.com/ok-oldking/ok-script)。它在保留上游模板能力（Windows 原生游戏、Android 模拟器、浏览器自动化）的基础上，作为后续扩展开发的载体。
 
-这个仓库提供任务示例、OCR、模板匹配、配置控件、测试、i18n、EXE 打包和更新发布配置。它是起步工程和功能演示，不是某个具体游戏的自动化成品。
+仓库当前保持模板结构，扩展能力将在 `src/` 下逐步叠加，任务示例、OCR、模板匹配、配置控件、测试、i18n、EXE 打包与更新发布配置可直接复用。
 
 ## 文档
 
@@ -35,8 +35,6 @@ python main_debug.py
 `requirements-web.txt` 和 `python web_main_debug.py`。官方 PyPI 的 pip 索引地址
 必须包含 `/simple/`；`https://pypi.org/` 不是有效的包索引地址。
 
-详细的仓库初始化、目标配置、首个任务和 tag 打包流程请阅读[快速开始](docs/getting-started.md)。
-
 ## 构建文档网站
 
 ```powershell
@@ -52,14 +50,15 @@ python -m mkdocs build --strict
 
 输出位于 `site/`。`.github/workflows/docs.yml` 可将网站自动发布到 GitHub Pages，具体设置见[文档网站说明](docs/documentation.md)。
 
-## 社区
+## 与上游的关系
 
-- 用户群：`1097603920`
-- 开发者群：`938132715`
-- [Discord](https://discord.gg/vVyCatEBgA)
+- 上游模板：[ok-oldking/ok-script-app](https://github.com/ok-oldking/ok-script-app)
+- 本项目：扩展能力在模板之上开发，通过 GitHub `upstream` 远端同步上游更新
+- 发布与更新：安装包与更新源均指向本项目仓库
 
 ## 致谢
 
+- [ok-script-app](https://github.com/ok-oldking/ok-script-app)
 - [ok-script](https://github.com/ok-oldking/ok-script)
 - [OnnxOCR](https://github.com/ok-oldking/OnnxOCR)
 - [PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)

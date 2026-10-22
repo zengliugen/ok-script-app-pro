@@ -1,5 +1,8 @@
 name: mirrorchyan_release_note
 
+# 需要先在仓库 Settings > Secrets and variables > Actions 中配置：
+#   Variables: MIRRORCHYAN_ENABLED = true （启用后才会同步更新日志）
+#   Secrets:   MirrorChyanUploadToken
 on:
   workflow_dispatch:
     inputs:
@@ -12,16 +15,16 @@ on:
 jobs:
   mirrorchyan:
     runs-on: macos-latest
-    if: ${{ github.repository_owner == 'ok-oldking' }}
+    if: ${{ vars.MIRRORCHYAN_ENABLED == 'true' }}
 
     steps:
       - id: uploading
         uses: MirrorChyan/release-note-action@v1
         with:
-          mirrorchyan_rid: ok-script-app
+          mirrorchyan_rid: ok-script-app-pro
           version_name: ${{ inputs.tag }}
 
-          owner: ok-oldking
-          repo: ok-script-app
+          owner: zengliugen
+          repo: ok-script-app-pro
           github_token: ${{ secrets.GITHUB_TOKEN }}
           upload_token: ${{ secrets.MirrorChyanUploadToken }}

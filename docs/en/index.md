@@ -1,17 +1,21 @@
-# ok-script-app
+# ok-script-app-pro
 
 [中文](../index.md)
 
-ok-script-app is a Python automation project template built on [ok-script](https://github.com/ok-oldking/ok-script), for native Windows games, Android emulators, and browser games.
+ok-script-app-pro is a capability-extension project built from the [ok-script-app](https://github.com/ok-oldking/ok-script-app) template and powered by [ok-script](https://github.com/ok-oldking/ok-script). It covers native Windows games, Android emulators, and browser games.
 
-It is not a finished automation tool for a specific game. The template includes a runnable GUI, task and configuration-widget examples, OCR, template matching, tests, i18n, EXE packaging, and update/release configuration.
+It is not a finished automation tool for a specific game. It keeps the upstream runnable GUI, task and configuration-widget examples, OCR, template matching, tests, i18n, EXE packaging, and update/release configuration, and layers additional extensions on top.
 
 ## Start Here
 
-1. Create and initialize a repository with the [Quick start](getting-started.md).
-2. Select at least one runtime target in [App configuration](configuration.md).
-3. Create and register the first task with [Task development](tasks.md).
+1. Prepare the local environment with the [Quick start](getting-started.md).
+2. Confirm runtime targets and project identity in [App configuration](configuration.md).
+3. Add extension tasks with [Task development](tasks.md).
 4. Build an EXE with [Packaging and release](release.md).
+
+## Relationship to Upstream
+
+This project tracks [ok-script-app](https://github.com/ok-oldking/ok-script-app) through the `upstream` remote: upstream provides the template skeleton and shared capabilities, while extensions are developed here and the installers and update source point at this repository.
 
 ## Demo
 
@@ -31,7 +35,7 @@ It is not a finished automation tool for a specific game. The template includes 
 
 ## Included
 
-- `MyOneTimeTask` and `MyTriggerTask` examples.
+- Upstream `MyOneTimeTask` and `MyTriggerTask` examples preserved.
 - Drop-down, boolean, numeric, text, list, multi-selection, file, global configuration, and button widgets.
 - OCR, relative-region recognition, and template matching examples.
 - `ConfigOption` global configuration and `TaskTestCase` test examples.

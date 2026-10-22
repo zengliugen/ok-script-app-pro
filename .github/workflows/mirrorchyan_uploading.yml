@@ -1,5 +1,9 @@
 name: mirrorchyan_release
 
+# 需要先在仓库 Settings > Secrets and variables > Actions 中配置：
+#   Variables: MIRRORCHYAN_ENABLED = true （启用后才会上传）
+#   Secrets:   MirrorChyanUploadToken
+# 并在下方填写本项目的 mirrorchyan_rid。
 on:
   workflow_dispatch:
     inputs:
@@ -10,20 +14,20 @@ on:
 jobs:
   mirrorchyan:
     runs-on: macos-latest
-    if: ${{ github.repository_owner == 'ok-oldking' }}
+    if: ${{ vars.MIRRORCHYAN_ENABLED == 'true' }}
 
     steps:
       - uses: MirrorChyan/uploading-action@v1
         with:
           filetype: latest-release
-          filename: "ok-script-app-win32-China-setup.exe"
-          mirrorchyan_rid: ok-script-app
+          filename: "ok-script-app-pro-win32-China-setup.exe"
+          mirrorchyan_rid: ok-script-app-pro
           tag: ${{ inputs.tag }}
 
           os: ${{ matrix.os }}
           arch: ${{ matrix.arch }}
 
-          owner: ok-oldking
-          repo: ok-script-app
+          owner: zengliugen
+          repo: ok-script-app-pro
           github_token: ${{ secrets.GITHUB_TOKEN }}
           upload_token: ${{ secrets.MirrorChyanUploadToken }}

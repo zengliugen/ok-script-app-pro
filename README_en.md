@@ -1,10 +1,10 @@
-# ok-script-app
+# ok-script-app-pro
 
 English | [中文](README.md)
 
-ok-script-app is a Python automation project template built on [ok-script](https://github.com/ok-oldking/ok-script). It supports GUI automation apps for native Windows games, Android emulators, and browser games.
+ok-script-app-pro is a capability-extension project built from the [ok-script-app](https://github.com/ok-oldking/ok-script-app) template and powered by [ok-script](https://github.com/ok-oldking/ok-script). It keeps the upstream template capabilities (native Windows games, Android emulators, and browser automation) and serves as the host for additional extensions developed on top of them.
 
-The template includes task examples, OCR, template matching, configuration widgets, tests, i18n, EXE packaging, and update/release configuration. It is a starter project and feature demo, not a finished automation tool for a specific game.
+The repository still follows the template layout; extensions are layered under `src/` over time. Task examples, OCR, template matching, configuration widgets, tests, i18n, EXE packaging, and update/release configuration remain available.
 
 ## Documentation
 
@@ -36,8 +36,6 @@ dependency and launch commands above with `requirements-web.txt` and
 `python web_main_debug.py`, respectively. The official PyPI index URL for pip
 must include `/simple/`; `https://pypi.org/` is not a valid package index URL.
 
-See the [Quick start](docs/en/getting-started.md) for repository initialization, runtime target configuration, the first task, and tag-based packaging.
-
 ## Build the Documentation Site
 
 ```powershell
@@ -53,14 +51,15 @@ python -m mkdocs build --strict
 
 The output is written to `site/`. `.github/workflows/docs.yml` can publish it automatically to GitHub Pages; see the [documentation-site guide](docs/en/documentation.md) for setup.
 
-## Community
+## Relationship to Upstream
 
-- QQ user group: `1097603920`
-- QQ developer group: `938132715`
-- [Discord](https://discord.gg/vVyCatEBgA)
+- Upstream template: [ok-oldking/ok-script-app](https://github.com/ok-oldking/ok-script-app)
+- This project: extensions are developed on top of the template and track upstream through the `upstream` remote
+- Release and updates: installers and the update source point at this repository
 
 ## Credits
 
+- [ok-script-app](https://github.com/ok-oldking/ok-script-app)
 - [ok-script](https://github.com/ok-oldking/ok-script)
 - [OnnxOCR](https://github.com/ok-oldking/OnnxOCR)
 - [PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)

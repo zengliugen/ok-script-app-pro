@@ -1,8 +1,8 @@
-site_name: ok-script-app
-site_description: Build Windows, Android emulator, and browser automation apps with ok-script.
-repo_name: ok-oldking/ok-script-app
-repo_url: https://github.com/ok-oldking/ok-script-app
-edit_uri: edit/master/docs/
+site_name: ok-script-app-pro
+site_description: ok-script-app-pro 是基于 ok-script-app 模板的扩展项目，扩展 Windows、Android 模拟器与浏览器自动化能力。
+repo_name: zengliugen/ok-script-app-pro
+repo_url: https://github.com/zengliugen/ok-script-app-pro
+edit_uri: edit/dev/docs/
 
 docs_dir: docs
 site_dir: site

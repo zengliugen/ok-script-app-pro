@@ -1,18 +1,30 @@
 # 快速开始
 
-## 1. 从模板创建仓库
+## 1. 获取仓库
 
-点击 GitHub 上的 [Use this template](https://github.com/ok-oldking/ok-script-app/generate)，创建自己的 repository，然后 clone：
+本项目从上游模板派生，已按扩展项目的需要完成初始化。直接 clone 本项目：
 
 ```bash
-git clone https://github.com/<你的 GitHub 用户名>/<你的仓库名>.git
-cd <你的仓库名>
+git clone https://github.com/zengliugen/ok-script-app-pro.git
+cd ok-script-app-pro
 ```
 
-clone 完成后，可以选择以下任一方式初始化项目：
+仓库已配置两个远端：
 
-- **使用 AI 编程工具（推荐）**：在 Codex 中输入 `使用 $initialize-ok-script-app 初始化这个仓库`。使用其他工具时，让它先阅读 `.agents/skills/initialize-ok-script-app/SKILL.md`。初始化助手会先询问游戏名、运行目标、仓库地址、图标和首个任务，再修改项目。
-- **手动初始化**：继续完成本文和后续页面中的步骤。
+```bash
+git remote -v
+# origin   https://github.com/zengliugen/ok-script-app-pro.git
+# upstream https://github.com/ok-oldking/ok-script-app.git
+```
+
+项目在模板之上开发扩展能力。需要跟随上游更新时，从 `upstream` 拉取：
+
+```bash
+git fetch upstream
+git merge upstream/master
+```
+
+合并后重新检查 `src/config.py`、`pyappify.yml` 与 `.github/workflows`，避免上游改动覆盖本项目的标识与发布配置。
 
 ## 2. 安装 Python 3.12 和项目依赖
 
@@ -53,12 +65,12 @@ python -m pip install --index-url $PypiIndex ".[web]"
 
 通常不需要管理员权限。如果目标游戏以管理员权限运行，自动化程序也需要以相同权限启动，否则截图或输入可能无法生效。
 
-## 3. 初始化应用
+## 3. 确认应用配置
 
-接下来完成以下工作：
+项目标识已初始化为 `ok-script-app-pro`，三种运行目标（Windows、Android 模拟器、浏览器）的结构均保留。开发扩展能力时可以：
 
-1. 按[应用配置](configuration.md)修改应用名称、运行目标、图标和更新仓库。
-2. 按[任务开发](tasks.md)创建并注册第一个任务。
+1. 按[应用配置](configuration.md)确认应用名称、运行目标、图标和更新仓库。
+2. 按[任务开发](tasks.md)新增并注册扩展任务。
 3. 启动 Debug 模式：
 
 ```powershell
