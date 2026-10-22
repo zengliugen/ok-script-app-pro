@@ -6,6 +6,10 @@ on:
     tags:
       - 'v*'
 
+# 默认的 GITHUB_TOKEN 只读，创建 Release 需要显式授予 contents: write
+permissions:
+  contents: write
+
 jobs:
   build:
 
@@ -74,8 +78,11 @@ jobs:
             ###  更新日志
               本次发布 ${{ github.ref_name }}
             ### 下载包说明
-              * [ok-script-app-pro-win32-online-setup.exe](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32-online-setup.exe) 在线安装包, 首次启动时从 GitHub 拉取源码与依赖.
-              * [ok-script-app-pro-win32.zip](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32.zip) 完整离线包, 已包含全部依赖.
+              * [ok-script-app-pro-win32-China-setup.exe](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32-China-setup.exe) 完整安装包（China profile）
+              * [ok-script-app-pro-win32-Global-setup.exe](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32-Global-setup.exe) full package with dependencies (Global profile)
+              * [ok-script-app-pro-win32-Web-setup.exe](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32-Web-setup.exe) web UI package (Web profile)
+              * [ok-script-app-pro-win32-online-setup.exe](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32-online-setup.exe) 在线安装包, 首次启动时拉取源码与依赖
+              * [ok-script-app-pro-win32.zip](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32.zip) 免安装压缩包
           files: pyappify_dist/*
 
       # 默认关闭，需要在仓库 Variables 中设置 MIRRORCHYAN_ENABLED=true 才会触发上传

@@ -16,7 +16,8 @@
 - Git 身份改为 `zengliugen`。
 - 移除了 CNB 与独立更新仓库的 `Sync Repositories` 步骤，构建不再需要 `CNB_TOKEN`、`OK_GH` 等模板 secrets。
 - `pyappify-action` 固定 `version: v1.2.3`，避免上游更新导致构建结果漂移。
-- 产物为 `ok-script-app-pro-win32-online-setup.exe`（在线安装包）与 `ok-script-app-pro-win32.zip`（离线完整包），Release 下载链接指向本项目。
+- 声明 `permissions: contents: write`，否则默认只读的 `GITHUB_TOKEN` 无法创建 Release（报 403 `Resource not accessible by integration`）。
+- 产物共 5 个：三个 profile 安装包（`China`/`Global`/`Web`）、`ok-script-app-pro-win32-online-setup.exe`（在线安装包）与 `ok-script-app-pro-win32.zip`（免安装压缩包）。
 - 更新日志使用本次 tag 的简要说明，不再依赖同步步骤的输出。
 
 构建约需 20 分钟，主要耗时在 PyAppify 的 Tauri/Rust 全量编译（约 18 分钟），GitHub Actions 未对该过程做缓存。如需加速，可以在 `pyappify-action` 步骤加 `use_release` 输入复用已构建的 launcher，但前提是本项目未改动图标与 `pyappify.yml`。
