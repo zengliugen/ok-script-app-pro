@@ -15,8 +15,11 @@
 
 - Git identity is `zengliugen`.
 - The CNB and dedicated update-repository `Sync Repositories` step was removed, so builds no longer need template secrets such as `CNB_TOKEN` or `OK_GH`.
-- Installers are named `ok-script-app-pro-win32-<Profile>-setup.exe` and Release links point at this repository.
+- `pyappify-action` is pinned to `version: v1.2.3` to keep build results stable against upstream changes.
+- Artifacts are `ok-script-app-pro-win32-online-setup.exe` (online installer) and `ok-script-app-pro-win32.zip` (offline bundle), with Release links pointing at this repository.
 - The release body uses a short note for the pushed tag instead of sync-step outputs.
+
+A build takes roughly 20 minutes, dominated by PyAppify's full Tauri/Rust compilation (~18 minutes), which GitHub Actions does not cache. To speed it up, add the `use_release` input to the `pyappify-action` step to reuse a prebuilt launcher, provided the project has not changed its icons or `pyappify.yml`.
 
 ## MirrorChyan
 

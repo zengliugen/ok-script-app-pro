@@ -23,24 +23,19 @@ python -m mkdocs build --strict
 
 ## GitHub Pages
 
-**Current status: automatic deployment is disabled.**
+The repository is public and GitHub Pages is enabled (**Build and deployment → Source = GitHub Actions**). The site is published at:
 
-This is a private repository, and free accounts cannot enable GitHub Pages for private repositories, so the `push` trigger in `.github/workflows/docs.yml` is commented out and only manual `workflow_dispatch` remains.
+```text
+https://zengliugen.github.io/ok-script-app-pro/
+```
 
-Validate documentation locally while it is disabled:
+`.github/workflows/docs.yml` builds and deploys on pushes to `master`, `main`, or `dev` that touch `docs/`, `mkdocs.yml`, `requirements-docs.txt`, or the workflow itself. It can also be run manually.
+
+Validate locally:
 
 ```powershell
 python -m mkdocs build --strict
 ```
-
-### Restoring automatic deployment
-
-Restore it after either of the following:
-
-1. Make the repository **public**, then set **Build and deployment → Source** to **GitHub Actions** under **Settings → Pages**.
-2. Upgrade to a plan that supports Pages for private repositories and enable Pages.
-
-Then uncomment the `push:` block in `.github/workflows/docs.yml` to build and deploy on pushes to `master`, `main`, or `dev`.
 
 `site_name`, `site_description`, `repo_name`, `repo_url`, and `edit_uri` in `mkdocs.yml` already point at this project; update them if the repository or documentation branch changes.
 

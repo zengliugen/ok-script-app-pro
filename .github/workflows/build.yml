@@ -61,6 +61,9 @@ jobs:
       - name: Build with PyAppify Action
         id: build-app
         uses: ok-oldking/pyappify-action@master #使用pyappify打包exe
+        with:
+          # 固定 pyappify 版本，避免上游更新导致构建结果漂移
+          version: 'v1.2.3'
 
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -71,9 +74,8 @@ jobs:
             ###  更新日志
               本次发布 ${{ github.ref_name }}
             ### 下载包说明
-              * [ok-script-app-pro-win32-China-setup.exe](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32-China-setup.exe) 完整安装包, 更新使用 GitHub.
-              * [ok-script-app-pro-win32-Global-setup.exe](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32-Global-setup.exe) full package with dependencies, using GitHub and PyPi as update source
-              * [ok-script-app-pro-win32-Web-setup.exe](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32-Web-setup.exe) web UI package with dependencies
+              * [ok-script-app-pro-win32-online-setup.exe](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32-online-setup.exe) 在线安装包, 首次启动时从 GitHub 拉取源码与依赖.
+              * [ok-script-app-pro-win32.zip](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32.zip) 完整离线包, 已包含全部依赖.
           files: pyappify_dist/*
 
       # 默认关闭，需要在仓库 Variables 中设置 MIRRORCHYAN_ENABLED=true 才会触发上传
