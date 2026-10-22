@@ -9,21 +9,17 @@
 | `requirements-web.txt` | Web profile 的锁定文件 | 生成物，禁止手改 |
 | `requirements-docs.txt` | 文档 profile 的锁定文件 | 生成物，禁止手改 |
 
-## UPM 包
+## 包管理器依赖
 
-**不适用**：非 Unity 项目，无 UPM/`manifest.json`。
+全部依赖经 PyPI 安装，无自建源。直接依赖（`pyproject.toml`）：
 
-## 本地插件
-
-无本地 Python 插件包；全部能力来自 PyPI 安装的 `ok-script` 及其传递依赖：
-
-| 依赖 | 版本（锁定） | 来源 | 用途 |
-|------|-------------|------|------|
-| `ok-script[adb,default,ocr,qt]` | `2.0.0b7` | `pyproject.toml` `[qt]` extra | 自动化框架（Qt profile） |
-| `ok-script[adb,default,ocr,web]` | `2.0.0b7` | `pyproject.toml` `[web]` extra | 自动化框架（Web profile） |
-| `openvino` | `2026.3.0` | `pyproject.toml` | OCR 推理加速（`config['ocr']['params']['use_openvino']=True`） |
-| `opencv-python` | `5.0.0.93` | `pyproject.toml` | 图像处理与模板匹配 |
-| `mkdocs` | `1.6.1` | `[docs]` extra | 文档站点 |
+| 依赖 | 版本 | profile | 用途 |
+|------|------|---------|------|
+| `ok-script[adb,default,ocr,qt]` | `2.0.0b7` | `qt` | 自动化框架（Qt 界面） |
+| `ok-script[adb,default,ocr,web]` | `2.0.0b7` | `web` | 自动化框架（Web 界面） |
+| `openvino` | `2026.3.0` | `qt`/`web` | OCR 推理加速（`config['ocr']['params']['use_openvino']=True`） |
+| `opencv-python` | `5.0.0.93` | `qt`/`web` | 图像处理与模板匹配 |
+| `mkdocs` | `1.6.1` | `docs` | 文档站点 |
 
 `ok-script` 带出的关键传递依赖（锁定版本见 `requirements.txt`）：`pyside6-essentials==6.11.1`、
 `pyside6-fluent-widgets==1.11.3`、`adbutils==2.12.0`、`onnxocr-ppocrv5==0.0.20`、
@@ -34,11 +30,22 @@
 - `PySide6-Fluent-Widgets` 声明了完整 PySide6 元包，但项目只用到 Essentials；
   重编译锁定文件后**须删除 `pyside6` 与 `pyside6-addons` 条目，保留 `pyside6-essentials`**。
 
-## NuGet 手动安装包
+**版本约束**：`requires-python = ">=3.12,<3.13"`；`pyappify.yml` 三个 profile 均要求 `3.12`，
+CI 矩阵同样为 `3.12`。使用 3.13 会在依赖解析或打包阶段出问题。
 
-**不适用**：非 .NET 项目。
+## 本地与私有依赖
 
-## Python 版本约束
+**无**。项目不含本地 wheel、私有索引或 `vendor` 目录；全部能力来自 PyPI 上的
+`ok-script` 及其传递依赖。运行时动态加载的模型资源（OCR 模型、字体）由 `ok-script`
+按需下载或手工放置，属资源而非代码依赖，且已被 `.gitignore` 忽略（见 `git-ignore.mdc`）。
 
-`requires-python = ">=3.12,<3.13"`；`pyappify.yml` 三个 profile 均要求 `3.12`，CI 矩阵同样为 `3.12`。
-使用 3.13 会在依赖解析或打包阶段出问题。
+## 手动安装依赖
+
+**无**。CI（`.github/workflows/build.yml`）只执行 `pip install --no-deps -r requirements.txt`，
+无额外的手动安装步骤或系统级依赖。
+
+唯一与「安装」相关的手工动作是文档站点依赖：
+
+```bash
+python -m pip install --index-url https://pypi.org/simple/ -r requirements-docs.txt
+```

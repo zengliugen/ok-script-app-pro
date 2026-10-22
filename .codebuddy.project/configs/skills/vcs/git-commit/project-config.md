@@ -29,7 +29,7 @@ subject 上限 50 字符、scope 上限 40 字符，subject 语言为简体中�
 | `.github/workflows/**` | `ci` | GitHub Actions 工作流 |
 | `main.py`、`main_debug.py`、`web_main.py`、`web_main_debug.py` | `entry` | 应用入口脚本 |
 | `pyproject.toml`、`requirements*.txt` | `deps` | 依赖声明与锁定文件 |
-| `pyappify.yml`、`deploy.txt`、`icons/**`、`assets/**`、`configs/**` | `packaging` | 打包、部署与随包资源 |
+| `pyappify.yml`、`deploy.txt`、`icons/**`、`assets/**` | `packaging` | 打包、部署与随包资源 |
 | `.codebuddy.project/**` | `codebuddy` | 引擎项目侧配置 |
 | 其他（含仓库根零散文件） | 省略 scope | 无明确归属时不写 scope |
 

@@ -12,7 +12,6 @@
 | `logs/` | 运行日志 | 运行时自动重建 |
 | `screenshots/` | 截图输出（每次启动清空） | 运行时自动重建 |
 | `ok/` | `ok-script` 源码内联产物（`inline_ok_requirements` 生成） | CI 打包时由 `python -m ok.update.inline_ok_requirements` 生成 |
-| `ok_tasks/` | GUI 中创建的自定义任务脚本 | 无自动重建，属本地用户数据 |
 | `ok_templates/` | 模板匹配切图产物 | 由 `assets/coco_annotations.json` + debug 运行重新生成 |
 | `site/` | MkDocs 构建产物 | `python -m mkdocs build` |
 | `.venv/`、`venv/`、`__pycache__/`、`*.pyc`、`*.egg-info/`、`build/`、`dist/` | Python 环境与打包产物 | 重新创建虚拟环境 / 重新构建 |
@@ -21,20 +20,32 @@
 | `updates/`、`update/`、`update.bat`、`md5.txt` | 更新流程临时产物 | 由发布/更新脚本生成 |
 | `my_key.txt` | 本地凭据（**不得入库**） | 用户自备 |
 | `*.bat`、`*.dat`、`*.msgpack`、`*.so`、`*.manifest`、`thread_dumps.txt`、`pip-log.txt`、`autohelper` | 各类本地/生成文件 | 按需重建 |
-| `test/`、`test_scripts/` | 临时测试脚本目录 | 按需重建（正式测试在 `tests/`，**未忽略**） |
+| `ok_tasks/` | GUI 中创建的自定义任务脚本 | 无自动重建，属本地用户数据 |
 
-## 产物入库的 Gen 目录
+**规则存在但目录未创建**：`.gitignore` 中的 `test/`（第 37 行）与 `test_scripts/`（第 27 行）
+是上游模板遗留条目，两个目录当前**均不存在**。正式测试目录是 `tests/`（复数，**未被忽略**），
+勿混淆。若日后创建 `test/` 或 `test_scripts/`，其内容会被忽略。
 
-**不适用**：本项目无 Unity 式生成代码目录。注意以下两点容易混淆的例外：
+## 生成目录的入库例外
 
-- `tests/`（复数）**入库**；被忽略的是 `test/`（单数）与 `test_scripts/`。
-- `i18n/`、`assets/`、`icons/`、`docs/`、`src/` **均入库**，不要误加到忽略规则。
+**本项目无 Unity 式生成代码目录**，但有以下「看着像产物、实际有意入库」的例外，改动时勿误清理：
+
+| 路径 | 为何入库 |
+|------|---------|
+| `tests/` | 正式测试目录（`test/` 单数形式才被忽略） |
+| `tests/images/` | 测试固定输入图片，测试依赖 |
+| `assets/coco_annotations.json`、`assets/images/` | 模板匹配标注与切图源，随发布包分发 |
+| `i18n/{zh_CN,en_US}/LC_MESSAGES/` | 已编译的 `.po`/`.mo` 翻译，随包分发 |
+| `icons/`、`docs/`、`src/` | 应用图标、文档源、源码，均为正式内容 |
 
 ## 未被忽略规则覆盖的生成目录
 
+以下目录在忽略规则**覆盖范围之外**，需靠人工纪律防止误提交：
+
 | 路径 | 说明 |
 |------|------|
-| `tests/images/` | 测试固定输入图片，**有意入库**，勿当产物清理 |
-| `configs/` 下的 `.json` | 整体目录已被忽略；若需入库存样，须在 `.gitignore` 显式加 `!configs/xxx.json` 例外 |
+| 仓库根零散文件 | `.gitignore` 未忽略 `*.tmp`、`*.log`（根级）等；临时文件请放 `cache/` 或系统临时目录 |
+| `configs/` 下的 json 存样 | 整体目录已被忽略；若需入库存样，须在 `.gitignore` 显式加 `!configs/xxx.json` 例外 |
+| `.codebuddy/` | 独立 Git submodule，其内部忽略规则由引擎仓库自己的 `.gitignore` 决定，不受本项目影响 |
 
 提交前核对计划外文件时，若出现上述运行目录下的文件，说明 `.gitignore` 或工作区状态异常，应查清再提交。
