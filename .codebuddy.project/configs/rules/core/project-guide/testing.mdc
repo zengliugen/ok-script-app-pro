@@ -1,0 +1,50 @@
+# 测试约束
+
+## 测试现状
+
+| 项 | 事实 |
+|----|------|
+| 测试框架 | `unittest`（标准库），基类 `ok.test.TaskTestCase` |
+| 测试目录 | `tests/`（**入库**；`test/` 与 `test_scripts/` 被 git 忽略，勿混用） |
+| 命名约定 | 文件 `Test*.py`，类 `Test*`，方法 `test_*` |
+| 现有测试 | `tests/TestMain.py` → `TestMyOneTimeTask`，校验配置控件类型与默认值 |
+| 运行方式 | `python -m unittest tests.TestMain`；CI 逐文件执行 `tests/*.py` |
+| 测试资源 | `tests/images/`（固定输入图片，有意入库） |
+
+现有测试写法约定：继承 `TaskTestCase`，类属性声明 `task_class` 与 `config`，
+在 `test_*` 方法中通过 `self.task` 访问任务实例，断言 `default_config`/`config_type` 等结构化数据。
+
+## 程序集限制
+
+**不适用**（无程序集/Assembly 概念）。对应的项目约束是**导入副作用约束**：
+
+- 测试会导入 `src.config`、`src.tasks.*`，进而导入 `ok`、`PySide6`、`qfluentwidgets`。
+  因此**在无 GUI 环境（如 Linux 容器、无显示服务器）中运行测试会失败**；CI 使用 `windows-latest`。
+- 新增测试应避免在模块顶层创建 Qt 窗口或读取真实设备（adb / 窗口句柄）；此类逻辑放进任务方法内。
+- 需要 OCR / 模板匹配的测试依赖 `assets/` 与模型文件存在；缺失时应在测试内用 `skipUnless` 跳过，而非令整套失败。
+
+## 断言与测试运行器
+
+- 使用 `unittest` 的 `assertEqual`/`assertTrue`/`assertIsInstance` 等；**不引入 pytest**（依赖清单中无 pytest）。
+- 运行器统一为 `python -m unittest`：
+
+```bash
+python -m unittest tests.TestMain
+python -m unittest discover -s tests -p "Test*.py"
+powershell -File run_tests.ps1        # 逐文件执行并短路失败（CI 同逻辑）
+```
+
+- 新增测试文件必须放在 `tests/` 且以 `Test` 开头，否则 `run_tests.ps1` 与 CI 不会执行。
+- 测试失败应通过 `assert` 表达，避免仅打印日志后继续（CI 依退出码判定）。
+
+## 内存与池化约束
+
+本项目无对象池 / 内存池机制，对应的实际约束为：
+
+- **重资源延迟加载**：OCR 模型（onnxocr / openvino）、模板匹配图片等应放在 `Globals`（`config['my_app']`）
+  或任务方法内按需加载，**不要在测试收集阶段或模块顶层加载**，否则单测启动即占用数百 MB 内存。
+- **截图与图像不落盘**：测试中避免写 `screenshots/`（运行时会清空且在 git 忽略范围），
+  临时图像用 `tempfile` 或 `tests/images/` 下的固定资源。
+- **不依赖真实设备**：`config['windows']` 已配置截图/输入方式，但测试环境无目标游戏窗口；
+  涉及设备交互的逻辑应可被 mock 或跳过，勿在 CI 中触发真实截图。
+- **CI 资源限制**：打包（PyAppify / Tauri 编译）与测试在同一 workflow 中串行，测试应保持快速（秒级）。

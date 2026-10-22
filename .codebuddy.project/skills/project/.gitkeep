@@ -1,0 +1,2 @@
+# 占位文件：保证空的 skills/project/ 目录能入库。
+# 项目专有技能（<技能名>/SKILL.md）直接放在本目录下，经 .codebuddy/skills/project 链接被加载。

@@ -1,0 +1,22 @@
+{
+  "language": "简体中文",
+  "enabledPlugins": {},
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [],
+  "disabledMcpjsonServers": [],
+  "memory": {
+    "autoMemoryEnabled": false,
+    "typedMemory": false,
+    "relevanceSelection": false,
+    "memoryExtraction": false,
+    "teamMemory": {
+      "enabled": false
+    }
+  },
+  "permissions": {
+    "allow": [],
+    "ask": [],
+    "deny": [],
+    "defaultMode": "auto"
+  }
+}

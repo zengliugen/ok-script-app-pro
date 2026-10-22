@@ -1,0 +1,73 @@
+# 项目指导
+
+本项目为 **ok-script-app-pro**：基于 [ok-script-app](https://github.com/ok-oldking/ok-script-app) 模板的能力扩展项目，
+底层依赖 [ok-script](https://github.com/ok-oldking/ok-script) 自动化框架。技术栈为 Python 3.12 + Qt（PySide6 / qfluentwidgets）
+或 Web（FastAPI + pywebview）双界面，运行目标覆盖 Windows 原生游戏、Android 模拟器（adb）与浏览器自动化。
+
+引擎侧本文件只保留强制入口与路由表，**项目事实正文由本文件承载**（项目侧 `.codebuddy.project/configs/rules/core/project-guide/`）。
+
+## 项目概述
+
+| 维度 | 事实 |
+|------|------|
+| 项目名 | `ok-script-app-pro`（`pyproject.toml` 的 `[project].name`） |
+| 定位 | 上游模板派生项目，扩展能力在 `src/` 下逐步叠加；当前保持模板结构 |
+| 语言/版本 | Python `>=3.12,<3.13`（`pyproject.toml`）；CI 使用 3.12，打包要求 3.12 |
+| 核心依赖 | `ok-script==2.0.0b7`（含 `adb`/`default`/`ocr`/`qt`/`web` extras） |
+| 界面 | Qt（默认，PySide6-Essentials + pyside6-fluent-widgets）或 Web（`PYAPPIFY_APP_PROFILE=web`） |
+| 运行目标 | `windows`（已配置）、`adb`、`browser`（后两者在 `src/config.py` 中为注释示例） |
+| 入口 | `main.py`（发布）/ `main_debug.py`（调试）/ `web_main.py` / `web_main_debug.py` |
+| 测试 | `tests/` + `run_tests.ps1`，使用 `ok.test.TaskTestCase`（unittest） |
+| 文档 | MkDocs（`mkdocs.yml`，`docs/`，中英双语），`site/` 为构建产物 |
+| 发布 | GitHub Actions（`build.yml` 监听 `v*` tag）+ PyAppify 打包 |
+
+## 架构总览
+
+分层极简，由 ok-script 框架承担大部分运行时能力：
+
+```
+main.py / web_main.py        # 入口：构造 ok.OK(config) 并 start()
+  └─ src/config.py           # 唯一配置中心（gui/ocr/windows/adb/tasks…）
+  └─ src/globals.py          # Globals(QObject) 全局单例，经 config['my_app'] 注册
+  └─ src/tasks/              # 任务层：BaseTask / TriggerTask 子类
+  └─ src/ui/                 # 界面层：CustomTab 子类（自定义 Tab）
+  └─ ok（第三方包）           # 框架：任务调度、截图、OCR、模板匹配、配置控件
+```
+
+关键架构约定：
+
+- **配置集中**：应用级配置全部在 `src/config.py` 的 `config` 字典，任务级配置在任务类的
+  `default_config`/`config_type`/`config_description`。
+- **任务注册**：`config['onetime_tasks']` 注册点击触发的任务（`[模块路径, 类名]`），
+  `config['trigger_tasks']` 注册后台周期任务。
+- **运行时目录不入库**：`configs/`（用户配置）、`cache/`、`logs/`、`screenshots/` 均由运行时生成，被 git 忽略。
+- **资源随包**：`assets/`（模板匹配标注与图片）、`icons/`、`i18n/` 随发布包分发。
+
+## 子规则路由表
+
+| 场景 | 子规则文件 | 内容 |
+|------|-----------|------|
+| 需要理解目录结构、分层、启动流程、生命周期、调试端口、工具链 | `architecture.mdc` | 架构细则 |
+| 需要运行应用、测试、构建文档站点、打包发布 | `commands.mdc` | 常用命令 |
+| 需要确认第三方依赖与锁定文件生成方式 | `dependencies.mdc` | 第三方依赖 |
+| 需要确认哪些内容被 git 忽略、需本地重建 | `git-ignore.mdc` | Git 忽略内容清单 |
+| 需要编写/运行测试、了解测试约束 | `testing.mdc` | 测试约束 |
+
+## 代码风格指引
+
+本项目**无** `.editorconfig`、ruff、flake8、pre-commit 等强制风格配置，风格以现有代码为准：
+
+- 缩进 4 空格；模块级常量小写下划线（`version`、`gui_config`）；类名大驼峰（`MyOneTimeTask`）。
+- 配置文件与界面文案以**简体中文**为主，界面/任务名可中英混排（i18n 由 `i18n/` 承载）。
+- 注释使用简体中文（沿用上游模板的英文注释可保留，新增注释一律中文）。
+- 文件编码统一 **UTF-8 无 BOM**；CI 设置 `core.autocrlf=false` / `core.eol=lf`，提交时保持 LF。
+- 直接依赖只在 `pyproject.toml` 维护，`requirements*.txt` 为生成物，不手改。
+
+引擎侧的 C# 代码风格规则（`rules/csharp-code/`）**不适用**于本项目（Python 项目，未安装 `csharp` 包）。
+
+## 加载机制说明
+
+- 本文件及其子规则均为**项目事实正文**，由引擎侧薄壳 `.codebuddy/rules/core/project-guide/RULE.mdc`
+  经 `.codebuddy/project.index.json` 的 `rule_shells` 索引读取。
+- 子规则为**按需加载**（`alwaysApply: false`），仅在涉及对应场景时读取。
+- 修改项目结构（新增顶层目录、换框架版本、改发布流程）后，须同步更新本文件与对应子规则，避免事实漂移。

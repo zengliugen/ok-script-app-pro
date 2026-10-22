@@ -1,0 +1,2 @@
+# 占位文件：保证空的 rules/project/ 目录能入库。
+# 项目专有规则（<规则名>/RULE.mdc）直接放在本目录下，经 .codebuddy/rules/project 链接被加载。

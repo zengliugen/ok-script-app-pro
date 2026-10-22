@@ -1,0 +1,22 @@
+# ============================================================
+#  项目侧配置目录（.codebuddy.project）忽略规则
+#
+#  caches/ 为运行时产物根目录（不持久化的临时结果：各技能 check_logs、
+#  .cache、.vcs-lock 等），由脚本执行生成，不入库；
+#  产物目录清单见 .codebuddy/project.index.json 的 artifacts.dirs。
+#  configs/ 与 store/ 为入库内容，不在此忽略。
+# ============================================================
+
+# 仓库根 .gitignore 的 configs/ 会匹配本项目侧 configs/ 目录（Python 运行时用户配置），
+# 此处反选恢复：项目侧 configs 为入库配置，必须随项目共享。
+# 两行缺一不可——目录级忽略（configs/）下，只写 !configs/ 无法恢复深层文件，
+# 须用 !configs/** 才能让 configs/skills/<pack>/... 等嵌套内容正常入库。
+!configs/
+!configs/**
+
+# 运行时产物根目录（整体忽略）
+caches/
+
+# 系统/编辑器临时文件
+.DS_Store
+Thumbs.db

@@ -1,0 +1,70 @@
+# 常用命令
+
+> 所有命令在项目根执行；Shell 以 **bash** 为准（PowerShell 等价命令在括号内注明）。
+> 首次使用先创建虚拟环境：`py -3.12 -m venv .venv`。
+
+## 环境准备
+
+```bash
+py -3.12 -m venv .venv
+source .venv/Scripts/activate            # PowerShell: .\.venv\Scripts\Activate.ps1
+python -m pip install --index-url https://pypi.org/simple/ --upgrade pip
+# Qt profile（推荐，锁文件安装）
+python -m pip install --index-url https://pypi.org/simple/ --no-deps --upgrade -r requirements.txt
+# Web profile
+python -m pip install --index-url https://pypi.org/simple/ --no-deps --upgrade -r requirements-web.txt
+```
+
+索引地址必须带 `/simple/`，否则报 `No matching distribution found`。
+
+## Unity 打开
+
+**不适用**：本项目为 Python 桌面应用，无 Unity 工程。
+
+## 构建
+
+Python 无编译步骤；「构建」指锁定文件生成与文档站点：
+
+```bash
+# 改 pyproject.toml 后重编译锁定文件
+python -m piptools compile --extra qt   --strip-extras --no-header --output-file requirements.txt pyproject.toml
+python -m piptools compile --extra web  --strip-extras --no-header --output-file requirements-web.txt pyproject.toml
+python -m piptools compile --extra docs --strip-extras --no-header --output-file requirements-docs.txt pyproject.toml
+# 编译后删除生成的 pyside6 与 pyside6-addons 条目，保留 pyside6-essentials
+
+# 文档站点
+python -m mkdocs build --strict          # 输出到 site/
+```
+
+## 运行
+
+```bash
+python main_debug.py         # Qt 调试模式（开发推荐）
+python main.py               # Qt 正式模式
+python web_main_debug.py     # Web 调试模式
+python web_main.py           # Web 正式模式
+python -m mkdocs serve       # 文档预览 http://127.0.0.1:8000/
+```
+
+## 测试
+
+```bash
+python -m unittest tests.TestMain                    # 单个测试模块
+python -m unittest discover -s tests -p "Test*.py"   # 发现式运行
+powershell -File run_tests.ps1                       # 逐文件运行（CI 等价逻辑）
+```
+
+## 打包与发布
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0       # 触发 .github/workflows/build.yml
+```
+
+本地打包由 PyAppify 完成（`pyappify.yml` 三个 profile）；CI 使用
+`ok-oldking/pyappify-action@master` 并固定 `version: v1.2.3`。产物清单与注意事项见 `docs/release.md`。
+
+## CDN 模拟
+
+**不适用**：本项目无 AssetBundle/CDN 资源体系。文档站点经 GitHub Pages
+（`.github/workflows/docs.yml`）发布，本地预览用 `python -m mkdocs serve`。

@@ -1,0 +1,44 @@
+# 第三方依赖
+
+依赖声明分三层，**唯一直接依赖来源是 `pyproject.toml`**，其余为生成物或派生清单。
+
+| 文件 | 性质 | 维护方式 |
+|------|------|---------|
+| `pyproject.toml` | 直接依赖 + profile（`qt`/`web`/`docs`） | **手动维护，改依赖只改这里** |
+| `requirements.txt` | Qt profile 的 pip-compile 锁定文件 | 生成物，禁止手改 |
+| `requirements-web.txt` | Web profile 的锁定文件 | 生成物，禁止手改 |
+| `requirements-docs.txt` | 文档 profile 的锁定文件 | 生成物，禁止手改 |
+
+## UPM 包
+
+**不适用**：非 Unity 项目，无 UPM/`manifest.json`。
+
+## 本地插件
+
+无本地 Python 插件包；全部能力来自 PyPI 安装的 `ok-script` 及其传递依赖：
+
+| 依赖 | 版本（锁定） | 来源 | 用途 |
+|------|-------------|------|------|
+| `ok-script[adb,default,ocr,qt]` | `2.0.0b7` | `pyproject.toml` `[qt]` extra | 自动化框架（Qt profile） |
+| `ok-script[adb,default,ocr,web]` | `2.0.0b7` | `pyproject.toml` `[web]` extra | 自动化框架（Web profile） |
+| `openvino` | `2026.3.0` | `pyproject.toml` | OCR 推理加速（`config['ocr']['params']['use_openvino']=True`） |
+| `opencv-python` | `5.0.0.93` | `pyproject.toml` | 图像处理与模板匹配 |
+| `mkdocs` | `1.6.1` | `[docs]` extra | 文档站点 |
+
+`ok-script` 带出的关键传递依赖（锁定版本见 `requirements.txt`）：`pyside6-essentials==6.11.1`、
+`pyside6-fluent-widgets==1.11.3`、`adbutils==2.12.0`、`onnxocr-ppocrv5==0.0.20`、
+`ok-d3dshot==0.1.5`、`pyappify==1.0.10`、`numpy==2.5.2`、`pillow==12.3.0`。
+
+**已知约束**：
+- Qt profile 以 `--no-deps` 安装（`pyproject.toml` 与 CI 均如此），因此锁定文件必须自洽完整。
+- `PySide6-Fluent-Widgets` 声明了完整 PySide6 元包，但项目只用到 Essentials；
+  重编译锁定文件后**须删除 `pyside6` 与 `pyside6-addons` 条目，保留 `pyside6-essentials`**。
+
+## NuGet 手动安装包
+
+**不适用**：非 .NET 项目。
+
+## Python 版本约束
+
+`requires-python = ">=3.12,<3.13"`；`pyappify.yml` 三个 profile 均要求 `3.12`，CI 矩阵同样为 `3.12`。
+使用 3.13 会在依赖解析或打包阶段出问题。

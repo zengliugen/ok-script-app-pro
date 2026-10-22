@@ -1,0 +1,6 @@
+# 占位文件：保证空的本目录能入库。
+# 本目录下有两类内容：
+#   <pack>/     引擎可选包的组件链接（由 pack_install.py 创建，勿手工增删）
+#   project/    项目专有技能（真实目录，随项目入库）
+# 项目专有技能请放 .codebuddy.project/skills/project/<技能名>/SKILL.md，
+# 经 .codebuddy/skills/project 链接被加载。
