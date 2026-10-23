@@ -64,6 +64,7 @@ VCS 互斥锁、暂存区校验、计划外文件核对。
 | `review_skill` | 空（当前无 Python 代码审查技能） |
 | `rules_dir` | 空 |
 | `report_dir` | 空 |
+| `collect_cmd` | 空（未配置时由 LLM 按 `git diff` + `git ls-files --others` 自行收集清单） |
 | `blocking_level` | `error` |
 
 过滤顺序为「扩展名 → 白名单（可选）→ 黑名单」。`file_extensions` 是门禁的固有边界，始终生效；
@@ -80,13 +81,24 @@ VCS 互斥锁、暂存区校验、计划外文件核对。
 
 当前**不启用任何 H1 步骤**：表内为空，暂存前不执行额外动作，直接进入阶段六安全检查。
 
-| enabled | name | description | blocking |
-|---------|------|-------------|----------|
-| false | — | — | — |
+| enabled | name | description | commands | blocking |
+|---------|------|-------------|----------|----------|
+| false | — | — | — | — |
 
-后续如需启用，按引擎侧字段语义（`enabled`/`name`/`description`/`blocking`）在本表追加行，
-并按表内顺序执行。可选步骤示例：`python -m unittest`（`blocking=true`）、
+字段语义（引擎只定义执行规则，不内置任何步骤）：
+
+- `description`：步骤**做什么**的完整说明。引擎不解释、不补齐；调用哪个技能、检查什么，全由这里给出。
+- `commands`：可执行命令清单，**逐条执行并以退出码判定**（0 通过，非 0 按 `blocking` 处理）。
+  留空表示该步骤为纯人工核对项，由 LLM 按 `description` 核对后判定。
+- `blocking`：`true` 失败即中止并询问用户；`false` 失败仅告警继续。
+
+按表内顺序逐行处理，`enabled=false` 跳过。后续如需启用，在本表追加行即可。
+可选步骤示例：`python -m unittest`（`commands` 填该命令，`blocking=true`）、
 `ruff format --check`（需先在项目内引入 ruff）。
+
+**为何 H1 位于暂存前**：任何会改写工作区文件的步骤（如格式化修复）置于暂存前时，
+修复结果随正常暂存流程进入提交，无需「修复后重新 `git add` 并重跑 `verify_staged.py`」；
+且 H1 落在 VCS 锁窗口之外，不占用互斥锁。
 
 ## 5. 项目专有检查说明
 
