@@ -1,0 +1,170 @@
+{
+  "positive_concepts": {
+    "upstream_diff": {
+      "weight": 0.38,
+      "phrases": [
+        "上游差异",
+        "上游改动",
+        "上游文件",
+        "上游来源",
+        "相对上游",
+        "上游改了多少",
+        "改过哪些上游",
+        "上游有哪些",
+        "冲突面"
+      ]
+    },
+    "registry_check": {
+      "weight": 0.3,
+      "phrases": [
+        "登记",
+        "未登记",
+        "已登记",
+        "divergence",
+        "divergence.yaml",
+        "登记清单",
+        "条目",
+        "补登记",
+        "清单"
+      ]
+    },
+    "inventory": {
+      "weight": 0.14,
+      "phrases": [
+        "盘点",
+        "校验",
+        "检查",
+        "查一下",
+        "看看",
+        "核对",
+        "审查",
+        "有没有"
+      ]
+    },
+    "add_entry": {
+      "weight": 0.1,
+      "phrases": [
+        "生成登记条目",
+        "登记条目骨架",
+        "补一条",
+        "生成条目",
+        "加一条登记",
+        "骨架"
+      ]
+    },
+    "sync_precheck": {
+      "weight": 0.08,
+      "phrases": [
+        "同步前",
+        "同步之前",
+        "提交前",
+        "merge 前",
+        "跟进上游",
+        "能不能跟进"
+      ]
+    },
+    "ownership_check": {
+      "weight": 0.14,
+      "phrases": [
+        "算不算上游",
+        "是否属于上游",
+        "归属",
+        "引擎还是上游",
+        "要不要登记",
+        "需要在 divergence",
+        "该不该登记",
+        "判断一下归属",
+        "帮我判断"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "upstream_diff",
+    "registry_check"
+  ],
+  "negative_concepts": {
+    "merge_execution": {
+      "weight": 0.26,
+      "exclusive": true,
+      "phrases": [
+        "git merge",
+        "git fetch",
+        "合并分支",
+        "把上游更新合进来",
+        "拉取上游",
+        "merge upstream"
+      ]
+    },
+    "run_tests": {
+      "weight": 0.22,
+      "exclusive": true,
+      "phrases": [
+        "run_tests",
+        "跑测试",
+        "运行测试",
+        "跑一下测试",
+        "单元测试"
+      ]
+    },
+    "write_reason": {
+      "weight": 0.2,
+      "exclusive": true,
+      "phrases": [
+        "你帮我编",
+        "帮我写 reason",
+        "reason 你",
+        "随便写个原因",
+        "编一句"
+      ]
+    },
+    "explain_only": {
+      "weight": 0.24,
+      "exclusive": true,
+      "phrases": [
+        "解释一下",
+        "什么意思",
+        "有哪些取值",
+        "给我讲讲",
+        "说明一下"
+      ]
+    },
+    "translate_only": {
+      "weight": 0.35,
+      "exclusive": true,
+      "phrases": [
+        "翻译成",
+        "译成",
+        "translate"
+      ]
+    },
+    "summarize_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "总结一下",
+        "概括一下",
+        "提炼重点"
+      ]
+    },
+    "doc_writing": {
+      "weight": 0.18,
+      "exclusive": false,
+      "phrases": [
+        "操作手册",
+        "写一份",
+        "文档",
+        "readme",
+        "指南"
+      ]
+    },
+    "one_off": {
+      "weight": 0.24,
+      "exclusive": true,
+      "phrases": [
+        "一次性",
+        "就这一次",
+        "不用复用"
+      ]
+    }
+  }
+}

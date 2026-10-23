@@ -1,18 +1,27 @@
 ---
 name: upstream-guard
-description: 盘点本项目相对上游 ok-script-app 的代码差异、校验差异是否都已登记到 divergence.yaml、辅助生成登记条目。用户说"上游差异"、"检查有没有未登记的改动"、"盘点上游改动"、"登记这个改动"、"同步前检查"、"能不能跟进上游"时使用。
+description: 盘点本项目相对上游 ok-script-app 的代码差异、校验差异是否都已登记到 divergence.yaml、辅助生成登记条目。用户说"上游差异"、"检查有没有未登记的改动"、"盘点上游改动"、"登记这个改动"、"同步前检查"、"能不能跟进上游"时使用。也用于判断某个改动到底算不算上游差异（引擎仓库 .codebuddy 与 .codebuddy.project 的改动不属于上游）。
 ---
 
 # 上游差异守护
 
-## 解决什么问题
-
 本项目 fork 自上游 `ok-oldking/ok-script-app`，靠 `git merge upstream/master` 跟进更新。
-上游文件被改动得越多，合并冲突越难解，最终会失去跟进能力。本技能守住这条线：
+上游文件改得越多，合并冲突越难解，最终会失去跟进能力。本技能守住这条线：
+**盘点**改过哪些上游文件、**校验**是否都登记、**登记**某个改动。
 
-1. **盘点**——以登记的上游锚点为基准，列出本项目改过/删过哪些上游文件。
-2. **校验**——这些改动是否都已在 `divergence.yaml` 中有条目，条目是否已失效。
-3. **登记**——为某个改动生成登记条目骨架，避免手写 YAML 写歪。
+## 先确认归属（最容易错的一步）
+
+工作区里有三类路径，只有第三类需要登记：
+
+| 路径 | 归属 | 要登记吗 |
+|---|---|---|
+| `.codebuddy/**` | **引擎仓库**（submodule，独立 Git 仓库） | **否** |
+| `.codebuddy.project/**` | 项目仓库中的**项目自有目录** | **否** |
+| `src/**`、`pyproject.toml` 等上游来源文件 | 项目仓库 | **是** |
+
+改完引擎后跑本脚本"什么都没提示"，不代表引擎属于上游——那是「不归本技能管」。
+判据：**这个文件在 `git merge upstream/master` 时会不会冲突**？不会就不登记。
+完整判定顺序、脚本表现与自查方法见 `references/ownership-rules.md`。
 
 ## 怎么用
 
@@ -29,53 +38,40 @@ python .codebuddy.project/skills/project/upstream-guard/scripts/upstream_guard.p
 python .codebuddy.project/skills/project/upstream-guard/scripts/upstream_guard.py --add src/config.py
 ```
 
-### 输出解读
+`--add` 指向非上游路径（引擎、项目自有目录、锚点中不存在的新增文件）时会**拒绝**并说明该去哪，
+退出码 4。四种输出标记（`[未登记]` / `[已失效]` / `[不一致]` / `[告警]`）的判定条件、
+处置动作与全部退出码见 `references/output-interpretation.md`。
 
-| 标记 | 含义 | 处置 |
-|---|---|---|
-| `[未登记]` | 改动了上游文件但清单里没有条目 | 补登记，与改动同一次提交 |
-| `[已失效]` | 清单有条目但文件已无差异 | 删除该条目（需要历史请查 git） |
-| `[不一致]` | 实际状态（M/D）与登记的 kind 不符 | 修正条目 kind |
-| `[告警]` | 新增文件落在上游专属目录 | 按扩展优先原则移到 `src/extensions/` |
+## 校验基准
 
-退出码：0 通过 / 1 有问题 / 2 git 失败 / 3 配置缺失。
+以 `divergence.yaml` 的 `synced_upstream_commit` 为唯一基准，不取自远端分支——离线可用、
+结果可复现，不会因某次 `git fetch` 让判定漂移。基准语义与配置定位见 `references/check-basis.md`。
 
-## 校验基准是本地锚点，不是远端分支
+## 不适用范围（do not use / out of scope）
 
-`divergence.yaml` 里的 `synced_upstream_commit` 是唯一基准。原因：离线可用、结果可复现，
-不会因为某次 `git fetch` 而让「本地有无未登记改动」这个判定漂移。
+以下请求**不要**调用本技能：
 
-「上游自锚点以来有哪些新提交」属于同步范畴，由规则的 `upstream-sync.mdc` 处理。
-
-## 配置来源
-
-两个清单在项目侧的固定位置，脚本按相对路径直接定位：
-
-| 路径 | 用途 |
+| 请求 | 该去哪 |
 |---|---|
-| `.codebuddy.project/configs/upstream/divergence.yaml` | 上游差异登记清单 |
-| `.codebuddy.project/configs/upstream/capabilities.yaml` | 本项目已实现能力清单 |
+| 执行 `git fetch` / `git merge upstream/master` | 规则 `upstream-sync.mdc` 的人工流程 |
+| 在引擎仓库或项目仓库**提交**改动 | 规则 `codebuddy-engine-vcs`（含先子后父顺序） |
+| 判断「这个上游改动该不该改」 | 人读 diff 判断；本技能只发现与报告 |
+| 直接改写 `divergence.yaml` 的 reason | 拒绝——自动推断的原因半年后毫无价值 |
+| 校验上游行为是否仍正确 | 跑 `tests/` 下的上游基线测试（`run_tests.ps1` 的 `extensions_tests/` 部分与此无关）；本技能只保证「登记完整」 |
 
-**不登记进 `.codebuddy/project.index.json`**——索引随引擎共享且对所有消费项目一致，
-只承载引擎技能所需的配置。本技能与两个清单都是项目专有内容，登进索引会让其他项目
-被 `codebuddy-init` 生成无用骨架。
+环境依赖与降级表现（缺 PyYAML、非 git 仓库、锚点失效）见 `references/boundaries.md`。
 
-配置缺失或 YAML 损坏时脚本直接报错退出（退出码 3），不回退内置默认值。
+## 触发评测
 
-## 边界（诚实的部分）
-
-- **不做同步**。不执行 `git fetch` / `git merge`，那属于 `upstream-sync.mdc` 的流程，
-  且高风险 git 操作不应藏在技能脚本里。
-- **只对比锚点与 HEAD 的树差异**，不分析改动的语义。判断「这个改动该不该由 `src/extensions/`
-  承接」需要人（或模型）读 diff，脚本只负责发现与报告。
-- **不推断改动原因**。`--add` 只生成骨架，`reason` 必须人工填写——自动推断出的原因
-  半年后读起来毫无价值。
-- **不替代测试**。校验通过只说明「登记完整」，不说明「上游行为未被破坏」，后者靠运行测试。
+`evals/` 下有 15 条正向 / 6 条反向 / 9 条近邻用例，基线为阈值 0.30、FP=0 / FN=0。
+**改 `description` 后必须重跑** `trigger_eval.py`。命令与用例设计意图见
+`references/trigger-eval.md`。
 
 ## 相关规则
 
 - `rules/project/upstream-compat/RULE.mdc` —— 核心底线与路由
 - `extension-methods.mdc` —— 四条零改动路径与红线
-- `extension-layout.mdc` —— `src/extensions/` 结构与覆写崩溃语义
+- `extension-layout.mdc` —— `extensions/` 结构与覆写崩溃语义
 - `divergence-registry.mdc` —— 清单字段定义的权威来源
 - `upstream-sync.mdc` —— merge 策略与冲突处置
+- `rules/tool/codebuddy-engine-vcs/` —— 引擎仓库 vs 项目仓库的提交归属
