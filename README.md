@@ -57,6 +57,13 @@ python -m mkdocs build --strict
 - 本项目：扩展能力在模板之上开发，通过 GitHub `upstream` 远端同步上游更新
 - 发布与更新：安装包与更新源均指向本项目仓库
 
+### 首次检出
+
+克隆后**必须先运行一次** `.codebuddy/setup.cmd`（macOS / Linux 为 `./.codebuddy/setup.sh`）。
+它生成 `.codebuddy.project/` 配置骨架、建立 `settings.json` 与可选包的软链接，并配置引擎的
+提交前校验钩子。这三类产物都不随仓库分发（在 `.git/` 或磁盘上），跳过会表现为配置读不到、
+可选包技能不加载、引擎提交时没有一致性校验。
+
 ### 扩展约定
 
 新增能力一律写在 `src/extensions/` 下，**不修改上游文件**。`src/config.py` 相对上游只保留一行
