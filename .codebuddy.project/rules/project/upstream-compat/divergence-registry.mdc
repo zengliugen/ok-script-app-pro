@@ -15,8 +15,17 @@ provider:
 | `.codebuddy.project/configs/upstream/divergence.yaml` | 防冲突：记录**所有**对上游文件的改动/删除及原因 | 随上游同步与偶发改动 |
 | `.codebuddy.project/configs/upstream/capabilities.yaml` | 防重复造轮子与便于交接：记录本项目**已实现的能力**及其扩展手段 | 随功能开发 |
 
-两文件均为项目侧配置，入库；路径已登记在 `.codebuddy/project.index.json` 的 `files` 中，
-由 `upstream-guard` 技能经索引逻辑名读取，**禁止脚本内硬编码路径**。
+两文件均为项目侧配置，入库，位置固定：
+
+```
+.codebuddy.project/configs/upstream/divergence.yaml
+.codebuddy.project/configs/upstream/capabilities.yaml
+```
+
+**不登记进 `.codebuddy/project.index.json`**。索引是引擎与项目侧之间的注册表、随引擎共享且
+对所有消费项目一致，只登记**引擎技能所需**的项目配置。本规则与 `upstream-guard` 技能均属
+项目专有，把它们登记进索引会让其他项目被 `codebuddy-init` 生成无用骨架。
+脚本按固定相对路径定位，文件缺失即报错退出（退出码 3）。
 
 ## divergence.yaml 结构
 

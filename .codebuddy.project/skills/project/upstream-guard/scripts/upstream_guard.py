@@ -6,9 +6,10 @@
     python .codebuddy.project/skills/project/upstream-guard/scripts/upstream_guard.py --changed
     python .codebuddy.project/skills/project/upstream-guard/scripts/upstream_guard.py --add src/config.py
 
-配置来源：
-    .codebuddy/project.index.json 的 files["upstream.divergence"] / files["upstream.capabilities"]
-    路径缺失或索引损坏时直接报错退出（退出码 3），不回退内置默认值。
+配置路径（项目侧固定位置，不经索引）：
+    .codebuddy.project/configs/upstream/divergence.yaml     —— 上游差异登记清单
+    .codebuddy.project/configs/upstream/capabilities.yaml   —— 已实现能力清单
+    文件缺失或 YAML 损坏时直接报错退出（退出码 3），不回退内置默认值。
 
 退出码：
     0 = 校验通过
@@ -18,15 +19,20 @@
 """
 
 import argparse
-import json
 import subprocess
 import sys
 from pathlib import Path
 
 import yaml
 
+# 项目根：本脚本位于 <项目根>/.codebuddy.project/skills/project/upstream-guard/scripts/
 PROJECT_ROOT = Path(__file__).resolve().parents[5]
-INDEX_PATH = PROJECT_ROOT / ".codebuddy" / "project.index.json"
+
+# 配置路径：项目专有技能的配置属项目侧内容，直接定位，不经 .codebuddy/project.index.json。
+# 索引是引擎与项目侧之间的注册表、随引擎共享并对所有消费项目一致；
+# 把项目专有技能的配置登进去，会让其他项目被 codebuddy-init 生成无用骨架。
+DIVERGENCE_PATH = PROJECT_ROOT / ".codebuddy.project" / "configs" / "upstream" / "divergence.yaml"
+CAPABILITIES_PATH = PROJECT_ROOT / ".codebuddy.project" / "configs" / "upstream" / "capabilities.yaml"
 
 # 上游专属的**代码**目录：新增项目代码落在这些目录会告警（应写 src/extensions/）。
 # 注意 docs/ 与 tests/ 不在此列——两处均允许新增文件：
@@ -43,28 +49,6 @@ def fail(message, code=3):
     """统一错误出口：明确报错并退出，不静默降级。"""
     print(f"[错误] {message}", file=sys.stderr)
     sys.exit(code)
-
-
-def load_index():
-    """读取配置索引，返回差异清单与能力清单的绝对路径。"""
-    if not INDEX_PATH.is_file():
-        fail(f"配置索引不存在：{INDEX_PATH}")
-    try:
-        data = json.loads(INDEX_PATH.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        fail(f"配置索引 JSON 损坏：{exc}")
-
-    files = data.get("files")
-    if not isinstance(files, dict):
-        fail("配置索引缺少 files 段")
-
-    paths = {}
-    for logical_name in ("upstream.divergence", "upstream.capabilities"):
-        entry = files.get(logical_name)
-        if not isinstance(entry, dict) or not entry.get("path"):
-            fail(f"配置索引缺少逻辑名 {logical_name} 的 path 登记")
-        paths[logical_name] = PROJECT_ROOT / entry["path"]
-    return paths
 
 
 def load_divergence(path):
@@ -240,12 +224,11 @@ def main():
     group.add_argument("--add", metavar="路径", help="为指定路径生成登记条目骨架")
     args = parser.parse_args()
 
-    paths = load_index()
-    anchor, entries = load_divergence(paths["upstream.divergence"])
+    anchor, entries = load_divergence(DIVERGENCE_PATH)
     verify_anchor(anchor)
 
     if args.add:
-        return add_entry(paths["upstream.divergence"], args.add)
+        return add_entry(DIVERGENCE_PATH, args.add)
 
     diff = collect_diff(anchor, args.changed)
     return 1 if report(anchor, entries, diff, args.changed) else 0

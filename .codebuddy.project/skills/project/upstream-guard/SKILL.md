@@ -49,15 +49,18 @@ python .codebuddy.project/skills/project/upstream-guard/scripts/upstream_guard.p
 
 ## 配置来源
 
-两个清单的路径经 `.codebuddy/project.index.json` 的逻辑名定位：
+两个清单在项目侧的固定位置，脚本按相对路径直接定位：
 
-| 逻辑名 | 用途 |
+| 路径 | 用途 |
 |---|---|
-| `upstream.divergence` | 上游差异登记清单 |
-| `upstream.capabilities` | 本项目已实现能力清单 |
+| `.codebuddy.project/configs/upstream/divergence.yaml` | 上游差异登记清单 |
+| `.codebuddy.project/configs/upstream/capabilities.yaml` | 本项目已实现能力清单 |
 
-配置缺失或索引损坏时脚本直接报错退出（退出码 3），**不回退内置默认值**——
-路径写死在脚本里会让技能在别的项目失效。
+**不登记进 `.codebuddy/project.index.json`**——索引随引擎共享且对所有消费项目一致，
+只承载引擎技能所需的配置。本技能与两个清单都是项目专有内容，登进索引会让其他项目
+被 `codebuddy-init` 生成无用骨架。
+
+配置缺失或 YAML 损坏时脚本直接报错退出（退出码 3），不回退内置默认值。
 
 ## 边界（诚实的部分）
 
