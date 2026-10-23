@@ -17,6 +17,9 @@ ok-script-app-pro 是基于 [ok-script-app](https://github.com/ok-oldking/ok-scr
 
 本项目通过 `upstream` 远端跟踪 [ok-script-app](https://github.com/ok-oldking/ok-script-app)：上游提供模板骨架与通用能力，本项目在其之上开发扩展功能，并将安装包与更新源指向本项目仓库。
 
+本项目对上游做了哪些修改、每处为什么改、怎样防止修改面扩大，见
+[本仓库对上游的修改说明](upstream-changes.md)（共 22 个文件被修改，0 个被删除）。
+
 ## 功能演示
 
 ### API 列表与脚本录制

@@ -27,25 +27,35 @@ provider:
    `.codebuddy.project/configs/upstream/divergence.yaml` 中有对应条目（含改动原因）。
    未登记的改动视为违规，`upstream-guard` 技能会报错。
 
-3. **唯一接线点是 `src/config.py` 末尾的一行 import**。项目扩展经 `src/extensions/bootstrap.py`
+3. **唯一接线点是 `src/config.py` 末尾的一行 import**。项目扩展经 `extensions/bootstrap.py`
    统一装载；`src/config.py` 相对上游**只允许这一行差异**。其余任何 `src/config.py` 的改动
-   都应迁移到 `src/extensions/overrides.py`。
+   都应迁移到 `extensions/overrides.py`。
 
 4. **不设灰度线**。「只改一行」「只加个默认值」「只是重构」都不构成豁免。改上游文件就是改上游文件，
    没有按行数、按影响面的例外判定——灰度线一旦存在就会无限扩张。
 
-5. **项目专属代码只写在 `src/extensions/`**。该目录在上游不存在，是本项目唯一的自有代码区。
+5. **项目专属代码只写在 `extensions/`**。该目录在上游不存在，是本项目唯一的自有代码区。
    新增任务、Tab、业务逻辑、patch 均落在此处，不得散落到 `src/tasks/`、`src/ui/` 等上游目录。
+   放在**顶层**而非 `src/extensions/`：`src/` 是命名空间包，扩展目录下若再套一层 `src`，
+   两个 `src` 会在进入 `sys.path` 时被静默合并成同一个包，同名模块谁生效取决于路径顺序。
+   `extensions/` 是常规包（每层 `__init__.py`），`__path__` 唯一，不存在该风险；
+   **禁止**把 `extensions/` 加入 `sys.path`，只能以 `extensions.xxx` 引用。
 
 6. **侵入性改动必须可失效**。任何 patch 或对框架内部符号的假设，必须在启动时断言目标存在，
    并在目标消失时**立即崩溃且指名缺失项**，不得静默降级。
+
+7. **改引擎不等于改上游**。`.codebuddy/**` 是独立 Git 仓库（submodule），其改动归引擎仓库，
+   **不登记** `divergence.yaml`；`.codebuddy.project/**` 同理。判据只有一条：
+   **这个文件在 `git merge upstream/master` 时会不会冲突**？不会就不登记。
+   把引擎改动当上游登记，条目永远无法失效，清单会失去可信度。归属判定与提交去向见
+   `codebuddy-engine-vcs` 规则与技能 `references/ownership-rules.md`。
 
 ## 子规则路由表
 
 | 场景 | 子规则文件 | 内容 |
 |------|-----------|------|
 | 需要新增能力、选择扩展手段、判断某个改法是否合规 | `extension-methods.mdc` | 四条零改动路径的优先级与适用边界、monkey patch 准入条件与收口要求、红线清单 |
-| 需要新建扩展模块、确定目录结构、写 bootstrap/overrides | `extension-layout.mdc` | `src/extensions/` 目录职责、注入时序、覆写键校验与崩溃语义、测试落位 |
+| 需要新建扩展模块、确定目录结构、写 bootstrap/overrides | `extension-layout.mdc` | `extensions/` 目录职责、注入时序、覆写键校验与崩溃语义、测试落位 |
 | 需要登记上游改动、运行校验、查询已实现能力 | `divergence-registry.mdc` | `divergence.yaml` 与 `capabilities.yaml` 字段、`upstream-guard` 技能用法、校验基准与通过标准 |
 | 需要跟进上游更新、解决合并冲突 | `upstream-sync.mdc` | merge 策略、冲突处置顺序、同步后必须更新的锚点与登记 |
 

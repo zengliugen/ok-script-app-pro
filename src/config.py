@@ -130,4 +130,4 @@ config = {
 }
 
 # 项目扩展唯一接线点：必须位于 config 字典之后、ok.OK(config) 之前
-from src.extensions import bootstrap; bootstrap.apply(config)
+from extensions import bootstrap; bootstrap.apply(config)

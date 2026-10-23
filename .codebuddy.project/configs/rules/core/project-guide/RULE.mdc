@@ -17,7 +17,7 @@
 | 界面 | Qt（默认，PySide6-Essentials + pyside6-fluent-widgets）或 Web（`PYAPPIFY_APP_PROFILE=web`） |
 | 运行目标 | `windows`（已配置）、`adb`、`browser`（后两者在 `src/config.py` 中为注释示例） |
 | 入口 | `main.py`（发布）/ `main_debug.py`（调试）/ `web_main.py` / `web_main_debug.py` |
-| 测试 | `tests/` + `run_tests.ps1`，使用 `ok.test.TaskTestCase`（unittest） |
+| 测试 | `tests/`（上游基线）+ `extensions_tests/`（项目扩展）+ `run_tests.ps1`，使用 `ok.test.TaskTestCase`（unittest） |
 | 文档 | MkDocs（`mkdocs.yml`，`docs/`，中英双语），`site/` 为构建产物 |
 | 发布 | GitHub Actions（`build.yml` 监听 `v*` tag）+ PyAppify 打包 |
 

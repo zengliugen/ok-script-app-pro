@@ -22,7 +22,7 @@
 框架从 `config` 读取类路径并实例化，语法是二元组 `[模块路径, 类名]`：
 
 ```python
-# src/extensions/my_feature/task.py
+# extensions/tasks/my_task.py
 from src.tasks.MyBaseTask import MyBaseTask
 
 class MyNewTask(MyBaseTask):
@@ -33,9 +33,9 @@ class MyNewTask(MyBaseTask):
         self.icon = "icons/icon.png"
         self.default_config = {"参数": 1}
 
-# src/extensions/bootstrap.py 中注册
+# extensions/bootstrap.py 中注册
 config.setdefault("onetime_tasks", []).append(
-    ["src.extensions.my_feature.task", "MyNewTask"]
+    ["extensions.tasks.my_task", "MyNewTask"]
 )
 ```
 
@@ -58,7 +58,7 @@ config.setdefault("onetime_tasks", []).append(
 框架把装配逻辑拆成了独立方法，可以覆写：
 
 ```python
-# src/extensions/my_ok.py
+# extensions/core/my_ok.py
 from ok import OK
 
 class MyOK(OK):
@@ -89,17 +89,27 @@ def on_show_main_window(self):
 ## 目录结构
 
 ```
-src/extensions/
-├── bootstrap.py      # 唯一入口，串起下面几层
-├── overrides.py      # config 值覆写（带键存在性校验）
-├── patches/          # monkey patch，一个目标一个文件
-└── <能力名>/         # 你的能力：任务、页面、业务逻辑
+extensions/                 # 只放运行时代码
+├── __init__.py
+├── bootstrap.py            # 唯一入口，串起下面几层
+├── overrides.py            # config 值覆写（带键存在性校验）
+├── core/                   # 核心能力扩展（patch、hook、框架行为调整）
+├── tasks/                  # 任务与触发器
+└── patches/                # monkey patch，一个目标一个文件
+
+extensions_tests/           # 只放测试（与 extensions/ 分目录）
+├── __init__.py
+└── Test<能力名>.py
 ```
+
+扩展**不止任务**：凡是上游没有、本项目要加的运行时能力都放 `extensions/`，
+按性质分 `core/`（框架级）、`tasks/`（任务）、`patches/`（侵入式 patch）。
+新增一类能力时新建子目录，不要往 `bootstrap.py` 里堆逻辑。
 
 `src/config.py` 相对上游**只允许一行差异**——末尾的接线：
 
 ```python
-from src.extensions import bootstrap; bootstrap.apply(config)
+from extensions import bootstrap; bootstrap.apply(config)
 ```
 
 其余任何 config 改动都应写进 `overrides.py`。

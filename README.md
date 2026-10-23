@@ -4,7 +4,7 @@
 
 ok-script-app-pro 是基于 [ok-script-app](https://github.com/ok-oldking/ok-script-app) 模板的能力扩展项目，底层依赖 [ok-script](https://github.com/ok-oldking/ok-script)。它在保留上游模板能力（Windows 原生游戏、Android 模拟器、浏览器自动化）的基础上，作为后续扩展开发的载体。
 
-仓库当前保持模板结构，扩展能力将在 `src/` 下逐步叠加，任务示例、OCR、模板匹配、配置控件、测试、i18n、EXE 打包与更新发布配置可直接复用。
+仓库保持模板结构，项目扩展写在 `extensions/` 下（上游不存在的目录）；任务示例、OCR、模板匹配、配置控件、测试、i18n、EXE 打包与更新发布配置可直接复用。
 
 ## 文档
 
@@ -57,6 +57,9 @@ python -m mkdocs build --strict
 - 本项目：扩展能力在模板之上开发，通过 GitHub `upstream` 远端同步上游更新
 - 发布与更新：安装包与更新源均指向本项目仓库
 
+本项目对上游做了哪些修改、每处为什么改、怎样防止修改面扩大，见
+**[本仓库对上游的修改说明](UPSTREAM_CHANGES.md)**（共 22 个文件被修改，0 个被删除）。
+
 ### 首次检出
 
 克隆后**必须先运行一次** `.codebuddy/setup.cmd`（macOS / Linux 为 `./.codebuddy/setup.sh`）。
@@ -66,9 +69,9 @@ python -m mkdocs build --strict
 
 ### 扩展约定
 
-新增能力一律写在 `src/extensions/` 下，**不修改上游文件**。`src/config.py` 相对上游只保留一行
-接线（`from src.extensions import bootstrap; bootstrap.apply(config)`），其余 config 改动走
-`src/extensions/overrides.py`。
+新增能力一律写在 `extensions/` 下，**不修改上游文件**。`src/config.py` 相对上游只保留一行
+接线（`from extensions import bootstrap; bootstrap.apply(config)`），其余 config 改动走
+`extensions/overrides.py`。扩展测试放 `extensions_tests/`。
 
 这样上游更新时冲突面接近零；确实无法避免的上游改动，必须登记到
 `.codebuddy.project/configs/upstream/divergence.yaml`，由 `upstream-guard` 技能校验。

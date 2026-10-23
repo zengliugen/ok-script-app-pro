@@ -21,8 +21,11 @@ caches/
 .DS_Store
 Thumbs.db
 
-# 技能工程产物：reports/ 由 yao-meta-skill 的 yao.py init 自动生成，
-# 共 36 个文件（842KB）且部分含本机绝对路径，每次重跑都会产生 diff。
-# 只保留手写的中文输出风险档案，其余不入库。
+# 技能工程产物：reports/ 下绝大多数文件由 yao-meta-skill 的各 render 命令生成，
+# 属一次性过程稿（含本机绝对路径、每次重跑都产生 diff），不入库。
+#
+# 例外：reports/skill-ir.json 是 manifest.skill_ir_source 指向的规范化产物，
+# 缺失会让 yao.py validate 报 declared-source-missing。必须入库。
 skills/project/*/reports/*
 !skills/project/*/reports/output-risk-profile.md
+!skills/project/*/reports/skill-ir.json

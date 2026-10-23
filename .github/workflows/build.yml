@@ -56,11 +56,15 @@ jobs:
           python -m ok.update.inline_ok_requirements --tag ${{ github.ref_name }}
 
       - name: Run tests
-        run: |
-          Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
-              Write-Host "Running tests in $($_.FullName)"
-              python -m unittest $_.FullName
-          }
+        # 复用 run_tests.ps1：测试收集逻辑只维护一处，避免 CI 与本地行为漂移。
+        # 该脚本遍历两个根并在任一文件失败时以非 0 退出，CI 因此能真正阻断：
+        #   tests/            —— 上游基线测试
+        #   extensions_tests/ —— 项目扩展测试
+        # 两层测试同时跑，但结论不可混为一谈：tests/ 过 = 上游行为没被我们破坏；
+        # extensions_tests/ 过 = 扩展自身按预期工作，与上游行为无关。
+        # 显式用 pwsh 执行：不依赖 .ps1 文件关联，且 -File 会把脚本退出码透传给步骤。
+        shell: pwsh
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./run_tests.ps1
 
       - name: Build with PyAppify Action
         id: build-app

@@ -37,7 +37,7 @@ git merge upstream/master
 | `git rebase dev upstream/master` | 冲突反复出现，且需 force push 覆盖已发布历史 |
 | 对登记文件用 `-X ours` 全局策略 | 会静默吞掉上游对同文件的改进，这正是要避免的 |
 | `cherry-pick` 挑选上游提交 | 历史割裂，无法判断是否漏同步 |
-| 在 `dev` 之外长期维护并行分支承载扩展 | 扩展本应在 `src/extensions/` 内与上游正交，无需并行分支 |
+| 在 `dev` 之外长期维护并行分支承载扩展 | 扩展本应在 `extensions/` 内与上游正交，无需并行分支 |
 
 ## 冲突处置顺序
 
@@ -50,13 +50,24 @@ git merge upstream/master
 
 | 冲突文件在 `divergence.yaml` 中 | 处置 |
 |---|---|
-| 有登记条目 | 预期内冲突。按条目 `reason` 判断：若该改动现在可由 `src/extensions/` 承接，**借机迁移掉**并删除条目；否则保留本地语义，吸收上游新内容 |
+| 有登记条目 | 预期内冲突。按条目 `reason` 判断：若该改动现在可由 `extensions/` 承接，**借机迁移掉**并删除条目；否则保留本地语义，吸收上游新内容 |
 | 无登记条目 | 意外冲突。**先停下**查明本地为何改了它——可能是未登记的改动（补登记），也可能是上游动了我们依赖的结构（评估影响） |
 
-4. **优先迁移而非合并**。冲突暴露出「这个改动本该在 `src/extensions/` 里」时，
+4. **优先迁移而非合并**。冲突暴露出「这个改动本该在 `extensions/` 里」时，
    迁移后该文件回归上游原样，条目删除。这是唯一能持续减少冲突面的做法。
 5. 解决后**立即**运行 `upstream-guard`，确认登记与实际差异一致。
-6. 运行测试（`powershell -File run_tests.ps1`），确认上游行为未被破坏。
+6. 运行测试（`powershell -File run_tests.ps1`），但**只看 `tests/` 的结果**判断上游行为是否完好。
+
+   `run_tests.ps1` 会同时跑两个根，它们的结论不能混用：
+
+   | 测试根 | 通过意味着 | 通过不意味着 |
+   |---|---|---|
+   | `tests/`（上游基线） | 上游既有行为未被本地改动破坏 | 上游新增功能符合预期 |
+   | `extensions_tests/`（项目扩展） | 扩展代码自身按预期工作 | **与上游行为无关** |
+
+   `extensions_tests/` 全绿**不能**作为「上游行为未被破坏」的证据——它测的是我们自己的
+   `overrides` 与 `extensions/` 代码，上游行为好坏它看不见。反之 `extensions_tests/` 红了
+   也不代表上游兼容性出了问题，只说明扩展要修。
 
 ## 同步后必须更新的内容
 
@@ -72,7 +83,7 @@ git merge upstream/master
 该文件在本项目里**只允许一行差异**（末尾的 bootstrap 接线）。合并后若发现它有其他差异：
 
 1. 说明有人绕过规则直接改了 config 字典。
-2. 处置：把差异迁移到 `src/extensions/overrides.py`，恢复该文件为「上游原样 + 一行 import」。
+2. 处置：把差异迁移到 `extensions/overrides.py`，恢复该文件为「上游原样 + 一行 import」。
 3. 迁移后条目从 `necessary` 降级为 `patch-point`，`reason` 改为只描述接线。
 
 这条是做得到的硬约束：`overrides.py` 能在 `OK(config)` 之前改到任意 config 键（已核实

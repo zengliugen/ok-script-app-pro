@@ -18,9 +18,9 @@
 | 项 | 事实 |
 |----|------|
 | 框架 | `unittest`（标准库），基类 `ok.test.TaskTestCase` |
-| 目录 | `tests/`（**入库**；`test/` 与 `test_scripts/` 被 git 忽略但当前均不存在，勿混用） |
+| 目录 | `tests/`（上游基线，**入库**；`test/` 与 `test_scripts/` 被 git 忽略但当前均不存在，勿混用）；`extensions_tests/`（项目扩展测试，顶层独立目录） |
 | 命名 | 文件 `Test*.py`，类 `Test*`，方法 `test_*` |
-| 现有测试 | `tests/TestMain.py` → `TestMyOneTimeTask`，校验配置控件类型与默认值 |
+| 现有测试 | 上游基线 `tests/TestMain.py` → `TestMyOneTimeTask`（勿改）；项目扩展 `extensions_tests/TestExtensions.py` → 覆写生效性与缺键语义 |
 
 现有测试写法约定：继承 `TaskTestCase`，类属性声明 `task_class` 与 `config`，
 在 `test_*` 方法中通过 `self.task` 访问任务实例，断言 `default_config`/`config_type` 等结构化数据。
@@ -30,12 +30,19 @@
 - 运行器统一为 `python -m unittest`：
 
 ```bash
-python -m unittest tests.TestMain
-python -m unittest discover -s tests -p "Test*.py"
-powershell -File run_tests.ps1        # 逐文件执行并短路失败（CI 同逻辑）
+python -m unittest tests/TestMain.py                  # 上游基线
+python -m unittest extensions_tests/TestExtensions.py # 项目扩展
+powershell -File run_tests.ps1                        # 递归收集全部，逐文件短路失败（CI 调用同一脚本）
 ```
 
-- 新增测试文件必须放在 `tests/` 且以 `Test` 开头，否则 `run_tests.ps1` 与 CI 不会执行。
+**不要用 `python -m unittest discover`**：它只递归含 `__init__.py` 的包，结构一变就
+**静默漏测**且仍报成功。`run_tests.ps1` 因此显式遍历 `tests` 与 `extensions_tests`
+两个根并逐个传文件路径。
+
+- 新增测试文件：**上游基线**放 `tests/` 根（一般不新增，改上游测试须登记 divergence）；
+   **项目扩展测试**放 `extensions_tests/`。两者都须以 `Test` 开头，否则 `run_tests.ps1` 不会执行。
+- **两层测试结论不可混用**：`tests/` 通过 = 上游行为未被破坏；`extensions_tests/` 通过 = 扩展自身
+  按预期工作，**不能**证明上游行为完好。
 - 测试失败应通过 `assert` 表达，避免仅打印日志后继续（CI 依退出码判定）。
 
 ## 资源与性能约束

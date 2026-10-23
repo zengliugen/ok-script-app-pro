@@ -14,7 +14,7 @@ entries:
   # ---------- 接线点 ----------
   - path: src/config.py
     kind: M
-    reason: 末尾追加扩展 bootstrap 的唯一接线行，这是项目扩展生效的唯一入口
+    reason: 末尾追加扩展 bootstrap 的唯一接线行（from extensions import bootstrap），这是项目扩展生效的唯一入口
     method: patch-point
 
   # ---------- 构建与发布必需 ----------
@@ -30,7 +30,12 @@ entries:
 
   - path: .github/workflows/build.yml
     kind: M
-    reason: 需 contents write 权限创建 Release；作者改为本项目；下载链接与产物名改本项目；移除上游 partial-sync-repo 步骤
+    reason: 需 contents write 权限创建 Release；作者改为本项目；下载链接与产物名改本项目；移除上游 partial-sync-repo 步骤；测试步骤改为调用 run_tests.ps1（统一收集逻辑，避免 CI 与本地漂移）
+    method: necessary
+
+  - path: run_tests.ps1
+    kind: M
+    reason: 上游只 glob tests/*.py 这一层，项目扩展测试在 extensions_tests/ 下会被漏测；改为遍历 tests 与 extensions_tests 两个根递归收集，并显式传文件路径给 unittest（discover 不递归无 __init__.py 的子目录）
     method: necessary
 
   - path: .github/workflows/docs.yml
@@ -56,12 +61,12 @@ entries:
   # ---------- 文档与站点 ----------
   - path: mkdocs.yml
     kind: M
-    reason: 站点名、仓库地址与导航对齐本项目，并新增扩展开发指南条目
+    reason: 站点名、仓库地址与导航对齐本项目，并新增扩展开发指南、对上游的修改两个条目
     method: doc
 
   - path: README.md
     kind: M
-    reason: 项目定位为上游派生的扩展项目，需说明来源与扩展约定
+    reason: 项目定位为上游派生的扩展项目，需说明来源与扩展约定，并引用 UPSTREAM_CHANGES.md 说明修改面
     method: doc
 
   - path: README_en.md

@@ -38,6 +38,7 @@ nav:
       - 应用配置: configuration.md
       - 任务开发: tasks.md
       - 扩展开发: extension-guide.md
+      - 对上游的修改: upstream-changes.md
       - 打包与发布: release.md
       - 文档网站: documentation.md
   - English:

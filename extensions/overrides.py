@@ -33,7 +33,7 @@ def apply(config):
         raise RuntimeError(
             "上游 config 结构已变化，以下覆写键不存在：\n  "
             + "\n  ".join(missing)
-            + "\n请检查 upstream 变更后更新 src/extensions/overrides.py"
+            + "\n请检查 upstream 变更后更新 extensions/overrides.py"
         )
     for path, value in OVERRIDES.items():
         _set_path(config, path, value)

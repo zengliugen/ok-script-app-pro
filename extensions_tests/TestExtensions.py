@@ -1,15 +1,27 @@
 # -*- coding: utf-8 -*-
 """扩展机制测试：验证 config 覆写已生效且未破坏上游结构。
 
-测试只能新增，不得修改 tests/ 下既有的 Test*.py——那些是上游行为基线。
+被测对象是 extensions/ 下的运行时代码；上游基线测试在 tests/，两者互不混放。
+
+环境要求：导入 src.config 需要 ok / PySide6 等运行依赖。缺依赖时整类跳过并说明原因，
+而不是让测试报错——报错会掩盖真正的断言失败，也让无 GUI 的环境无法区分
+「环境没装」与「代码坏了」。
 """
 
 import unittest
 
-from src.config import config
-from src.extensions import overrides
+try:
+    from src.config import config
+    from extensions import overrides
+
+    IMPORT_ERROR = None
+except ModuleNotFoundError as exc:  # 缺 ok / PySide6 等运行依赖
+    config = None
+    overrides = None
+    IMPORT_ERROR = str(exc)
 
 
+@unittest.skipIf(overrides is None, f"缺少运行依赖，跳过扩展测试：{IMPORT_ERROR}")
 class TestExtensionOverrides(unittest.TestCase):
     """验证 overrides 的覆写结果与缺键语义。"""
 

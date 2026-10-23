@@ -3,7 +3,7 @@
 
 由 src/config.py 末尾一行调用，是项目扩展生效的**唯一接线点**：
 
-    from src.extensions import bootstrap; bootstrap.apply(config)
+    from extensions import bootstrap; bootstrap.apply(config)
 
 时序保证（已核实的框架行为）：
     config 字典字面量已构造完毕，尚未调用 ok.OK(config)。
@@ -11,7 +11,7 @@
     必须在此刻完成，之后再无机会。
 """
 
-from src.extensions import overrides
+from extensions import overrides
 
 
 def apply(config):
@@ -31,7 +31,7 @@ def apply(config):
 
 
 def _apply_patches():
-    """装载 src/extensions/patches/ 下的全部 patch。
+    """装载 extensions/patches/ 下的全部 patch。
 
     每个 patch 模块需提供 apply() 函数，且内部必须断言目标符号存在。
     当前无 patch——优先使用扩展点，patch 是最后手段。

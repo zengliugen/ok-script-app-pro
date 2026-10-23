@@ -23,7 +23,9 @@ subject 上限 50 字符、scope 上限 40 字符，subject 语言为简体中�
 | `src/ui/**` | `ui` | 自定义界面（`MyTab` 等基于 CustomTab 的页面） |
 | `src/config.py`、`src/globals.py` | `core` | 应用配置与全局状态 |
 | `src/**`（其余） | `src` | `src/` 下的其他模块 |
-| `tests/**` | `test` | 单元测试 |
+| `tests/**` | `test` | 单元测试（上游基线） |
+| `extensions/**` | `extensions` | 项目自有运行时代码（扩展能力） |
+| `extensions_tests/**` | `test` | 项目扩展测试 |
 | `docs/**`、`mkdocs.yml` | `docs` | 文档与文档站点配置 |
 | `i18n/**` | `i18n` | 多语言资源 |
 | `.github/workflows/**` | `ci` | GitHub Actions 工作流 |

@@ -43,9 +43,9 @@ python -m mkdocs build --strict          # 输出到 site/
 ## 测试
 
 ```bash
-python -m unittest tests.TestMain                    # 单个测试模块
-python -m unittest discover -s tests -p "Test*.py"   # 发现式运行
-powershell -File run_tests.ps1                       # 逐文件运行（CI 等价逻辑）
+python -m unittest tests/TestMain.py                    # 上游基线（单个模块）
+python -m unittest extensions_tests/TestExtensions.py   # 项目扩展（单个模块）
+powershell -File run_tests.ps1                          # 两个测试根全跑，CI 等价逻辑
 ```
 
 ## 发布与分发

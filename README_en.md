@@ -4,7 +4,7 @@ English | [中文](README.md)
 
 ok-script-app-pro is a capability-extension project built from the [ok-script-app](https://github.com/ok-oldking/ok-script-app) template and powered by [ok-script](https://github.com/ok-oldking/ok-script). It keeps the upstream template capabilities (native Windows games, Android emulators, and browser automation) and serves as the host for additional extensions developed on top of them.
 
-The repository still follows the template layout; extensions are layered under `src/` over time. Task examples, OCR, template matching, configuration widgets, tests, i18n, EXE packaging, and update/release configuration remain available.
+The repository follows the template layout; project extensions live under `extensions/` (a directory that does not exist upstream). Task examples, OCR, template matching, configuration widgets, tests, i18n, EXE packaging, and update/release configuration remain available.
 
 ## Documentation
 
@@ -56,6 +56,10 @@ The output is written to `site/`. `.github/workflows/docs.yml` can publish it au
 - Upstream template: [ok-oldking/ok-script-app](https://github.com/ok-oldking/ok-script-app)
 - This project: extensions are developed on top of the template and track upstream through the `upstream` remote
 - Release and updates: installers and the update source point at this repository
+
+For what this repository changes relative to upstream, why each change is needed, and how the change
+surface is kept from growing, see **[Upstream change notes](UPSTREAM_CHANGES.md)** (22 files modified,
+0 deleted).
 
 ## Credits
 

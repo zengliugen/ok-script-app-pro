@@ -12,7 +12,7 @@ capabilities:
     method: override
     config_keys: [screenshot_processor]
     tests: []
-    notes: 遮挡 UID，避免截图泄露；由上游模板自带，路径待迁移至 src/extensions/overrides.py
+    notes: 遮挡 UID，避免截图泄露；由上游模板自带，路径待迁移至 extensions/overrides.py
 
   - name: 自定义任务示例（一次性）
     path: src/tasks/MyOneTimeTask.py
