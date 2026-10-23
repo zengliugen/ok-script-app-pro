@@ -1,0 +1,65 @@
+---
+description: 上游兼容与扩展优先规范入口 —— 本项目 fork 自上游 ok-script-app，新增能力时必须优先用扩展/注入实现，不得直接修改上游文件；无法避免的上游改动必须登记到差异清单。修改任何上游来源文件（src/、main*.py、pyproject.toml、.github/workflows/、docs/ 等）、新增项目能力、或执行上游同步时注入。
+alwaysApply: true
+enabled: true
+updatedAt: 2026-10-23T00:00:00.000Z
+provider:
+---
+
+# 上游兼容与扩展优先规范
+
+## 背景
+
+本项目（`ok-script-app-pro`）**fork 自上游** `ok-oldking/ok-script-app`，通过 `upstream` 远端跟踪。
+新增能力若直接改动上游文件，每次上游更新都会在 `git merge` 时产生冲突；改动越深，冲突越难解，
+最终会导致「无法再跟进上游」。因此本项目采取**扩展优先**策略：能力以增量方式挂在框架既有扩展点上，
+上游文件保持接近原样，差异集中登记、可机械校验。
+
+另一层动机：`ok` 框架是 pip 依赖（`ok-script`），会随版本演进。依赖其内部实现的隐性绑定
+（尤其是 monkey patch）会在升级时静默失效，因此规则要求对每一条侵入性改动显式留痕。
+
+## 核心底线（始终生效，不可妥协）
+
+1. **扩展优先，修改上游文件是最后手段**。新增能力必须先在四条零改动路径中寻找落点
+   （见子规则 `extension-methods.mdc`），四条都不可行才允许改上游文件，且必须登记。
+
+2. **上游文件改动必须登记**。任何对上游来源文件的修改或删除，都必须在
+   `.codebuddy.project/configs/upstream/divergence.yaml` 中有对应条目（含改动原因）。
+   未登记的改动视为违规，`upstream-guard` 技能会报错。
+
+3. **唯一接线点是 `src/config.py` 末尾的一行 import**。项目扩展经 `src/extensions/bootstrap.py`
+   统一装载；`src/config.py` 相对上游**只允许这一行差异**。其余任何 `src/config.py` 的改动
+   都应迁移到 `src/extensions/overrides.py`。
+
+4. **不设灰度线**。「只改一行」「只加个默认值」「只是重构」都不构成豁免。改上游文件就是改上游文件，
+   没有按行数、按影响面的例外判定——灰度线一旦存在就会无限扩张。
+
+5. **项目专属代码只写在 `src/extensions/`**。该目录在上游不存在，是本项目唯一的自有代码区。
+   新增任务、Tab、业务逻辑、patch 均落在此处，不得散落到 `src/tasks/`、`src/ui/` 等上游目录。
+
+6. **侵入性改动必须可失效**。任何 patch 或对框架内部符号的假设，必须在启动时断言目标存在，
+   并在目标消失时**立即崩溃且指名缺失项**，不得静默降级。
+
+## 子规则路由表
+
+| 场景 | 子规则文件 | 内容 |
+|------|-----------|------|
+| 需要新增能力、选择扩展手段、判断某个改法是否合规 | `extension-methods.mdc` | 四条零改动路径的优先级与适用边界、monkey patch 准入条件与收口要求、红线清单 |
+| 需要新建扩展模块、确定目录结构、写 bootstrap/overrides | `extension-layout.mdc` | `src/extensions/` 目录职责、注入时序、覆写键校验与崩溃语义、测试落位 |
+| 需要登记上游改动、运行校验、查询已实现能力 | `divergence-registry.mdc` | `divergence.yaml` 与 `capabilities.yaml` 字段、`upstream-guard` 技能用法、校验基准与通过标准 |
+| 需要跟进上游更新、解决合并冲突 | `upstream-sync.mdc` | merge 策略、冲突处置顺序、同步后必须更新的锚点与登记 |
+
+## 与其他规则的关系
+
+| 规则 | 分工 |
+|------|------|
+| `codebuddy-project-config` | 管 `.codebuddy/` 内引擎内容的项目隔离；本规则管**项目代码**与上游的关系，二者不重叠 |
+| `vcs-router` / `git-commit` | 管提交动作；本规则的校验由 `upstream-guard` 技能独立执行，未接入提交门禁（避免依赖远端可达） |
+| `core/project-guide` | 管项目结构与命令事实；本规则只管「如何扩展而不破坏上游 lineage」 |
+
+## 加载机制说明
+
+- 本入口**始终生效**（`alwaysApply: true`），承载核心底线与路由；细则按需加载。
+- 子规则均为**按需加载**（`alwaysApply: false`），涉及对应场景时主动读取。
+- 本规则位于项目侧 `.codebuddy.project/rules/project/upstream-compat/`，经 `.codebuddy/rules/project`
+  软链接被 CodeBuddy 加载；**不进入**引擎仓库，随本项目版本控制。

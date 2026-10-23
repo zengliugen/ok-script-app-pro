@@ -20,3 +20,9 @@ caches/
 # 系统/编辑器临时文件
 .DS_Store
 Thumbs.db
+
+# 技能工程产物：reports/ 由 yao-meta-skill 的 yao.py init 自动生成，
+# 共 36 个文件（842KB）且部分含本机绝对路径，每次重跑都会产生 diff。
+# 只保留手写的中文输出风险档案，其余不入库。
+skills/project/*/reports/*
+!skills/project/*/reports/output-risk-profile.md

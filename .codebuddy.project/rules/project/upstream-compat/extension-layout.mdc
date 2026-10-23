@@ -1,0 +1,118 @@
+---
+description: 扩展代码落位规范 —— src/extensions/ 的目录职责、bootstrap 注入时序、overrides 键校验与崩溃语义、扩展代码的测试落位。新建扩展模块或编写 bootstrap/overrides 时加载。
+alwaysApply: false
+enabled: true
+updatedAt: 2026-10-23T00:00:00.000Z
+provider:
+---
+
+# 扩展代码落位
+
+## 为什么是 `src/extensions/`
+
+`src/extensions/` 在上游不存在，是本项目**唯一自有代码区**。放这里有三个直接好处：
+
+1. **冲突面为零**——上游永远不会改这个目录（除非上游也新建同名目录，概率极低）。
+2. **判定成本为零**——`git status` 里出现 `src/extensions/` 下的改动，一定不涉及上游文件。
+3. **打包自动覆盖**——`deploy.txt` 逐行列出同步清单，含 `src` 一行即可覆盖，
+   不需要为它单独加一行（顶层 `extensions/` 则不行）。
+
+`src/` 本身是命名空间包（无 `__init__.py`），`src/extensions/` 沿用同样风格，**不建 `__init__.py`**，
+与 `src/tasks/`、`src/ui/` 保持一致。
+
+## 目录结构
+
+```
+src/extensions/
+├── bootstrap.py          # 唯一入口：串起 overrides、patches、各能力
+├── overrides.py          # config 值覆写（集中，带键存在性校验）
+├── patches/              # monkey patch，一个目标一个文件
+│   └── <目标名>.py
+└── <能力名>/             # 按能力自包含：任务、Tab、业务逻辑
+    ├── __init__.py       # 可选导出
+    └── ...
+```
+
+| 路径 | 职责 | 约束 |
+|---|---|---|
+| `bootstrap.py` | 按固定顺序调用 `overrides.apply(config)`、各 patch 的 `apply()`、能力注册 | 只做装配，不写业务；必须幂等 |
+| `overrides.py` | 对 `config` 字典做值覆写，并校验每个键在上游仍存在 | 键清单集中声明；校验失败一次列全 |
+| `patches/` | 每个文件一个 `apply()`，返回前断言目标存在 | 见 `extension-methods.mdc` 路径 4 的准入条件 |
+| `<能力名>/` | 该能力的全部实现 | 不得反向被 `src/tasks/`、`src/ui/` 引用 |
+
+## 注入时序
+
+`src/config.py` 末尾追加**唯一一行**：
+
+```python
+from src.extensions import bootstrap; bootstrap.apply(config)  # 项目扩展唯一接线点
+```
+
+时序保证（按已核实的框架行为）：
+
+1. `config` 字典字面量已构造完毕（覆写目标存在）。
+2. 尚未调用 `ok.OK(config)`，因此覆写与注册追加都能生效——`OK.__init__` 会原地读写同一个 dict
+   （`ok/__init__.py:598-672`），**不做深合并**，所以必须在它之前完成。
+3. `OK.__init__` 之后的时机不可用：`onetime_tasks` / `custom_tabs` / `my_app` 均在构造期一次性消费。
+
+`bootstrap.apply(config)` 内部顺序固定：
+
+1. `overrides.apply(config)` —— 先改值，后追加注册项（注册项可能依赖覆写后的值）。
+2. `patches/*.apply()` —— patch 在注册前完成，保证注册的类在被使用前就已就位。
+3. 各能力的注册函数（如 `config.setdefault('onetime_tasks', []).append([...])`）。
+
+## overrides.py 的键校验与崩溃语义
+
+每个覆写项声明「期望存在的键路径」。启动时先**收集全部缺失项**，再一次性抛出，
+不在遇到第一个缺失时中断——上游若改多处，一次就能暴露全部受影响项。
+
+```python
+# 形状示意，非最终实现
+OVERRIDES = {
+    "links.default.github": "https://github.com/zengliugen/ok-script-app-pro",
+    "gui_title": "ok-script-app-pro",
+}
+
+def apply(config):
+    missing = [path for path in OVERRIDES if not _has_path(config, path)]
+    if missing:
+        raise RuntimeError(
+            "上游 config 结构已变化，以下覆写键不存在：" + "、".join(missing)
+            + "\n请检查 upstream 变更后更新 src/extensions/overrides.py"
+        )
+    for path, value in OVERRIDES.items():
+        _set_path(config, path, value)
+```
+
+强制要求：
+
+- **不得静默降级**。缺键必须抛异常，不得跳过或告警继续。
+- 错误信息必须**指名缺失的键路径**，让人无需调试即可定位。
+- 覆写**只允许值覆写**，不得新增上游没有的顶层结构（新增结构会与上游演进冲突）。
+- 覆写不得改变字典的键集合语义（如把 list 改成 dict），否则下游消费方会崩。
+
+## patch 的写法要求
+
+```python
+# src/extensions/patches/<目标名>.py 形状示意
+def apply():
+    from ok.some.module import TargetClass
+    if not hasattr(TargetClass, "target_method"):
+        raise RuntimeError("patch 目标消失：TargetClass.target_method —— 请检查 ok-script 升级")
+    ...  # 实际替换
+```
+
+- 必须在 `apply()` 开头断言目标符号存在。
+- 必须幂等（重复调用不叠加副作用，例如不要重复包装同一函数）。
+- 必须保留原实现的引用（便于排查与恢复），不得就地覆盖后丢失原函数。
+
+## 测试落位
+
+| 测试类型 | 位置 | 说明 |
+|---|---|---|
+| 扩展能力单元测试 | `tests/Test*.py`（**新增文件**） | `run_tests.ps1` 与 CI 只 glob `tests/*.py`；新增文件不属改上游 |
+| 覆写正确性 | `tests/` 内断言 `config` 的键与值 | 验证 `overrides` 已生效且未破坏原有键 |
+| 上游基线回归 | `tests/TestMain.py`（**不得修改**） | 上游示例任务的行为基线，随上游更新自动跟进 |
+
+命名沿用项目约定：文件 `Test*.py`、类 `Test*`、方法 `test_*`，基类 `ok.test.TaskTestCase`，
+不引入 pytest。测试需在 Windows + 图形环境运行（Qt 导入即需运行库）。
