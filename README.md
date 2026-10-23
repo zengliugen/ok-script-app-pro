@@ -14,6 +14,7 @@ ok-script-app-pro 是基于 [ok-script-app](https://github.com/ok-oldking/ok-scr
 - [快速开始](docs/getting-started.md)
 - [应用与运行目标配置](docs/configuration.md)
 - [任务开发](docs/tasks.md)
+- [扩展开发](docs/extension-guide.md)
 - [打包与发布](docs/release.md)
 - [构建文档网站](docs/documentation.md)
 - [English documentation](docs/en/index.md)
@@ -55,6 +56,17 @@ python -m mkdocs build --strict
 - 上游模板：[ok-oldking/ok-script-app](https://github.com/ok-oldking/ok-script-app)
 - 本项目：扩展能力在模板之上开发，通过 GitHub `upstream` 远端同步上游更新
 - 发布与更新：安装包与更新源均指向本项目仓库
+
+### 扩展约定
+
+新增能力一律写在 `src/extensions/` 下，**不修改上游文件**。`src/config.py` 相对上游只保留一行
+接线（`from src.extensions import bootstrap; bootstrap.apply(config)`），其余 config 改动走
+`src/extensions/overrides.py`。
+
+这样上游更新时冲突面接近零；确实无法避免的上游改动，必须登记到
+`.codebuddy.project/configs/upstream/divergence.yaml`，由 `upstream-guard` 技能校验。
+
+详见[扩展开发指南](docs/extension-guide.md)。
 
 ## 致谢
 

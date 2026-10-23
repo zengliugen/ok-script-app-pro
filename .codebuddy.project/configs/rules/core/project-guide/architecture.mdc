@@ -9,7 +9,11 @@ ok-script-app-pro/
 ├── web_main.py              # 发布入口（Web）
 ├── web_main_debug.py        # 调试入口（Web）
 ├── src/
-│   ├── config.py            # 应用配置中心（config 字典）
+│   ├── config.py            # 应用配置中心（config 字典）+ 末尾一行扩展接线
+│   ├── extensions/          # ★ 本项目自有代码区（上游没有此目录）
+│   │   ├── bootstrap.py     # 唯一装载入口
+│   │   ├── overrides.py     # config 值覆写（带键存在性校验）
+│   │   └── patches/         # monkey patch（当前为空）
 │   ├── globals.py           # Globals(QObject) 全局单例
 │   ├── tasks/
 │   │   ├── MyBaseTask.py    # 任务基类（继承 ok.BaseTask）
@@ -59,11 +63,14 @@ ok-script-app-pro/
 | 全局状态层 | `src/globals.py` | 跨任务共享的单例（`Globals`），用于加载模型等重资源 |
 | 任务层 | `src/tasks/` | 自动化逻辑：一次性任务（`BaseTask`）与后台任务（`TriggerTask`） |
 | 界面层 | `src/ui/` | 自定义 Tab（`CustomTab`），调用任务执行 |
+| 扩展层 | `src/extensions/` | **本项目自有**：config 覆写、patch、新增任务与页面；与上游隔离，见 `rules/project/upstream-compat/` |
 | 框架层 | `ok` 包 | 任务调度、截图、输入、OCR、模板匹配、配置控件与 GUI 骨架 |
 
 ## 启动流程
 
 1. 入口脚本 `import ok` 与 `from src.config import config`。
+   注意 `src/config.py` 末尾会执行 `bootstrap.apply(config)`（项目扩展唯一接线点），
+   因此导入 config 时扩展已装载完毕——覆写与注册追加必须在 `ok.OK(config)` 之前完成。
 2. 调试入口把 `config['debug']` 置 `True`；Web 入口覆写 `config['gui']` 为 `{'type':'web','launch_mode':'pywebview'}`。
 3. `ok.OK(config)` 构造应用：读取界面类型、初始化 OCR（onnxocr + openvino）、加载 `config['my_app']` 全局单例。
 4. `ok.start()` 启动界面主循环，按 `onetime_tasks`/`trigger_tasks` 注册任务，供用户点击或后台触发。
