@@ -1,5 +1,8 @@
 {
   "language": "简体中文",
+  "env": {
+    "CODEBUDDY_REPL_NESTED_TIMEOUT_MS": "14400000"
+  },
   "enabledPlugins": {},
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [],
