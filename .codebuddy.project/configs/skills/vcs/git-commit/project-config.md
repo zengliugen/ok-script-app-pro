@@ -58,12 +58,17 @@ VCS 互斥锁、暂存区校验、计划外文件核对。
 | 参数 | 取值 |
 |------|------|
 | `enabled` | `false` |
-| `file_patterns` | `*.py` |
+| `file_extensions` | `.py` |
+| `include_patterns` | 空（黑名单模式：仅按 `exclude_patterns` 排除，新目录自动纳入） |
 | `exclude_patterns` | `.venv/`、`__pycache__/`、`site/`、`build/`、`dist/` |
 | `review_skill` | 空（当前无 Python 代码审查技能） |
 | `rules_dir` | 空 |
 | `report_dir` | 空 |
 | `blocking_level` | `error` |
+
+过滤顺序为「扩展名 → 白名单（可选）→ 黑名单」。`file_extensions` 是门禁的固有边界，始终生效；
+`include_patterns` 非空即切到**白名单模式（默认拒绝）**，此时新增代码目录必须同步补充白名单，否则静默漏审；
+留空则退回**黑名单模式（默认放行）**。本项目选择黑名单模式，避免新增目录漏审的维护成本。
 
 **关闭原因与后续启用条件**：本项目为 Python 项目，引擎侧的 `csharp-code-review` 仅面向 C#，
 不适用；当前未安装任何 Python 代码审查技能，因此门禁关闭。后续接入 Python 审查技能后，
