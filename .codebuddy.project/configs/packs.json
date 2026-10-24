@@ -2,6 +2,7 @@
   "version": 1,
   "installed": [
     "grilling",
+    "python",
     "yao-meta-skill"
   ]
 }
