@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""扩展机制测试：验证 config 覆写已生效且未破坏上游结构。
+"""扩展机制测试：验证 config 覆写已生效且未破坏上游结构.
 
 被测对象是 extensions/ 下的运行时代码；上游基线测试在 tests/，两者互不混放。
 
@@ -11,8 +11,8 @@
 import unittest
 
 try:
-    from src.config import config
     from extensions import overrides
+    from src.config import config
 
     IMPORT_ERROR = None
 except ModuleNotFoundError as exc:  # 缺 ok / PySide6 等运行依赖
@@ -28,13 +28,9 @@ class TestExtensionOverrides(unittest.TestCase):
     def test_override_applied_to_links(self):
         """项目链接覆写已生效，且未被上游默认值覆盖。"""
         links = config["links"]["default"]
-        self.assertEqual(
-            "https://github.com/zengliugen/ok-script-app-pro", links["github"]
-        )
+        self.assertEqual("https://github.com/zengliugen/ok-script-app-pro", links["github"])
         self.assertIn("ok-script-app-pro", links["share"])
-        self.assertEqual(
-            "https://github.com/zengliugen/ok-script-app-pro", links["faq"]
-        )
+        self.assertEqual("https://github.com/zengliugen/ok-script-app-pro", links["faq"])
 
     def test_override_applied_to_gui_title(self):
         """窗口标题使用项目名。"""
