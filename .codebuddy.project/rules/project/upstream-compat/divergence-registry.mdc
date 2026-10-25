@@ -1,31 +1,26 @@
 ---
-description: 上游差异登记与校验规范 —— divergence.yaml 与 capabilities.yaml 的字段定义、upstream-guard 技能用法、校验基准与通过标准。需要登记上游改动、运行校验、或查询已实现能力时加载。
+description: 上游差异登记与校验 —— divergence.yaml 的字段定义、upstream-compat-guard 技能用法、校验基准与通过标准。需要登记上游改动或运行校验时加载。
 alwaysApply: false
 enabled: true
-updatedAt: 2026-10-23T00:00:00.000Z
+updatedAt: 2026-10-25T00:00:00.000Z
 provider:
 ---
 
 # 上游差异登记与校验
 
-## 两个清单，两个用途
+## 登记清单
 
 | 文件 | 用途 | 变更频率 |
 |---|---|---|
-| `.codebuddy.project/configs/upstream/divergence.yaml` | 防冲突：记录**所有**对上游文件的改动/删除及原因 | 随上游同步与偶发改动 |
-| `.codebuddy.project/configs/upstream/capabilities.yaml` | 防重复造轮子与便于交接：记录本项目**已实现的能力**及其扩展手段 | 随功能开发 |
+| `.codebuddy.project/configs/upstream/divergence.yaml` | 防冲突：记录**所有**对上游文件的改动/删除、原因与授权 | 随上游同步与偶发改动 |
 
-两文件均为项目侧配置，入库，位置固定：
+位置固定，入库。**不登记进** `.codebuddy/project.index.json`：索引是引擎与项目侧之间的注册表、
+随引擎共享且对所有消费项目一致，只登记**引擎技能所需**的项目配置。本规则与
+`upstream-compat-guard` 技能均属项目专有，把它们登记进索引会让其他项目被 `codebuddy-init`
+生成无用骨架。脚本按固定相对路径定位，文件缺失即报错退出（退出码 3）。
 
-```
-.codebuddy.project/configs/upstream/divergence.yaml
-.codebuddy.project/configs/upstream/capabilities.yaml
-```
-
-**不登记进 `.codebuddy/project.index.json`**。索引是引擎与项目侧之间的注册表、随引擎共享且
-对所有消费项目一致，只登记**引擎技能所需**的项目配置。本规则与 `upstream-guard` 技能均属
-项目专有，把它们登记进索引会让其他项目被 `codebuddy-init` 生成无用骨架。
-脚本按固定相对路径定位，文件缺失即报错退出（退出码 3）。
+> **项目已实现的能力**不在此登记——那是 `extensions_docs/README.md` 的能力总览表，
+> 由 `extension-capability` 族管理。两份清单登记不同的事，不重复。
 
 ## divergence.yaml 结构
 
@@ -33,17 +28,14 @@ provider:
 # 上游差异登记：本项目相对 upstream/master 的所有改动与删除。
 # 新增文件不登记（上游没有它，不构成冲突源）。
 synced_upstream_commit: <40 位 commit sha>   # 已同步的上游基线，校验基准
-updated_at: 2026-10-23
+updated_at: 2026-10-25
 entries:
   - path: src/config.py
     kind: M                                  # M=修改 / D=删除
     reason: 末尾追加 extension bootstrap 的唯一接线行
     method: patch-point                      # 见下文 method 取值
+    authorization: 用户明确授权               # 见下文取值
     upstream_anchor: v0.1.0                  # 记录改动时所基于的上游 tag 或短 sha（可选）
-  - path: pyproject.toml
-    kind: M
-    reason: 项目名由 ok-script-app 改为 ok-script-app-pro
-    method: necessary
 ```
 
 | 字段 | 必填 | 说明 |
@@ -52,44 +44,27 @@ entries:
 | `kind` | 是 | `M`（修改）或 `D`（删除） |
 | `reason` | 是 | 为什么必须改。写**动机**，不写「调整了一下」这类空话 |
 | `method` | 是 | `patch-point`（唯一接线点）/ `necessary`（构建与发布必需）/ `patch`（monkey patch 相关）/ `doc`（文档与导航） |
+| `authorization` | 是 | `用户明确授权` / `待授权`。**`待授权` 的改动不得提交** |
 | `upstream_anchor` | 否 | 改动发生时所基于的上游 tag 或短 sha，便于回溯 |
 
 **删除（`kind: D`）必须登记**：上游新增的功能被静默砍掉时，若无记录则无从察觉，
 这是比修改更危险的一类差异。
 
-## capabilities.yaml 结构
+### `authorization` 为什么必填
 
-```yaml
-# 本项目已实现的扩展能力清单。
-capabilities:
-  - name: 底部右下角遮黑
-    path: extensions/overrides.py
-    method: override                        # override / inherit / hook / patch / ok-subclass
-    config_keys: [screenshot_processor]
-    tests: [extensions_tests/TestExtensions.py]
-    notes: 遮挡 UID，避免截图泄露
-```
+本族的核心底线是「默认禁止修改上游文件」。授权发生在对话里，脚本无法验证真伪——
+但把它固化成字段后，至少能回答三个问题：这处改动当初是否被同意过（而非「改完就忘」）、
+有没有人卡在 `待授权` 状态就提交了、以及授权与登记的先后顺序是否正确。
 
-| `method` 取值 | 含义 | 对应 `extension-methods.mdc` |
-|---|---|---|
-| `inherit` | 继承 + config 注册 | 路径 1 |
-| `ok-subclass` | 子类化 OK/App | 路径 2 |
-| `hook` | 回调或事件订阅 | 路径 3 |
-| `patch` | monkey patch | 路径 4 |
-| `override` | config 值覆写 | `overrides.py` |
+## upstream-compat-guard 技能
 
-若某种能力尝试过高优先级路径但不可行，用 `method_rejected` 记录被否的路径与原因（列表形式，
-每项 `{method, why}`），供后续复用判断。
-
-## upstream-guard 技能
-
-技能位于 `.codebuddy.project/skills/project/upstream-guard/`。三种模式：
+技能位于 `.codebuddy.project/skills/project/upstream-compat-guard/`。三种模式：
 
 | 命令 | 行为 |
 |---|---|
-| `upstream-guard`（默认） | 全量盘点：以 `synced_upstream_commit` 为基准，列出全部改动/删除，与 `divergence.yaml` 比对，报告未登记项与已失效项 |
-| `upstream-guard --changed` | 只检查当前工作区变更中涉及上游文件的项 |
-| `upstream-guard --add <路径>` | 生成登记条目骨架（含 git 判定的 `kind`），由人补 `reason` 后写回。**目标不属上游来源时拒绝**（退出码 4）并指出该去哪：`.codebuddy/**` 归引擎仓库、`.codebuddy.project/**` 属项目自有目录、锚点中不存在的路径属本项目新增——三者都不登记 |
+| 无参数（默认） | 全量盘点：以 `synced_upstream_commit` 为基准，列出全部改动/删除，与 `divergence.yaml` 比对，报告未登记项与已失效项 |
+| `--changed` | 只检查当前工作区变更中涉及上游文件的项 |
+| `--add <路径>` | 生成登记条目骨架（含 git 判定的 `kind`），由人补 `reason` 与 `authorization` 后写回。**目标不属上游来源时拒绝**（退出码 4）并指出该去哪：`.codebuddy/**` 归引擎仓库、`.codebuddy.project/**` 属项目自有目录、锚点中不存在的路径属本项目新增——三者都不登记 |
 
 ### 校验基准
 
@@ -106,19 +81,21 @@ capabilities:
    在 `divergence.yaml` 中都有条目。
 2. `divergence.yaml` 中不存在「已在工作区恢复上游原样」的失效条目（条目对应文件已无差异）。
 3. 新增文件（`A` 状态）不需要登记；但若新增项目**代码**落在 `src/tasks/`、`src/ui/`、
-   `src/globals.py` 而非 `extensions/`，报告为**告警**（违反 `extension-methods.mdc` 红线）。
+   `src/globals.py` 而非 `extensions/`，报告为**告警**（违反 `extension-capability` 族的红线）。
    `docs/` 与 `tests/` 允许新增文件——新增文档页与新增 `Test*.py` 都不构成冲突源。
 4. `synced_upstream_commit` 必须是 `upstream` 远端存在的 commit。
 5. **只有上游来源文件才登记**。`.codebuddy/**`（引擎 submodule）与 `.codebuddy.project/**`（项目自有）的
    改动一律不登记——判据是「`git merge upstream/master` 时会不会冲突」。登记顺序为先判 submodule、
    再判项目自有目录、最后才问锚点，顺序反了会把整棵引擎树误认成上游文件（见技能
    `references/ownership-rules.md`）。
+6. 存在 `authorization: 待授权` 的条目时报告为**错误**——它意味着有改动未经同意就落地了。
 
 任一硬性条件不满足即退出码非 0，并打印可操作的修复提示。
 
 ## 登记纪律
 
 - **改动与登记必须同一次提交**。事后补登记等于没有登记。
+- **先授权后登记**。未经用户同意的改动不应进清单——清单是记录，不是许可。
 - `reason` 写动机。半年后读它的人需要知道「为什么不能不改」，而不是「改了什么」。
 - 上游同步后必须更新 `synced_upstream_commit` 与 `updated_at`（见 `upstream-sync.mdc`）。
 - 条目失效（文件已恢复上游原样）时删除条目，不要留「历史记录」——需要历史查 git。

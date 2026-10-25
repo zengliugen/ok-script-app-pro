@@ -18,14 +18,22 @@ ok-script-app-pro/
 │   └── ui/
 │       └── MyTab.py         # 自定义 Tab 示例（继承 ok.gui.widget.CustomTab）
 ├── extensions/              # ★ 本项目自有运行时代码（上游没有此目录）
-│   ├── bootstrap.py         # 唯一装载入口
+│   ├── bootstrap.py         # 唯一装载入口（只做装配）
 │   ├── overrides.py         # config 值覆写（带键存在性校验）
-│   ├── core/                # 核心能力扩展（patch、hook、框架行为调整）
+│   ├── core/                # 框架级扩展（hook、行为调整）
 │   ├── tasks/               # 任务与触发器扩展
 │   ├── ui/                  # Tab / 页面扩展
 │   └── patches/             # monkey patch（当前为空）
 ├── extensions_tests/        # 项目扩展测试（被测对象为 extensions/）
 │   └── TestExtensions.py    # 覆写生效性与缺键语义
+├── extensions_docs/         # 扩展能力开发文档（设计→开发→测试全过程，不参与运行时）
+│   ├── README.md            # 目录说明 + 扩展能力总览表
+│   ├── design/              # 方案推演与取舍理由
+│   ├── plans/               # <能力>-plan.md 与 <能力>-deviation.md
+│   ├── testing/             # 测试策略、验收结论、已知盲区
+│   ├── decisions/           # NNNN-<slug>.md，定稿不可改写
+│   ├── templates/           # 文档骨架
+│   └── archive/             # 已完成能力归档
 ├── tests/                   # 上游基线测试（不得修改）
 │   ├── TestMain.py          # 单元测试（TaskTestCase）
 │   └── images/              # 测试用图片
@@ -68,7 +76,7 @@ ok-script-app-pro/
 | 全局状态层 | `src/globals.py` | 跨任务共享的单例（`Globals`），用于加载模型等重资源 |
 | 任务层 | `src/tasks/` | 自动化逻辑：一次性任务（`BaseTask`）与后台任务（`TriggerTask`） |
 | 界面层 | `src/ui/` | 自定义 Tab（`CustomTab`），调用任务执行 |
-| 扩展层 | `extensions/` | **本项目自有**：config 覆写、patch、新增任务与页面；与上游隔离，见 `rules/project/upstream-compat/` |
+| 扩展层 | `extensions/` | **本项目自有**：config 覆写、patch、新增任务与页面；与上游隔离，见 `rules/project/extension-capability/` |
 | 框架层 | `ok` 包 | 任务调度、截图、输入、OCR、模板匹配、配置控件与 GUI 骨架 |
 
 ## 启动流程

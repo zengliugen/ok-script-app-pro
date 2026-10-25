@@ -1,0 +1,135 @@
+{
+  "recommended_threshold": 0.3,
+  "negative_patterns": [
+    "git merge",
+    "git fetch",
+    "合并分支",
+    "跑测试",
+    "解释一下",
+    "字段含义",
+    "帮我写 reason",
+    "一次性"
+  ],
+  "should_trigger": [
+    {
+      "text": "帮我盘点一下本项目相对上游改过哪些文件。",
+      "family": "inventory"
+    },
+    {
+      "text": "检查有没有未登记的上游改动。",
+      "family": "registry_check"
+    },
+    {
+      "text": "上游差异现在是什么情况？",
+      "family": "inventory"
+    },
+    {
+      "text": "跑一下 upstream-compat-guard 看看登记全不全。",
+      "family": "registry_check"
+    },
+    {
+      "text": "提交前先做一次上游差异校验。",
+      "family": "pre_commit_check"
+    },
+    {
+      "text": "同步 upstream 之前先检查本地改动登记是否完整。",
+      "family": "pre_commit_check"
+    },
+    {
+      "text": "src/config.py 这个改动还没登记，帮我生成一条登记条目骨架。",
+      "family": "add_entry"
+    },
+    {
+      "text": "给 pyproject.toml 的上游改动补一条 divergence 条目。",
+      "family": "add_entry"
+    },
+    {
+      "text": "还有没有未登记的上游文件改动？",
+      "family": "registry_check"
+    },
+    {
+      "text": "能不能跟进上游，现在冲突面有多大？",
+      "family": "inventory"
+    },
+    {
+      "text": "查一下 divergence.yaml 里的条目是不是都还有效。",
+      "family": "registry_check"
+    },
+    {
+      "text": "只查工作区未提交的上游改动有没有漏登记。",
+      "family": "registry_check"
+    },
+    {
+      "text": "我改了 .codebuddy 里的引擎技能，这算不算上游差异要登记？",
+      "family": "ownership_engine"
+    },
+    {
+      "text": "引擎仓库的改动需要在 divergence.yaml 里补条目吗？",
+      "family": "ownership_engine"
+    },
+    {
+      "text": ".codebuddy.project 下的改动要不要登记到上游差异清单？",
+      "family": "ownership_project"
+    }
+  ],
+  "should_not_trigger": [
+    {
+      "text": "帮我写一个 Python 脚本读取 CSV。",
+      "family": "unrelated"
+    },
+    {
+      "text": "解释一下 Python 的装饰器怎么用。",
+      "family": "explain_only"
+    },
+    {
+      "text": "把这个 README 翻译成英文。",
+      "family": "translate_only"
+    },
+    {
+      "text": "给我总结一下这次的会议纪要。",
+      "family": "summarize_only"
+    },
+    {
+      "text": "推荐几个好用的 git GUI 工具。",
+      "family": "unrelated"
+    },
+    {
+      "text": "帮我设计一个数据库表结构。",
+      "family": "unrelated"
+    }
+  ],
+  "near_neighbor": [
+    {
+      "text": "帮我 git merge upstream/master，把上游更新合进来。",
+      "family": "sibling_sync"
+    },
+    {
+      "text": "执行 git fetch upstream 看看远端有没有新提交。",
+      "family": "sibling_sync"
+    },
+    {
+      "text": "跑一下 run_tests.ps1，看看上游改动有没有破坏现有行为。",
+      "family": "sibling_test"
+    },
+    {
+      "text": "解释一下 divergence.yaml 里 kind 字段有哪些取值、分别什么意思。",
+      "family": "explain_registry"
+    },
+    {
+      "text": "把这个改动登记到 divergence.yaml，reason 你帮我编一句就行。",
+      "family": "write_reason"
+    },
+    {
+      "text": "看一下 src/config.py 里那行 import 是干什么用的。",
+      "family": "explain_code"
+    },
+    {
+      "text": "帮我写一份上游同步的操作手册文档。",
+      "family": "doc_writing"
+    },
+    {
+      "text": "刚才改的是引擎还是上游？帮我判断一下归属。",
+      "family": "ambiguous_ownership"
+    }
+  ]
+}

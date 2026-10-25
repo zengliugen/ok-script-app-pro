@@ -1,0 +1,99 @@
+{
+  "positive_concepts": {
+    "capability_docs": {
+      "weight": 0.36,
+      "phrases": [
+        "扩展能力",
+        "扩展文档",
+        "能力文档",
+        "文档骨架",
+        "extensions_docs",
+        "能力总览表",
+        "能力登记"
+      ]
+    },
+    "audit_check": {
+      "weight": 0.3,
+      "phrases": [
+        "体检",
+        "审计",
+        "检查",
+        "缺口",
+        "audit",
+        "对不上",
+        "是否齐全",
+        "有没有遗漏"
+      ]
+    },
+    "scaffold": {
+      "weight": 0.2,
+      "phrases": [
+        "新建能力",
+        "生成骨架",
+        "建文档",
+        "起文档",
+        "new ",
+        "文档流程",
+        "走流程"
+      ]
+    },
+    "adr": {
+      "weight": 0.14,
+      "phrases": [
+        "ADR",
+        "决策记录",
+        "编号",
+        "不可改",
+        "归档"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "capability_docs",
+    "audit_check"
+  ],
+  "negative_concepts": {
+    "upstream": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "上游差异",
+        "divergence",
+        "upstream",
+        "合并冲突",
+        "同步上游",
+        "登记上游"
+      ]
+    },
+    "code_impl": {
+      "weight": 0.26,
+      "exclusive": true,
+      "phrases": [
+        "用哪条路径",
+        "选继承还是 patch",
+        "放在哪个子目录",
+        "怎么写 patch",
+        "sys.path"
+      ]
+    },
+    "run_tests": {
+      "weight": 0.24,
+      "exclusive": true,
+      "phrases": [
+        "跑测试",
+        "覆盖率",
+        "run_tests",
+        "单元测试"
+      ]
+    },
+    "explain_only": {
+      "weight": 0.22,
+      "exclusive": true,
+      "phrases": [
+        "解释一下",
+        "什么意思",
+        "是什么"
+      ]
+    }
+  }
+}

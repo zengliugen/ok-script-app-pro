@@ -4,7 +4,7 @@
 
 ## 准入条件
 
-patch 是最后手段。新增 patch 前必须确认规则 `extension-methods.mdc` 中路径 1、2、3 都不可行，
+patch 是最后手段。新增 patch 前必须确认规则 `extension-capability/methods.mdc` 中路径 1、2、3 都不可行，
 并在差异登记条目里写明各自失败的原因。
 
 ## 文件约定

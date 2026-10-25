@@ -4,7 +4,11 @@
 # 新增文件不登记——上游没有它，不构成冲突源。
 # 字段定义与校验规则见 .codebuddy.project/rules/project/upstream-compat/divergence-registry.mdc
 #
-# 校验：python .codebuddy.project/skills/project/upstream-guard/scripts/upstream_guard.py
+# 每条改动必须带 authorization（用户明确授权 / 待授权）。本族默认禁止修改上游文件，
+# 授权是把口头同意固化成书面记录的机制；「待授权」条目不得提交。
+#
+#
+# 校验：python .codebuddy.project/skills/project/upstream-compat-guard/scripts/upstream_compat_guard.py
 
 # 已同步的上游基线（校验基准）。每次执行 git merge upstream/master 后必须更新。
 synced_upstream_commit: f134d07ce064c49060068c0511b5592b0e78a081
@@ -16,110 +20,132 @@ entries:
     kind: M
     reason: 末尾追加扩展 bootstrap 的唯一接线行（from extensions import bootstrap），这是项目扩展生效的唯一入口
     method: patch-point
+    authorization: 用户明确授权
 
   # ---------- 构建与发布必需 ----------
   - path: pyproject.toml
     kind: M
     reason: 项目名由 ok-script-app 改为 ok-script-app-pro，打包与依赖安装均依赖该名称
     method: necessary
+    authorization: 用户明确授权
 
   - path: pyappify.yml
     kind: M
     reason: 打包配置指向本项目仓库与项目名，并新增 Web profile
     method: necessary
+    authorization: 用户明确授权
 
   - path: .github/workflows/build.yml
     kind: M
     reason: 需 contents write 权限创建 Release；作者改为本项目；下载链接与产物名改本项目；移除上游 partial-sync-repo 步骤；测试步骤改为调用 run_tests.ps1（统一收集逻辑，避免 CI 与本地漂移）
     method: necessary
+    authorization: 用户明确授权
 
   - path: run_tests.ps1
     kind: M
     reason: 上游只 glob tests/*.py 这一层，项目扩展测试在 extensions_tests/ 下会被漏测；改为遍历 tests 与 extensions_tests 两个根递归收集，并显式传文件路径给 unittest（discover 不递归无 __init__.py 的子目录）
     method: necessary
+    authorization: 用户明确授权
 
   - path: .github/workflows/docs.yml
     kind: M
     reason: 文档站点部署配置对齐本项目仓库
     method: necessary
+    authorization: 用户明确授权
 
   - path: .github/workflows/mirrorchyan_release_note.yml
     kind: M
     reason: MirrorChyan 渠道配置对齐本项目
     method: necessary
+    authorization: 用户明确授权
 
   - path: .github/workflows/mirrorchyan_uploading.yml
     kind: M
     reason: MirrorChyan 上传配置对齐本项目，改为按仓库变量开关
     method: necessary
+    authorization: 用户明确授权
 
   - path: .gitignore
     kind: M
     reason: 补充忽略运行时缓存目录 cache/
     method: necessary
+    authorization: 用户明确授权
 
   # ---------- 文档与站点 ----------
   - path: mkdocs.yml
     kind: M
     reason: 站点名、仓库地址与导航对齐本项目，并新增扩展开发指南、对上游的修改两个条目
     method: doc
+    authorization: 用户明确授权
 
   - path: README.md
     kind: M
     reason: 项目定位为上游派生的扩展项目，需说明来源与扩展约定，并引用 UPSTREAM_CHANGES.md 说明修改面
     method: doc
+    authorization: 用户明确授权
 
   - path: README_en.md
     kind: M
     reason: 与 README.md 保持一致的英文版本
     method: doc
+    authorization: 用户明确授权
 
   - path: docs/index.md
     kind: M
     reason: 首页内容对齐本项目定位
     method: doc
+    authorization: 用户明确授权
 
   - path: docs/getting-started.md
     kind: M
     reason: 快速开始中的项目名与仓库链接对齐本项目
     method: doc
+    authorization: 用户明确授权
 
   - path: docs/configuration.md
     kind: M
     reason: 配置说明中的项目名与链接对齐本项目
     method: doc
+    authorization: 用户明确授权
 
   - path: docs/documentation.md
     kind: M
     reason: 文档站说明对齐本项目
     method: doc
+    authorization: 用户明确授权
 
   - path: docs/release.md
     kind: M
     reason: 发布流程对齐本项目仓库与打包产物名
     method: doc
+    authorization: 用户明确授权
 
   - path: docs/en/index.md
     kind: M
     reason: 英文首页对齐本项目定位
     method: doc
+    authorization: 用户明确授权
 
   - path: docs/en/getting-started.md
     kind: M
     reason: 英文快速开始对齐本项目
     method: doc
+    authorization: 用户明确授权
 
   - path: docs/en/configuration.md
     kind: M
     reason: 英文配置说明对齐本项目
     method: doc
+    authorization: 用户明确授权
 
   - path: docs/en/documentation.md
     kind: M
     reason: 英文文档站说明对齐本项目
     method: doc
+    authorization: 用户明确授权
 
   - path: docs/en/release.md
     kind: M
     reason: 英文发布流程对齐本项目
     method: doc
+    authorization: 用户明确授权

@@ -120,7 +120,7 @@ from extensions import bootstrap; bootstrap.apply(config)
 与改动放在同一次提交。校验：
 
 ```bash
-python .codebuddy.project/skills/project/upstream-guard/scripts/upstream_guard.py
+python .codebuddy.project/skills/project/upstream-compat-guard/scripts/upstream_compat_guard.py
 ```
 
 ## 常见判断
@@ -139,4 +139,4 @@ python .codebuddy.project/skills/project/upstream-guard/scripts/upstream_guard.p
 
 - 规则正文：`.codebuddy.project/rules/project/upstream-compat/`
 - 差异清单：`.codebuddy.project/configs/upstream/divergence.yaml`
-- 能力清单：`.codebuddy.project/configs/upstream/capabilities.yaml`
+- 能力清单：`extensions_docs/README.md` 的能力总览表

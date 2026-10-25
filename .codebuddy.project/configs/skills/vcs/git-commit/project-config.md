@@ -28,6 +28,7 @@ subject 上限 50 字符、scope 上限 40 字符，subject 语言为简体中�
 | `tests/**` | `test` | 单元测试（上游基线） |
 | `extensions/**` | `extensions` | 项目自有运行时代码（扩展能力） |
 | `extensions_tests/**` | `test` | 项目扩展测试 |
+| `extensions_docs/**` | `docs` | 扩展能力开发文档（设计/计划/测试/决策），不参与运行时 |
 | `docs/**`、`mkdocs.yml` | `docs` | 文档与文档站点配置 |
 | `i18n/**` | `i18n` | 多语言资源 |
 | `.github/workflows/**` | `ci` | GitHub Actions 工作流 |

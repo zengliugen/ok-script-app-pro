@@ -111,19 +111,19 @@ $ PYTHONPATH="extensions" python -c "import src; print(list(src.__path__))"
 全量盘点（锚点到 HEAD 的全部差异，与清单比对）：
 
 ```bash
-python .codebuddy.project/skills/project/upstream-guard/scripts/upstream_guard.py
+python .codebuddy.project/skills/project/upstream-compat-guard/scripts/upstream_compat_guard.py
 ```
 
 只查工作区未提交的改动：
 
 ```bash
-python .codebuddy.project/skills/project/upstream-guard/scripts/upstream_guard.py --changed
+python .codebuddy.project/skills/project/upstream-compat-guard/scripts/upstream_compat_guard.py --changed
 ```
 
 为某个上游文件生成登记条目骨架（人工补 `reason` 后写回）：
 
 ```bash
-python .codebuddy.project/skills/project/upstream-guard/scripts/upstream_guard.py --add src/config.py
+python .codebuddy.project/skills/project/upstream-compat-guard/scripts/upstream_compat_guard.py --add src/config.py
 ```
 
 `--add` 指向非上游路径（`extensions/`、`.codebuddy.project/`、锚点中不存在的新增文件）时会
@@ -143,7 +143,7 @@ python .codebuddy.project/skills/project/upstream-guard/scripts/upstream_guard.p
 | 文档 | 内容 |
 |---|---|
 | `.codebuddy.project/configs/upstream/divergence.yaml` | 差异登记清单（机器可校验，权威来源） |
-| `.codebuddy.project/configs/upstream/capabilities.yaml` | 已实现能力清单（防重复造轮子） |
-| `.codebuddy.project/rules/project/upstream-compat/` | 规则正文：扩展优先、差异登记、同步流程 |
+| `extensions_docs/README.md` 的能力总览表 | 已实现能力清单（防重复造轮子） |
+| `.codebuddy.project/rules/project/extension-capability/` | 规则正文：扩展手段、代码落位、文档体系 |
 | [扩展开发指南](extension-guide.md) | 四条扩展路径与目录约定 |
-| `.codebuddy.project/skills/project/upstream-guard/` | 校验技能：盘点和登记的实现 |
+| `.codebuddy.project/skills/project/upstream-compat-guard/` | 校验技能：盘点和登记的实现 |
