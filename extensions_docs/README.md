@@ -79,5 +79,6 @@ python .codebuddy.project/skills/project/extension-capability-guard/scripts/exte
 |---|---|---|---|---|---|---|
 | config 覆写 | 已实施 | 待补 | — | — | `extensions_tests/TestExtensions.py` | — |
 | log-noise-filter | 已实施 | `design/log-noise-filter.md` | `plans/log-noise-filter-plan.md` | — | `testing/log-noise-filter-testing.md` | — |
+| update-check-guard | 已实施 | `design/update-check-guard.md` | `plans/update-check-guard-plan.md` | — | `testing/update-check-guard-testing.md` | — |
 
 > 「待补」是显式的缺口标记，不是占位符。补齐后改成实际文件名。

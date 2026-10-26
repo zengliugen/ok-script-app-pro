@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """config 值覆写.
 
-集中声明本项目对上游 config 的所有值覆写。**不允许**在这里新增上游没有的
-顶层结构——新增结构会与上游演进冲突；只做既有键的值替换。
+集中声明本项目对上游 config 的所有覆写。**不允许**在这里新增上游没有的
+顶层结构——新增结构会与上游演进冲突；只做既有键的值替换，或对既有列表键做整体替换。
 
 缺键语义：启动时先收集全部缺失项，一次性抛出，不在第一个缺失处中断。
 上游若改多处，一次就能暴露全部受影响项。
@@ -16,19 +16,26 @@ OVERRIDES = {
     "gui_title": "ok-script-app-pro",
 }
 
+# 列表替换表：键路径 → 完整新值。用于「注册项整体替换」而非逐元素追加，
+# 避免追加后上游实现仍被优先选用。当前只有 my_app 一项：换成项目子类
+# AppGlobals（继承上游 Globals），其 on_show_main_window 负责启动期界面修正。
+LIST_OVERRIDES = {
+    "my_app": ["extensions.core.app_globals", "AppGlobals"],
+}
+
 _SEP = "."
 
 
-def apply(config):
+def apply(config: dict) -> None:
     """应用全部覆写，缺键时一次性列出并抛错.
 
-    参数：
-        config: 应用配置字典
+    Args：
+        config：应用配置字典
 
-    异常：
-        RuntimeError: 存在覆写键在上游 config 中不存在
+    Raises：
+        RuntimeError：存在覆写键在上游 config 中不存在
     """
-    missing = [path for path in OVERRIDES if not _has_path(config, path)]
+    missing = [path for path in (*OVERRIDES, *LIST_OVERRIDES) if not _has_path(config, path)]
     if missing:
         raise RuntimeError(
             "上游 config 结构已变化，以下覆写键不存在：\n  "
@@ -37,9 +44,11 @@ def apply(config):
         )
     for path, value in OVERRIDES.items():
         _set_path(config, path, value)
+    for path, value in LIST_OVERRIDES.items():
+        _set_path(config, path, list(value))
 
 
-def _has_path(config, path):
+def _has_path(config: dict, path: str) -> bool:
     """判断点号路径在字典中是否可解析。"""
     node = config
     for key in path.split(_SEP):
@@ -49,7 +58,7 @@ def _has_path(config, path):
     return True
 
 
-def _set_path(config, path, value):
+def _set_path(config: dict, path: str, value: object) -> None:
     """按点号路径写入值；调用前须已确认路径存在。"""
     keys = path.split(_SEP)
     node = config
