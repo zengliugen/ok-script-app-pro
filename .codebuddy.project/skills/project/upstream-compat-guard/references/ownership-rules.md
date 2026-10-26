@@ -56,4 +56,4 @@ submodule 路径由项目自行配置，可能不叫 `.codebuddy`，也可能一
 
 本文件只回答「这条路径归哪个仓库、要不要登记」。**怎么在各自仓库提交**（先子后父的顺序、
 两仓库混提交的后果、判定当前目录属于哪个仓库的命令）由
-`.codebuddy/rules/tool/codebuddy-engine-vcs/` 管辖，那里是权威来源，本文件不复述。
+`.codebuddy/rules/vcs/vcs-engine-commit/` 管辖，那里是权威来源，本文件不复述。

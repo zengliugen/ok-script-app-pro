@@ -69,7 +69,7 @@ provider:
 |------|------|
 | `upstream-compat` | 管上游文件的**能不能改**与**改了怎么登记**；本族管**不动上游怎么做** |
 | `core/project-guide` | 管项目结构与命令事实；本族管扩展能力的实现规范 |
-| `codebuddy-project-config` | 管 `.codebuddy/` 内引擎内容的项目隔离；与本族无关 |
+| `core-engine` | 管 `.codebuddy/` 内引擎的内容隔离与登记同步；与本族无关 |
 
 ## 加载机制说明
 

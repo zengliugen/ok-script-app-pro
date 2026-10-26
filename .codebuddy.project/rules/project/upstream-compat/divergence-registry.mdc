@@ -16,7 +16,7 @@ provider:
 
 位置固定，入库。**不登记进** `.codebuddy/project.index.json`：索引是引擎与项目侧之间的注册表、
 随引擎共享且对所有消费项目一致，只登记**引擎技能所需**的项目配置。本规则与
-`upstream-compat-guard` 技能均属项目专有，把它们登记进索引会让其他项目被 `codebuddy-init`
+`upstream-compat-guard` 技能均属项目专有，把它们登记进索引会让其他项目被 `core-init`
 生成无用骨架。脚本按固定相对路径定位，文件缺失即报错退出（退出码 3）。
 
 > **项目已实现的能力**不在此登记——那是 `extensions_docs/README.md` 的能力总览表，

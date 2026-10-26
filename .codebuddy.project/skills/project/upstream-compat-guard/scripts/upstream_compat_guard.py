@@ -35,7 +35,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[5]
 
 # 配置路径：项目专有技能的配置属项目侧内容，直接定位，不经 .codebuddy/project.index.json。
 # 索引是引擎与项目侧之间的注册表、随引擎共享并对所有消费项目一致；
-# 把项目专有技能的配置登进去，会让其他项目被 codebuddy-init 生成无用骨架。
+# 把项目专有技能的配置登进去，会让其他项目被 core-init 生成无用骨架。
 DIVERGENCE_PATH = PROJECT_ROOT / ".codebuddy.project" / "configs" / "upstream" / "divergence.yaml"
 
 # 授权取值：把口头同意固化成书面记录，缺失或「待授权」都不得提交
@@ -265,7 +265,7 @@ def report_submodules(subs, changed_only):
     print("以下目录是独立仓库（submodule），其改动不属于上游差异，不在本技能登记范围内：")
     for line in lines:
         print(line)
-    print("  归属判定与提交方式见 rules/tool/codebuddy-engine-vcs/。")
+    print("  归属判定与提交方式见 rules/vcs/vcs-engine-commit/。")
 
 
 def report(anchor, entries, diff, changed_only):
@@ -338,7 +338,7 @@ def add_entry(divergence_path, target, subs, anchor):
         if owner == "submodule":
             for sub in subs:
                 if path == sub.rstrip("/") or path.startswith(sub):
-                    print(f"请在 {sub.rstrip('/')} 内提交；归属判定见 rules/tool/codebuddy-engine-vcs/。")
+                    print(f"请在 {sub.rstrip('/')} 内提交；归属判定见 rules/vcs/vcs-engine-commit/。")
                     break
         return 4
 

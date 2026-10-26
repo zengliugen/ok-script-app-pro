@@ -54,7 +54,7 @@ python .codebuddy.project/skills/project/upstream-compat-guard/scripts/upstream_
 | 请求 | 该去哪 |
 |---|---|
 | 执行 `git fetch` / `git merge upstream/master` | 规则 `upstream-sync.mdc` 的人工流程 |
-| 在引擎仓库或项目仓库**提交**改动 | 规则 `codebuddy-engine-vcs`（含先子后父顺序） |
+| 在引擎仓库**提交**改动 | 规则 `vcs-engine-commit`（只治引擎侧；含 submodule / 独立检出两种形态的提交顺序） |
 | 判断「这个上游改动该不该改」 | 人读 diff 判断；本技能只发现与报告 |
 | 直接改写 `divergence.yaml` 的 reason | 拒绝——自动推断的原因半年后毫无价值 |
 | 校验上游行为是否仍正确 | 跑 `tests/` 下的上游基线测试（`run_tests.ps1` 的 `extensions_tests/` 部分与此无关）；本技能只保证「登记完整」 |
@@ -74,4 +74,4 @@ python .codebuddy.project/skills/project/upstream-compat-guard/scripts/upstream_
 - `extension-capability/layout.mdc` —— `extensions/` 结构与覆写崩溃语义（属扩展能力族）
 - `divergence-registry.mdc` —— 清单字段定义的权威来源
 - `upstream-sync.mdc` —— merge 策略与冲突处置
-- `rules/tool/codebuddy-engine-vcs/` —— 引擎仓库 vs 项目仓库的提交归属
+- `rules/vcs/vcs-engine-commit/` —— 引擎仓库改动如何提交（两种部署形态）

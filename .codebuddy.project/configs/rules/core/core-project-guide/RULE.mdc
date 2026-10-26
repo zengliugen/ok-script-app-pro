@@ -4,7 +4,7 @@
 底层依赖 [ok-script](https://github.com/ok-oldking/ok-script) 自动化框架。技术栈为 Python 3.12 + Qt（PySide6 / qfluentwidgets）
 或 Web（FastAPI + pywebview）双界面，运行目标覆盖 Windows 原生游戏、Android 模拟器（adb）与浏览器自动化。
 
-引擎侧本文件只保留强制入口与路由表，**项目事实正文由本文件承载**（项目侧 `.codebuddy.project/configs/rules/core/project-guide/`）。
+引擎侧本文件只保留强制入口与路由表，**项目事实正文由本文件承载**（项目侧 `.codebuddy.project/configs/rules/core/core-project-guide/`）。
 
 ## 项目概述
 
@@ -67,7 +67,7 @@ main.py / web_main.py        # 入口：构造 ok.OK(config) 并 start()
 
 ## 加载机制说明
 
-- 本文件及其子规则均为**项目事实正文**，由引擎侧薄壳 `.codebuddy/rules/core/project-guide/RULE.mdc`
+- 本文件及其子规则均为**项目事实正文**，由引擎侧薄壳 `.codebuddy/rules/core/core-project-guide/RULE.mdc`
   经 `.codebuddy/project.index.json` 的 `rule_shells` 索引读取。
 - 子规则为**按需加载**（`alwaysApply: false`），仅在涉及对应场景时读取。
 - 修改项目结构（新增顶层目录、换框架版本、改发布流程）后，须同步更新本文件与对应子规则，避免事实漂移。

@@ -1,13 +1,13 @@
 # 版本控制项目配置（project-config）
 
 > 本文件是 git-commit 技能的**项目侧参数**：Scope 规则、发起权取值、审查门禁参数、H1 钩子步骤。
-> 机制定义见引擎侧 `.codebuddy/skills/vcs/git-commit/references/project-config.md`。
+> 机制定义见引擎侧 `.codebuddy/skills/vcs/vcs-git-commit/references/project-config.md`。
 
 ## 0. 关联配置
 
 | 配置项 | 逻辑名 | 项目侧路径 | 说明 |
 |--------|--------|-----------|------|
-| 提交摘要参数 | `git_commit.config` | `.codebuddy.project/configs/skills/vcs/git-commit/config.json` | type 枚举、subject/scope 长度上限、subject 语言 |
+| 提交摘要参数 | `git_commit.config` | `.codebuddy.project/configs/skills/vcs/vcs-git-commit/config.json` | type 枚举、subject/scope 长度上限、subject 语言 |
 | Python 检查参数 | `python_lint.config` | `.codebuddy.project/configs/skills/python/python-lint/config.json` | ruff 规则集、行宽、docstring 风格、检查范围（H1 与清单收集的唯一口径来源） |
 | Python 覆盖率参数 | `python_coverage.config` | `.codebuddy.project/configs/skills/python/python-test-coverage/config.json` | 测试框架、测试根、覆盖率分母（不在门禁链路上，供覆盖率技能使用） |
 
@@ -66,7 +66,7 @@ VCS 互斥锁、暂存区校验、计划外文件核对。
 | `include_patterns` | 空（由 `collect_cmd` 接管） |
 | `exclude_patterns` | 空（由 `collect_cmd` 接管） |
 | `review_skill` | `python-code-review` |
-| `rules_dir` | `.codebuddy/rules/python/python-code/` |
+| `rules_dir` | `.codebuddy/rules/python/python-code-review/` |
 | `report_dir` | `.codebuddy.project/caches/skills/python/python-code-review/check_logs/` |
 | `blocking_level` | `error` |
 

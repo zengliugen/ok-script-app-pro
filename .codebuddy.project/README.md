@@ -28,7 +28,7 @@
 
 ## 文件从何而来
 
-- 本目录的全部配置由 `codebuddy-init` 技能依据 `.codebuddy/project.index.json`
+- 本目录的全部配置由 `core-init` 技能依据 `.codebuddy/project.index.json`
   （引擎侧的配置注册表）生成占位骨架。
 - **占位值（`<...>`）须按本项目实际情况填写**；填写完成前，对应技能会按
   「配置缺失即报错」的约定明确报错并提示缺失项（不静默使用默认值）。
@@ -56,4 +56,4 @@
 
 - `configs/` 与 `store/` **入库**（随项目版本控制），`caches/` **不入库**；不含敏感信息
   （凭据等机器级配置保留在 `.codebuddy` 根的 `models.json` / `settings.local.json`，已被忽略）。
-- 修改引擎侧索引（新增配置项或产物目录）后，可重新运行 `codebuddy-init` 补齐缺失内容。
+- 修改引擎侧索引（新增配置项或产物目录）后，可重新运行 `core-init` 补齐缺失内容。
