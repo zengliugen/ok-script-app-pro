@@ -12,6 +12,7 @@
 """
 
 from extensions import overrides
+from extensions.core import log_noise_filter
 
 
 def apply(config):
@@ -20,10 +21,10 @@ def apply(config):
     顺序：
         1. overrides  —— 先改值，后追加注册项（注册项可能依赖覆写后的值）
         2. patches    —— patch 在注册前完成，保证注册的类被使用前已就位
-        3. 能力注册   —— 各能力自行向 config 追加任务、Tab 等
+        3. 能力装载   —— 各能力自行安装钩子或向 config 追加任务、Tab 等
 
-    参数：
-        config: 应用配置字典，由 src/config.py 构造并原地修改
+    Args：
+        config：应用配置字典，由 src/config.py 构造并原地修改
     """
     overrides.apply(config)
     _apply_patches()
@@ -41,5 +42,13 @@ def _apply_patches():
 
 
 def _register_capabilities(config):
-    """注册各能力。当前无新增能力，保留占位以固定装载顺序。"""
-    return
+    """装载各能力。
+
+    日志噪音过滤在此安装：它在 config 装配期只做一次 logger 挂载，
+    不依赖 OK 实例；此处装上后，后续 TaskExecutor 配置日志时不会被覆盖
+    （config_logger 只重建 handlers，不清 filters）。
+
+    Args：
+        config：应用配置字典，当前能力未读取该参数，保留以固定签名
+    """
+    log_noise_filter.install()
