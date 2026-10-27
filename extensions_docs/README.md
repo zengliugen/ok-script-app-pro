@@ -6,9 +6,9 @@
 
 | 内容 | 归属 | 说明 |
 |---|---|---|
-| 扩展代码怎么写、目录职责、崩溃语义 | `.codebuddy.project/rules/project/extension-capability/` | 强制约束，规则文件是唯一权威 |
+| 扩展代码怎么写、目录职责、崩溃语义 | `.codebuddy.project/rules/project/project-extension-capability/` | 强制约束，规则文件是唯一权威 |
 | 面向使用者的扩展用法 | `docs/extension-guide.md` | 公开文档，讲稳定用法不讲论证过程 |
-| 上游文件能不能改、改了怎么登记 | `.codebuddy.project/rules/project/upstream-compat/` | 服务于「上游兼容」，与扩展能力维护是两件事 |
+| 上游文件能不能改、改了怎么登记 | `.codebuddy.project/rules/project/project-upstream-compat/` | 服务于「上游兼容」，与扩展能力维护是两件事 |
 | 扩展测试代码本身 | `extensions_tests/` | 可执行事实，本目录只引用不复制 |
 
 **分工原则**：规则定约束，本目录记过程。同一结论不写两遍——约束进规则，判断与推理进本目录。
@@ -55,21 +55,21 @@
 
 ```bash
 # 1. 生成骨架（方案设计开始前）
-python .codebuddy.project/skills/project/extension-capability-guard/scripts/extension_capability_guard.py new <能力名>
+python .codebuddy.project/skills/project/project-extension-capability-guard/scripts/extension_capability_guard.py new <能力名>
 
 # 2. 填 design（方案与取舍）→ 定稿后补 plans → 开发完成后补 testing
 
 # 3. 提交前体检
-python .codebuddy.project/skills/project/extension-capability-guard/scripts/extension_capability_guard.py audit
+python .codebuddy.project/skills/project/project-extension-capability-guard/scripts/extension_capability_guard.py audit
 ```
 
 能力名必须是**英文 kebab-case**（如 `config-overrides`）——它同时是文件名、总览表「能力」列
 与文件头「关联能力」字段的值。
 
 **不是所有改动都算新增能力**：修 bug、调参数、内部重构、补测试都不需要走这套流程。
-判据是「是否向用户或框架暴露了新的行为面」，详见 `rules/project/extension-capability/RULE.mdc`。
+判据是「是否向用户或框架暴露了新的行为面」，详见 `rules/project/project-extension-capability/RULE.mdc`。
 
-完整的约束与检查项见 `rules/project/extension-capability/docs.mdc`。
+完整的约束与检查项见 `rules/project/project-extension-capability/docs.mdc`。
 
 ## 扩展能力总览
 

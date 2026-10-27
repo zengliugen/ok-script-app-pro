@@ -76,7 +76,7 @@ ok-script-app-pro/
 | 全局状态层 | `src/globals.py` | 跨任务共享的单例（`Globals`），用于加载模型等重资源 |
 | 任务层 | `src/tasks/` | 自动化逻辑：一次性任务（`BaseTask`）与后台任务（`TriggerTask`） |
 | 界面层 | `src/ui/` | 自定义 Tab（`CustomTab`），调用任务执行 |
-| 扩展层 | `extensions/` | **本项目自有**：config 覆写、patch、新增任务与页面；与上游隔离，见 `rules/project/extension-capability/` |
+| 扩展层 | `extensions/` | **本项目自有**：config 覆写、patch、新增任务与页面；与上游隔离，见 `rules/project/project-extension-capability/` |
 | 框架层 | `ok` 包 | 任务调度、截图、输入、OCR、模板匹配、配置控件与 GUI 骨架 |
 
 ## 启动流程

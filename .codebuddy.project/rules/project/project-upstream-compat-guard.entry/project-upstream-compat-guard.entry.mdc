@@ -1,0 +1,57 @@
+---
+description: project-upstream-compat-guard 技能强制入口 —— 修改任何上游来源文件（src/、main*.py、pyproject.toml、docs/、.github/workflows/ 等）、执行上游同步、或处置合并冲突时，必须经该技能盘点与登记，禁止未登记就提交。本文件是入口规则（只定义「必须走该技能」），执行规范由技能按需加载。
+alwaysApply: true
+enabled: true
+updatedAt: 2026-10-27T00:00:00.000Z
+provider:
+---
+
+# project-upstream-compat-guard 强制入口
+
+本文件是 `project-upstream-compat-guard` 技能的**强制入口规则**，始终生效。
+它只规定「什么时候必须经该技能」，规范正文在 `project-upstream-compat/` 目录，
+由技能按需加载。
+
+## 为什么需要这条规则
+
+本项目 fork 自上游，靠 `git merge upstream/master` 跟进。每改一处上游文件，
+下次合并就多一处冲突；漏登记一处，差异清单就失去可信度，半年后无人能判断
+「这个文件到底是有意改的，还是合并时被带歪的」。判断归属（引擎仓库 / 项目自有 / 上游文件）
+是这条路线上最容易出错的一步，必须由技能按固定判据机械执行，而不是凭印象。
+
+## 强制条款
+
+1. **改上游文件前必须经本技能确认**。先确认目标文件是否属上游来源，是否需要用户授权。
+   **禁止**先改后补登记。
+
+2. **上游文件改动必须有登记条目**。`divergence.yaml` 中需有对应条目的 `reason` 与
+   `authorization`；`authorization` 为「待授权」的改动**不得提交**。
+
+3. **不设灰度线**。「只改一行」「只加个默认值」「只是重构」都不构成豁免。
+
+4. **提交前必须跑一次校验**，确认工作区没有未登记的上游改动、清单里没有已失效条目。
+
+5. **改引擎不等于改上游**。`.codebuddy/**` 与 `.codebuddy.project/**` 的改动不登记
+   `divergence.yaml`（前者属引擎仓库，见 `vcs-engine-commit` 规则）。
+
+## 何时**不**走本技能
+
+| 场景 | 应走 |
+|---|---|
+| 新增或调整项目自有扩展能力 | `project-extension-capability-guard` 技能 |
+| 只改 `.codebuddy/**`（引擎）或 `.codebuddy.project/**`（项目配置） | 无需登记上游差异 |
+| 只是提交已登记的改动 | `vcs-router` 技能路由 |
+
+## 加载机制说明
+
+- 本规则**始终生效**（`alwaysApply: true`）：「上游文件」这一判据横跨整个仓库根，
+  用 `paths` 无法可靠枚举，且判断必须发生在第一次修改之前。
+- 无子规则：字段契约与同步流程属 `project-upstream-compat/` 与技能 `references/`。
+
+## 与其他规则的关系
+
+| 规则 | 分工 |
+|---|---|
+| 本规则 | **必须走该技能** |
+| `project-upstream-compat` 规范目录 | **登记字段、校验基准、合并处置** |
+| `project-extension-capability-guard` 入口规则 | 不动上游时**怎么做** |

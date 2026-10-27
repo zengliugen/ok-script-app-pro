@@ -1,0 +1,78 @@
+---
+description: 上游兼容规范入口 —— 本项目 fork 自上游 ok-script-app，默认禁止修改上游文件；确需修改须先获得用户授权并登记到差异清单。修改任何上游来源文件（src/、main*.py、pyproject.toml、.github/workflows/、docs/ 等）、执行上游同步、或处置合并冲突时注入。扩展能力如何实现不属本族，见 project-extension-capability 规则。
+alwaysApply: false
+enabled: true
+updatedAt: 2026-10-27T00:00:00.000Z
+provider:
+---
+
+# 上游兼容规范
+
+## 背景
+
+本项目（`ok-script-app-pro`）**fork 自上游** `ok-oldking/ok-script-app`，通过 `upstream` 远端跟踪。
+每次 `git merge upstream/master` 时，凡是本地改过的上游文件都会产生冲突；改动越深，冲突越难解，
+最终会失去跟进上游的能力。
+
+另一层动机：`ok` 框架是 pip 依赖（`ok-script`），会随版本演进。依赖其内部实现的隐性绑定
+会在升级时静默失效，因此对上游文件的每一处改动都必须显式留痕。
+
+**本族只管一件事**：上游文件能不能动、动了怎么记账、同步时怎么处置。
+「不动上游的话该怎么做」是 `project-extension-capability` 族的内容——本族不重复其做法，只在需要时给出指针。
+
+## 核心底线（始终生效，不可妥协）
+
+1. **默认禁止修改上游文件**。确需修改时，必须**先获得用户明确授权**，再登记到
+   `.codebuddy.project/configs/upstream/divergence.yaml`。授权与登记是一体的两步：
+   未获授权的改动不得提交；已授权的改动未登记同样不得提交。
+   **替代做法见 `project-extension-capability` 族**——绝大多数「想改上游」的需求都能用扩展点承接。
+
+2. **上游文件改动必须登记**。任何对上游来源文件的修改或删除，都必须在 `divergence.yaml` 中
+   有对应条目，含改动原因（`reason`）与授权记录（`authorization`）。
+   未登记的改动视为违规，`project-upstream-compat-guard` 技能会报错。
+
+3. **不设灰度线**。「只改一行」「只加个默认值」「只是重构」都不构成豁免。改上游文件就是改上游文件，
+   没有按行数、按影响面的例外判定——灰度线一旦存在就会无限扩张。
+
+4. **改引擎不等于改上游**。`.codebuddy/**` 是独立 Git 仓库（submodule），其改动归引擎仓库，
+   **不登记** `divergence.yaml`；`.codebuddy.project/**` 同理。判据只有一条：
+   **这个文件在 `git merge upstream/master` 时会不会冲突**？不会就不登记。
+   把引擎改动当上游登记，条目永远无法失效，清单会失去可信度。归属判定与提交去向见
+   `vcs-engine-commit` 规则与 `project-upstream-compat-guard` 技能的 `references/ownership-rules.md`。
+
+### 授权记录怎么写
+
+`divergence.yaml` 的条目新增 `authorization` 字段：
+
+| 取值 | 含义 |
+|---|---|
+| `用户明确授权` | 用户在对话中确认可以改这个上游文件 |
+| `待授权` | 已判断确需修改但尚未获得授权（**此状态的改动不得提交**） |
+
+字段存在的意义是把口头授权固化为可查的书面记录。脚本无法验证真伪，但它留下了责任点与时间线——
+半年后能回答「这处改动当初是谁同意的」。
+
+## 子规则路由表
+
+| 场景 | 子规则文件 | 内容 |
+|------|-----------|------|
+| 需要登记上游改动、运行校验 | `divergence-registry.mdc` | `divergence.yaml` 字段定义、`project-upstream-compat-guard` 技能用法、校验基准与通过标准 |
+| 需要跟进上游更新、解决合并冲突 | `upstream-sync.mdc` | merge 策略、冲突处置顺序、同步后必须更新的锚点与登记 |
+
+## 与其他规则的关系
+
+| 规则 | 分工 |
+|------|------|
+| `project-extension-capability` | 管项目自有能力的实现、落位与文档；本族管上游文件的禁令、授权与登记。**二者不重叠** |
+| `core-engine` | 管 `.codebuddy/` 内引擎的内容隔离与登记同步；与本族无关 |
+| `vcs-router` / `vcs-git-commit` | 管提交动作；本族的校验由 `project-upstream-compat-guard` 技能独立执行，未接入提交门禁 |
+| `core/project-guide` | 管项目结构与命令事实；本族只管上游文件的兼容关系 |
+
+## 加载机制说明
+
+- 本文件是**规范规则**（`alwaysApply: false`），承载核心底线与路由，由
+  `project-upstream-compat-guard` 技能按需加载；强制入口在同目录上层的
+  `project-upstream-compat-guard.entry/`。
+- 子规则同样**按需加载**（`alwaysApply: false`），涉及对应场景时主动读取。
+- 本族位于项目侧 `.codebuddy.project/rules/project/project-upstream-compat/`，经
+  `.codebuddy/rules/project` 软链接被 CodeBuddy 加载；**不进入**引擎仓库，随本项目版本控制。

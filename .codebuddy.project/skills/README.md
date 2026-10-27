@@ -28,8 +28,9 @@
 
 ## 创建项目专有技能
 
-1. 建技能目录：`.codebuddy.project/skills/project/<技能名>/`
-2. 写 `SKILL.md`（frontmatter 含 `name`、`description`）。
+1. 建技能目录：`.codebuddy.project/skills/project/project-<主题>/`——**组件名一律以 `project-` 开头**，
+   与 `.codebuddy.project/rules/project/` 下同名规则前缀对齐（见 `core-rule-governance` 规则 §2.4）。
+2. 写 `SKILL.md`（frontmatter 的 `name` 必须与目录名完全一致）与 `manifest.json`（`name` 同步）。
 3. **无需其他操作**——`.codebuddy/skills/project` 链接已存在，CodeBuddy 自动扫描；新开会话即可见。
 
 ## 跨机器注意事项

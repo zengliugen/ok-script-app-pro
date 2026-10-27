@@ -2,13 +2,13 @@
 #
 # 记录本项目相对上游 ok-oldking/ok-script-app 的所有**修改**与**删除**。
 # 新增文件不登记——上游没有它，不构成冲突源。
-# 字段定义与校验规则见 .codebuddy.project/rules/project/upstream-compat/divergence-registry.mdc
+# 字段定义与校验规则见 .codebuddy.project/rules/project/project-upstream-compat/divergence-registry.mdc
 #
 # 每条改动必须带 authorization（用户明确授权 / 待授权）。本族默认禁止修改上游文件，
 # 授权是把口头同意固化成书面记录的机制；「待授权」条目不得提交。
 #
 #
-# 校验：python .codebuddy.project/skills/project/upstream-compat-guard/scripts/upstream_compat_guard.py
+# 校验：python .codebuddy.project/skills/project/project-upstream-compat-guard/scripts/upstream_compat_guard.py
 
 # 已同步的上游基线（校验基准）。每次执行 git merge upstream/master 后必须更新。
 synced_upstream_commit: f134d07ce064c49060068c0511b5592b0e78a081

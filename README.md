@@ -74,10 +74,10 @@ python -m mkdocs build --strict
 `extensions/overrides.py`。扩展测试放 `extensions_tests/`。
 
 扩展能力的设计、实施计划、测试策略与决策记录见 **[extensions_docs/](extensions_docs/README.md)**；
-该目录只放文档，不参与运行时与打包。新建能力用 `extension-capability-guard` 技能生成骨架并体检。
+该目录只放文档，不参与运行时与打包。新建能力用 `project-extension-capability-guard` 技能生成骨架并体检。
 
-两套规范分工：`rules/project/extension-capability/` 管**不动上游该怎么做**，
-`rules/project/upstream-compat/` 管**上游文件能不能改、改了怎么登记**。
+两套规范分工：`rules/project/project-extension-capability/` 管**不动上游该怎么做**，
+`rules/project/project-upstream-compat/` 管**上游文件能不能改、改了怎么登记**。
 
 这样上游更新时冲突面接近零；确实无法避免的上游改动，必须登记到
 `.codebuddy.project/configs/upstream/divergence.yaml`，由 `upstream-guard` 技能校验。

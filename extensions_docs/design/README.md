@@ -12,7 +12,7 @@
 |---|---|
 | 已拍板的决策结论 | `decisions/`——决策一旦定稿就不可变，不能随方案文档一起被改写 |
 | 实施步骤与进度 | `plans/` |
-| 强制约束（目录职责、禁止项） | 规则文件 `extension-capability/layout.mdc` |
+| 强制约束（目录职责、禁止项） | 规则文件 `project-extension-capability/layout.mdc` |
 | 对已实现代码的复述 | 不写。代码本身是事实来源 |
 
 ## 命名

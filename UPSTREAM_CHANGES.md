@@ -56,10 +56,10 @@ from extensions import bootstrap; bootstrap.apply(config)
 
 ```bash
 # 全量：锚点到 HEAD 的全部差异，与清单比对
-python .codebuddy.project/skills/project/upstream-compat-guard/scripts/upstream_compat_guard.py
+python .codebuddy.project/skills/project/project-upstream-compat-guard/scripts/upstream_compat_guard.py
 
 # 只查工作区未提交改动
-python .codebuddy.project/skills/project/upstream-compat-guard/scripts/upstream_compat_guard.py --changed
+python .codebuddy.project/skills/project/project-upstream-compat-guard/scripts/upstream_compat_guard.py --changed
 ```
 
 退出码：`0` 通过 / `1` 有问题 / `2` git 失败 / `3` 配置缺失 / `4` 目标不属上游来源。
@@ -78,4 +78,4 @@ python .codebuddy.project/skills/project/upstream-compat-guard/scripts/upstream_
 | [完整修改说明](docs/upstream-changes.md) | 逐文件列出改动原因、同步时的冲突处置 |
 | [扩展开发指南](docs/extension-guide.md) | 四条扩展路径与目录约定 |
 | `.codebuddy.project/configs/upstream/divergence.yaml` | 差异登记清单（机器可校验） |
-| `.codebuddy.project/rules/project/extension-capability/`、`upstream-compat/` | 规则正文：扩展能力 / 上游兼容 |
+| `.codebuddy.project/rules/project/project-extension-capability/`、`project-upstream-compat/`（各自另有 `*-guard.entry/` 入口） | 规则正文：扩展能力 / 上游兼容 |

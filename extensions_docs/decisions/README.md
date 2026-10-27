@@ -21,7 +21,7 @@ ADR 记录的是**最终采纳的决策**及其判据，不是讨论过程。
 这里记录**某个扩展能力**在实现过程中拍板的决策：为什么选这个方案、否决了哪些备选、边界划在哪。
 
 **不记录**「这套文档体系为什么这样设计」——那是体系自身的建设过程，结论已经落在规则文件里
-（`.codebuddy.project/rules/project/extension-capability/`），不需要在这里留档。
+（`.codebuddy.project/rules/project/project-extension-capability/`），不需要在这里留档。
 
 判断标准：这条决策以后还会被某个能力的维护者查询吗？会 → 写；只是当初建体系时的推演 → 不写。
 
