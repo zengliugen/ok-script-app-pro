@@ -21,7 +21,7 @@ python .codebuddy/skills/yao-meta-skill/yao-meta-skill/scripts/trigger_eval.py \
 | 阈值 | 0.30 |
 | 正向（should_trigger） | 15 条，全过 |
 | 反向（should_not_trigger） | 6 条，全过 |
-| 近邻（near_neighbor） | 9 条，全过 |
+| 近邻（near_neighbor） | 8 条，全过 |
 | Precision / Recall | 1.0 / 1.0 |
 
 ## 用例为什么这样分类

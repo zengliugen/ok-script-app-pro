@@ -2,17 +2,39 @@
   "schema_version": "2.0.0",
   "name": "project-extension-capability-guard",
   "title": "扩展能力守卫",
-  "job_to_be_done": "约束扩展能力的开发流程：新增扩展能力时按设计→开发→测试生成并归档文档，检查文档契约与代码落位，报告缺口。用于新建扩展能力、检查扩展文档缺口、盘点扩展能力状态。",
+  "job_to_be_done": "约束扩展能力的开发流程：新建扩展能力时生成设计/计划/测试三份文档骨架并登记能力总览表，体检文档契约与代码落位并按三档报缺口。用户说\"新建扩展能力\"、\"加个新任务\"、\"扩展文档\"、\"检查扩展文档\"、\"文档缺口\"、\"扩展能力体检\"、\"audit 一下扩展\"、\"这个能力登记了吗\"时使用。也用于判断某个改动算不算新增扩展能力。",
   "trigger_surface": {
-    "description": "约束扩展能力的开发流程：新增扩展能力时按设计→开发→测试生成并归档文档，检查文档契约与代码落位，报告缺口。用于新建扩展能力、检查扩展文档缺口、盘点扩展能力状态。",
+    "description": "约束扩展能力的开发流程：新建扩展能力时生成设计/计划/测试三份文档骨架并登记能力总览表，体检文档契约与代码落位并按三档报缺口。用户说\"新建扩展能力\"、\"加个新任务\"、\"扩展文档\"、\"检查扩展文档\"、\"文档缺口\"、\"扩展能力体检\"、\"audit 一下扩展\"、\"这个能力登记了吗\"时使用。也用于判断某个改动算不算新增扩展能力。",
     "should_trigger": [
-      "约束扩展能力的开发流程：新增扩展能力时按设计→开发→测试生成并归档文档，检查文档契约与代码落位，报告缺口。用于新建扩展能力、检查扩展文档缺口、盘点扩展能力状态。"
+      "我要新增一个扩展能力，帮我把文档建起来",
+      "新建扩展能力 config-overrides",
+      "帮我生成扩展能力的文档骨架",
+      "检查一下扩展文档有没有缺口",
+      "扩展能力体检一下",
+      "跑一下扩展文档的 audit",
+      "这个能力在总览表登记了吗",
+      "扩展能力的 ADR 编号对不对"
     ],
     "should_not_trigger": [
-      "one-off adjacent requests that do not match the recurring job",
-      "private local material that was not intentionally included"
+      "盘点一下上游差异",
+      "check divergence.yaml 有没有未登记的改动",
+      "合并上游的冲突怎么解",
+      "跑一下单元测试",
+      "统计测试覆盖率",
+      "帮我写个爬虫脚本",
+      "解释一下什么是命名空间包",
+      "修一下这个 bug"
     ],
-    "edge_cases": []
+    "edge_cases": [
+      "上游改动需要登记到哪里",
+      "extensions/ 里的代码应该放哪个子目录",
+      "选继承还是 patch 实现这个能力",
+      "同步上游之后要更新什么",
+      "这个改动算不算新增扩展能力",
+      "文档写完了要归档吗",
+      "ADR 可以改吗",
+      "能力总览表怎么加一行"
+    ]
   },
   "workflow": {
     "steps": [
@@ -20,53 +42,33 @@
       "Execute the main task.",
       "Validate the result."
     ],
-    "decision_points": [
-      "Infer non-core gaps visibly; ask one focused clarification only for an unresolved core job, primary output, or explicit direction conflict.",
-      "Escalate visible tradeoffs when benchmark patterns conflict with local privacy, naming, or governance constraints.",
-      "Do not silently broaden the skill into adjacent jobs just because the examples are nearby."
-    ],
-    "failure_modes": [
-      "Tables can render as dense grids with weak hierarchy or poor mobile readability.",
-      "Long bullets can make the output look complete while hiding the actual decision logic.",
-      "Footnote markers or dense citation notes can interrupt the reading flow.",
-      "Evidence can be over-attached to obvious statements and under-attached to risky claims.",
-      "Screenshots can be captured from the wrong state, wrong viewport, or wrong crop.",
-      "Missing screenshots can cause the skill to invent visual references instead of declaring the gap.",
-      "Users start invoking the skill for adjacent one-off or explanation-only requests.",
-      "Outputs remain valid but become generic, cluttered, or weakly aligned with the user's domain.",
-      "Borrowed benchmark patterns no longer fit the local job or add ceremony without payoff.",
-      "Skill usage becomes team-critical while ownership, review cadence, or rollback evidence stays informal."
-    ]
+    "decision_points": [],
+    "failure_modes": []
   },
   "resources": {
-    "references": [],
-    "scripts": [],
+    "references": [
+      "references\\trigger-eval.md"
+    ],
+    "scripts": [
+      "scripts\\extension_capability_guard.py"
+    ],
     "assets": [],
     "reports": [
-      "reports/intent-context.json",
-      "reports/intent-confidence.json",
-      "reports/intent-confidence.md",
-      "reports/reference-synthesis.json",
-      "reports/reference-synthesis.md",
-      "reports/output-risk-profile.json",
-      "reports/output-risk-profile.md",
-      "reports/artifact-design-profile.json",
-      "reports/artifact-design-profile.md",
-      "reports/prompt-quality-profile.json",
-      "reports/prompt-quality-profile.md",
-      "reports/system-model.json",
-      "reports/system-model.md"
+      "reports/output-risk-profile.md"
     ]
   },
   "eval_plan": {
-    "trigger": [],
+    "trigger": [
+      "evals\\semantic_config.json",
+      "evals\\trigger_cases.json"
+    ],
     "output": [],
     "adversarial": [],
     "baseline": "without_skill"
   },
   "risk": {
-    "output_risk": "high",
-    "execution_risk": "low",
+    "output_risk": "low",
+    "execution_risk": "medium",
     "trust_boundary": "team"
   },
   "governance": {
@@ -85,9 +87,6 @@
   "source_files": [
     "SKILL.md",
     "manifest.json",
-    "agents/interface.yaml",
-    "reports/intent-context.json",
-    "reports/output-risk-profile.json",
-    "reports/system-model.json"
+    "agents/interface.yaml"
   ]
 }

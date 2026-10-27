@@ -29,9 +29,9 @@
       "跑一下 run_tests.ps1，看看上游改动有没有破坏现有行为。",
       "解释一下 divergence.yaml 里 kind 字段有哪些取值、分别什么意思。",
       "把这个改动登记到 divergence.yaml，reason 你帮我编一句就行。",
-      "评估一下 extensions/bootstrap.py 这个 patch 写得合不合适。",
       "看一下 src/config.py 里那行 import 是干什么用的。",
-      "帮我写一份上游同步的操作手册文档。"
+      "帮我写一份上游同步的操作手册文档。",
+      "刚才改的是引擎还是上游？帮我判断一下归属。"
     ]
   },
   "workflow": {

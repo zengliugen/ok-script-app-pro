@@ -28,6 +28,7 @@ compatibility:
     artifacts:
       - "SKILL.md"
       - "scripts/extension_capability_guard.py"
+      - "references/trigger-eval.md"
       - "evals/trigger_cases.json"
       - "evals/semantic_config.json"
       - "agents/interface.yaml"

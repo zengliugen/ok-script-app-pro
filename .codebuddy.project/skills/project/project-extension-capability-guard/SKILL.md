@@ -14,11 +14,10 @@ description: 约束扩展能力的开发流程：新建扩展能力时生成设�
 ## 两个模式
 
 ```bash
-# 生成能力文档骨架并在总览表登记一行
-python .codebuddy.project/skills/project/project-extension-capability-guard/scripts/extension_capability_guard.py new <能力名>
+DIR=.codebuddy.project/skills/project/project-extension-capability-guard
 
-# 体检文档契约与代码落位
-python .codebuddy.project/skills/project/project-extension-capability-guard/scripts/extension_capability_guard.py audit
+python $DIR/scripts/extension_capability_guard.py new <能力名>   # 生成骨架并登记总览表
+python $DIR/scripts/extension_capability_guard.py audit           # 体检文档契约与代码落位
 ```
 
 ### `new` 做什么
@@ -89,15 +88,16 @@ python .codebuddy.project/skills/project/project-extension-capability-guard/scri
 
 ## 已知局限
 
-本技能**没有脚本单元测试**。判定逻辑（表格解析、ADR 编号、patch 断言）的正确性靠实际运行验证——
-首次使用与每次改脚本后手工构造缺陷场景确认。当前已知的验证记录见
-`reports/output-risk-profile.md`。这是显式取舍，不是遗漏：写测试的成本高于当前收益，
-但代价是**逻辑错误可能静默通过**，使用时应留意输出是否合理，而非只看退出码。
+本技能**没有脚本单元测试**，判定逻辑靠实际运行验证，已知验证记录见 `reports/output-risk-profile.md`。
+这是显式取舍：代价是**逻辑错误可能静默通过**，应留意输出是否合理，而非只看退出码。
+
+## 触发评测
+
+改动 `description` 或 `evals/trigger_cases.json` 后必须重跑语义评测，跑法与用例分类见
+`references/trigger-eval.md`。**不得为过测而删用例**。
 
 ## 相关规则
 
-- `rules/project/project-extension-capability/RULE.mdc` —— 核心底线与路由
-- `project-extension-capability/methods.mdc` —— 四条路径与红线
-- `project-extension-capability/layout.mdc` —— 代码落位、注入时序、崩溃语义
-- `project-extension-capability/docs.mdc` —— 文档体系与流程强制
-- `project-extension-capability/sync-conflict.mdc` —— 合并冲突时的迁移处置
+`rules/project/project-extension-capability/RULE.mdc` 为核心底线与路由；其子规则
+`methods.mdc`（四条路径与红线）、`layout.mdc`（落位与崩溃语义）、`docs.mdc`（文档体系）、
+`sync-conflict.mdc`（合并冲突处置）按需加载。

@@ -28,14 +28,11 @@ description: 盘点本项目相对上游 ok-script-app 的代码差异、校验�
 在项目根目录执行：
 
 ```bash
-# 全量盘点（默认）：锚点 → HEAD 的全部差异，与登记清单比对
-python .codebuddy.project/skills/project/project-upstream-compat-guard/scripts/upstream_compat_guard.py
+GUARD=.codebuddy.project/skills/project/project-upstream-compat-guard/scripts/upstream_compat_guard.py
 
-# 只检查当前工作区尚未提交的变更
-python .codebuddy.project/skills/project/project-upstream-compat-guard/scripts/upstream_compat_guard.py --changed
-
-# 为某个上游文件生成登记条目骨架（人工补 reason 后写回）
-python .codebuddy.project/skills/project/project-upstream-compat-guard/scripts/upstream_compat_guard.py --add src/config.py
+python $GUARD                                       # 全量盘点：锚点 → HEAD 与登记清单比对
+python $GUARD --changed                             # 只查工作区未提交变更
+python $GUARD --add src/config.py                   # 生成登记条目骨架（reason 人工补）
 ```
 
 `--add` 指向非上游路径（引擎、项目自有目录、锚点中不存在的新增文件）时会**拒绝**并说明该去哪，
@@ -63,15 +60,13 @@ python .codebuddy.project/skills/project/project-upstream-compat-guard/scripts/u
 
 ## 触发评测
 
-`evals/` 下有 15 条正向 / 6 条反向 / 9 条近邻用例，基线为阈值 0.30、FP=0 / FN=0。
+`evals/` 下有 15 条正向 / 6 条反向 / 8 条近邻用例，基线为阈值 0.30、FP=0 / FN=0。
 **改 `description` 后必须重跑** `trigger_eval.py`。命令与用例设计意图见
 `references/trigger-eval.md`。
 
 ## 相关规则
 
-- `rules/project/project-upstream-compat/RULE.mdc` —— 核心底线与路由
-- `project-extension-capability/methods.mdc` —— 四条零改动路径与红线（属扩展能力族）
-- `project-extension-capability/layout.mdc` —— `extensions/` 结构与覆写崩溃语义（属扩展能力族）
-- `divergence-registry.mdc` —— 清单字段定义的权威来源
-- `upstream-sync.mdc` —— merge 策略与冲突处置
-- `rules/vcs/vcs-engine-commit/` —— 引擎仓库改动如何提交（两种部署形态）
+`rules/project/project-upstream-compat/RULE.mdc` 为核心底线与路由；其子规则
+`divergence-registry.mdc`（清单字段权威定义）、`upstream-sync.mdc`（merge 策略与冲突处置）
+按需加载。引擎仓库改动的提交见 `rules/vcs/vcs-engine-commit/`；扩展能力的实现手段与落位
+见 `project-extension-capability` 规则族（不属本族）。
