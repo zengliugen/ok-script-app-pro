@@ -38,6 +38,7 @@ provider:
 |---|---|
 | 修改上游来源文件、登记上游差异 | `project-upstream-compat-guard` 技能 |
 | 只是调整既有扩展的参数或文案、修 bug、补测试 | 无需登记为新能力，直接执行 |
+| 改 `bootstrap.py` / `overrides.py` / `patches/` 等装配基础设施（无独立行为面） | 无需登记、不写过程文档；取舍写进规则 |
 | 需要提交代码 | `vcs-router` 技能路由 |
 
 ## 加载机制说明

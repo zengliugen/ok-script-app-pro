@@ -46,7 +46,7 @@ python $DIR/scripts/extension_capability_guard.py audit           # 体检文档
 | 文档契约 | 表头七列契约（不符即报错，不静默降级）|
 | 文档契约 | ADR 编号连续、无重复、文件名合规 |
 | 文档契约 | plan/deviation 配对完整（状态为已定/已实施时必须有偏差文档或显式写「无偏差」）|
-| 文档契约 | 草稿文档带生成器标记（证明走了技能）|
+| 文档契约 | 生成器字段存在且取值合法（全部能力文档，不限状态；分级为错误）|
 | 代码落位 | patch 模块的 `apply()` 内有 raise 断言（用 ast 解析，不靠文本匹配）|
 | 代码落位 | `extensions/` 内不得把 extensions 加入 `sys.path` |
 | 代码落位 | `extensions/` 每层目录有 `__init__.py` |
@@ -75,16 +75,11 @@ python $DIR/scripts/extension_capability_guard.py audit           # 体检文档
 
 ## 什么算「新增扩展能力」
 
-判据是**是否向用户或框架暴露了新的行为面**：
+完整判据只在规则族维护一处，本技能不复制：见
+`rules/project/project-extension-capability/RULE.mdc` 的「什么算「新增扩展能力」」节。
 
-| 算 | 不算 |
-|---|---|
-| 新增任务、Tab、Web 页面 | 修 bug |
-| 新增 patch 目标 | 调整既有能力参数或文案 |
-| 新增 config 覆写项（改变用户可见行为）| 内部重构、拆分模块 |
-| 新增全局单例或后台触发器 | 补测试、改注释 |
-
-边界模糊时按「是否需要记录取舍理由」判断：有取舍就写，没有就不写。
+该处除了判定表，还有一张**装配基础设施清单**（`bootstrap.py` / `overrides.py` / `patches/`）——
+这类文件改变用户可见行为但**不是能力**，不进总览、不写过程文档。判断某文件该不该登记前先看那张表。
 
 ## 已知局限
 

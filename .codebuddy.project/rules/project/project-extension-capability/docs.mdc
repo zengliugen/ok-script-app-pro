@@ -34,6 +34,14 @@ extensions_docs/
 
 ### 新增能力的标准动作
 
+**动手前先判一步**：要加的东西是不是**能力**？
+
+- 若是**装配基础设施**（`bootstrap.py` / `overrides.py` / `patches/` 这类改 `config` 或装 patch、
+  但自身不注册任务与页面的文件）→ **不登记、不写过程文档**，其取舍写进规则。
+- 若是在既有覆写机制上**新增一项覆写** → 算能力，走下面流程。
+
+两张判据表在 `RULE.mdc`：「什么算「新增扩展能力」」与「不属于能力：装配基础设施」。
+
 ```bash
 # 1. 生成骨架（在设计开始前）
 python .codebuddy.project/skills/project/project-extension-capability-guard/scripts/extension_capability_guard.py new <能力名>
@@ -69,7 +77,7 @@ python .codebuddy.project/skills/project/project-extension-capability-guard/scri
 ## 文档字段契约
 
 每份**能力文档**（`design/*.md`、`plans/*.md`、`testing/*.md`、`decisions/NNNN-*.md`）
-开头必须有一张四行字段表：
+开头必须有一张**五行**字段表：
 
 ```markdown
 | 字段 | 值 |
@@ -78,11 +86,30 @@ python .codebuddy.project/skills/project/project-extension-capability-guard/scri
 | 关联能力 | 能力名；跨能力决策写「全局」 |
 | 创建日期 | YYYY-MM-DD |
 | 更新日期 | YYYY-MM-DD |
+| 生成器 | project-extension-capability-guard/new |
 ```
 
 **不适用于**：根 `README.md`、各子目录 `README.md`（目录说明，不是能力文档）、`templates/*.md`。
 
 「状态」字段的价值在于让**已废弃但仍存在**的文档可被检索识别，避免被误读为现行方案。
+
+### 生成器字段
+
+校验规则（`audit` 检查项，分级为**错误**）：
+
+| 情形 | 判定 |
+|---|---|
+| 文件头字段表缺失 | 错误——无法确认是否经技能生成 |
+| 缺 `生成器` 字段 | 错误——应由 `new` 生成，不得手工省略 |
+| 取值不在合法集合内 | 错误——合法值仅 `project-extension-capability-guard/new` |
+
+与旧实现的差异及原因：旧检查只对**草稿态**做子串匹配（`"| 生成器 |" in text`），因此值为空、值为任意文本、
+标记写在正文中段都能通过；且文档填完内容把状态改为「评审中」后，检查立即失效。现改为**解析字段后比对取值、
+不限状态、错误级**，与该约束的强制力对齐。
+
+**这个字段证明什么、不证明什么**：它证明骨架由技能写入，**不证明**内容经过推演或判断成立。
+标记只在写文件那一刻存在，之后文档被整体重写不会被察觉。要真正证明「生成时走过技能」需要 git 历史基线，
+本项目不做该检查（与 ADR 正文不可变性同属一类取舍）。因此**audit 全绿不等于流程合规**。
 
 ## 能力总览表
 
@@ -115,7 +142,7 @@ python .codebuddy.project/skills/project/project-extension-capability-guard/scri
 | 档位 | 含义 | 退出码 |
 |---|---|---|
 | 错误 | 确定的违规（缺文件、状态非法、表头被改、ADR 编号重复或文件名不合规、patch 无断言） | 2 |
-| 警告 | 可能违规需人工判断（配对缺一半、文档存在但未登记） | 1 |
+| 警告 | 可能违规需人工判断（状态已定/已实施但缺计划或偏差、文档存在但未登记） | 1 |
 | 提示 | 仅供参考（代码有变更但总览表未变） | 0 |
 
 **不设豁免机制**：缺口就该一直报，直到被修复。已知缺口的可见性比输出的整洁更重要。

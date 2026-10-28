@@ -23,7 +23,7 @@
 | `plans/` | 做之中 | 实施计划，以及实施偏差记录 |
 | `testing/` | 做之后 | 测试策略、验收结论、已知盲区 |
 | `decisions/` | 贯穿 | 不可变的决策快照（ADR） |
-| `templates/` | — | 上述四类文档的骨架，复制即用 |
+| `templates/` | — | 骨架来源，**不直接复制**｜生成器字段是占位符，须经 `new` 生成 |
 | `archive/` | 收尾 | 已完成能力的整包归档 |
 
 ## 命名规范
@@ -37,7 +37,7 @@
 
 ## 文件头必备字段
 
-每份文档开头（一级标题之后）放一张字段表，四行固定：
+每份文档开头（一级标题之后）放一张字段表，**五行固定**：
 
 ```markdown
 | 字段 | 值 |
@@ -46,10 +46,16 @@
 | 关联能力 | 能力名，与能力总览表一致；跨能力决策写「全局」 |
 | 创建日期 | YYYY-MM-DD |
 | 更新日期 | YYYY-MM-DD |
+| 生成器 | project-extension-capability-guard/new |
 ```
 
+**生成器字段的用途与局限**：它证明该文档的骨架由 `new` 生成，取值只有
+`project-extension-capability-guard/new` 一个合法值，其它取值一律报错。但它**不能证明内容经过推演**——
+标记只存在于写文件那一刻，文档之后被整体重写也不会被察觉。要真正证明「生成时走过技能」需要 git 历史基线，
+本项目暂不做该检查（与 ADR 正文不可变性同属一类取舍）。因此 **audit 全绿不等于流程合规**，内容是否可采纳仍需评审。
+
 「状态」字段的价值在于让**已废弃但仍存在**的文档可被检索识别，避免被误读为现行方案。
-新建文档从 `templates/` 复制，模板已含该表。
+新建文档经 `new <能力名>` 生成，模板已含该表。**不要手工复制模板**——生成器字段是占位符 `{{generator}}`，只有 `new` 会替换为合法值，手工复制的文档会被 `audit` 判为「未走技能」。
 
 ## 新建扩展能力的流程
 
@@ -68,6 +74,7 @@ python .codebuddy.project/skills/project/project-extension-capability-guard/scri
 
 **不是所有改动都算新增能力**：修 bug、调参数、内部重构、补测试都不需要走这套流程。
 判据是「是否向用户或框架暴露了新的行为面」，详见 `rules/project/project-extension-capability/RULE.mdc`。
+该节另附一张**装配基础设施清单**（`bootstrap.py` / `overrides.py` / `patches/` 目录）——这类文件改变用户可见行为但**不是能力**，不进本表。
 
 完整的约束与检查项见 `rules/project/project-extension-capability/docs.mdc`。
 
@@ -77,7 +84,6 @@ python .codebuddy.project/skills/project/project-extension-capability-guard/scri
 
 | 能力 | 状态 | 设计 | 实施计划 | 实施偏差 | 测试 | 决策记录 |
 |---|---|---|---|---|---|---|
-| config 覆写 | 已实施 | 待补 | — | — | `extensions_tests/TestExtensions.py` | — |
 | log-noise-filter | 已实施 | `design/log-noise-filter.md` | `plans/log-noise-filter-plan.md` | — | `testing/log-noise-filter-testing.md` | — |
 | update-check-guard | 已实施 | `design/update-check-guard.md` | `plans/update-check-guard-plan.md` | — | `testing/update-check-guard-testing.md` | — |
 

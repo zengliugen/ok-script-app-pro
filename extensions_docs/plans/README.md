@@ -25,8 +25,8 @@
 统一后缀，一个能力恰好一对：
 
 ```
-plans/config-overrides-plan.md
-plans/config-overrides-deviation.md
+plans/<能力>-plan.md
+plans/<能力>-deviation.md
 ```
 
 ## 归档

@@ -49,6 +49,15 @@ CAPABILITY_DOC_PATTERNS = (
 
 REQUIRED_FIELDS = ("状态", "关联能力", "创建日期", "更新日期")
 
+# 生成器字段：证明该文档由技能生成骨架。字段名固定，取值必须落在合法集合内。
+# 注意：该字段只能证明「文件头里声明了来源」，不能证明内容经过推演——
+# 内容是否合规仍需评审。此局限在规则文件与 README 中一并说明。
+GENERATOR_FIELD = "生成器"
+GENERATOR_VALUES = {"project-extension-capability-guard/new"}
+
+# 文件头字段表的完整契约：四个业务字段 + 生成器，共五行。
+HEADER_FIELDS = REQUIRED_FIELDS + (GENERATOR_FIELD,)
+
 # 分级
 LEVEL_ERROR = "错误"
 LEVEL_WARN = "警告"
@@ -101,8 +110,8 @@ def read_text(path):
         return None
 
 
-def parse_head_fields(text):
-    """解析文档开头的四字段表。
+def parse_head_fields(text, names=None):
+    """解析文档开头的字段表。
 
     字段表形如：
         | 字段 | 值 |
@@ -111,12 +120,13 @@ def parse_head_fields(text):
 
     参数：
         text: 文档全文
+        names: 要解析的字段名序列；缺省为四个业务字段
 
     返回：
         {字段名: 值}；未找到的字段不出现在结果中
     """
     found = {}
-    for name in REQUIRED_FIELDS:
+    for name in (names if names is not None else REQUIRED_FIELDS):
         pattern = re.compile(r"^\|\s*" + name + r"\s*\|\s*(.*?)\s*\|\s*$", re.MULTILINE)
         m = pattern.search(text)
         if m:
@@ -272,7 +282,13 @@ def check_head_fields():
         if text is None:
             findings.append(Finding(LEVEL_ERROR, "字段齐全", rel + " 无法读取"))
             continue
-        fields = parse_head_fields(text)
+        # 只在文件头表格区域内解析：对全文做正则搜索时，正文任意位置的
+        # 一行「| 状态 | 草稿 |」都能让「文件头缺字段」这条检查失效。
+        header = extract_header_table(text)
+        if not header:
+            findings.append(Finding(LEVEL_ERROR, "字段齐全", rel + " 缺少文件头字段表"))
+            continue
+        fields = parse_head_fields(header)
         missing = [n for n in REQUIRED_FIELDS if n not in fields]
         if missing:
             findings.append(Finding(LEVEL_ERROR, "字段齐全", rel + " 缺少字段：" + "、".join(missing)))
@@ -395,42 +411,132 @@ def check_adr_numbering():
     return findings
 
 
+def _doc_path_exists(value):
+    """判断总览表单元格指向的文档是否存在。
+
+    与 `check_table_vs_disk` 用同一套解析（`resolve_doc_ref` + `expand_ref`）：
+    单元格可能带 `extensions_docs/` 前缀、或用「、」分隔多个引用、或写目录前缀。
+    只看是否能解析出至少一个存在的文件。
+
+    参数：
+        value: 单元格原文
+
+    返回：
+        存在返回 True
+    """
+    refs, is_error = resolve_doc_ref(value)
+    if is_error or not refs:
+        return False
+    return any(expand_ref(ref) for ref in refs)
+
 def check_plan_deviation_pair(rows):
     """检查 5：plan 与 deviation 的配对完整性。
 
-    规则：有 <能力>-plan.md 且状态为「进行中/已实施」时，应存在 <能力>-deviation.md，
-    或 plan 正文显式写明「无偏差」。
+    以总览表该行的实际路径为准，而不是按 <能力>-plan.md 猜名：能力归档后路径会变成
+    archive/<能力名>/...，按名字猜会对着已归档能力稳定误报「缺少计划」。
+
+    规则：状态为「已定 / 已实施」时，该行的计划列应指向存在的文件；
+    偏差列若为占位符或指向的文件不存在，则读计划正文：正文在独立一行声明「无偏差：」
+    时不报缺口，否则告警。限定行首匹配而非全文子串，避免正文引用旧结论或抄写提示文案被误判。
 
     参数：
-        rows: 总览表行
+        rows: 总览表行（每项含 能力 / 状态 / 单元格）
 
     返回：
         缺口列表
     """
     findings = []
-    plans_dir = DOCS_DIR / "plans"
-    if not plans_dir.is_dir():
+    if not rows:
         return findings
-    for plan in sorted(plans_dir.glob("*-plan.md")):
-        capability = plan.name[: -len("-plan.md")]
-        text = read_text(plan) or ""
-        if "无偏差" in text:
+    settled = {"已定", "已实施"}
+
+    def column_rel(row, predicate):
+        """按表头语义取出该行匹配列的单元格值。
+
+        rows 的每一项是 {列名: 值} 字典（由 parse_capability_table 产出），
+        因此按列名取值，不按列序号索引。
+        """
+        for column in TABLE_HEADER[2:]:
+            if not predicate(column):
+                continue
+            cell = row.get(column, "")
+            if cell in (PLACEHOLDER_DASH, PLACEHOLDER_TODO, ""):
+                return ""
+            return cell
+        return ""
+
+    for row in rows:
+        if row.get("状态") not in settled:
             continue
-        fields = parse_head_fields(text)
-        status = fields.get("状态", "")
-        if status not in ("已定", "已实施"):
-            continue
-        deviation = plans_dir / (capability + "-deviation.md")
-        if not deviation.exists():
+        capability = row.get("能力", "")
+        plan_rel = column_rel(row, lambda c: "计划" in c and "偏差" not in c)
+        deviation_rel = column_rel(row, lambda c: "偏差" in c)
+        if not plan_rel or not _doc_path_exists(plan_rel):
             findings.append(Finding(
                 LEVEL_WARN, "plan/偏差配对",
-                capability + " 的状态为「" + status + "」但缺少实施偏差文档",
+                capability + " 的状态为「" + row["状态"] + "」但缺少实施计划",
+            ))
+            continue
+        if not deviation_rel or not _doc_path_exists(deviation_rel):
+            # 逃生口：计划正文显式声明「无偏差」时不算缺口。
+            # 不提供该判定会让「确实没偏差」的能力被迫造一份空偏差文档，
+            # 而空文档比没有更糟——它看起来像记录，实际什么都没说。
+            plan_files = [p for ref in resolve_doc_ref(plan_rel)[0] for p in expand_ref(ref)]
+            plan_text = read_text(plan_files[0]) if plan_files else ""
+            # 只认独立一行的声明：「无偏差：…」或「无偏差。」，避免正文提及该词即算已声明
+            if re.search(r"(?m)^\s*无偏差\s*[:：。]", plan_text):
+                continue
+            findings.append(Finding(
+                LEVEL_WARN, "plan/偏差配对",
+                capability + " 的状态为「" + row["状态"] + "」但缺少实施偏差记录"
+                "（若确无偏差，在计划正文写明「无偏差」）",
             ))
     return findings
 
+def extract_header_table(text):
+    """提取文件头字段表区域。
+
+    定位首个 `| 字段 | 值 |` 表头行，收集其后连续的表格行，遇非表格行即结束。
+    只在这段区域内查找字段，避免正文里偶然出现的同名行被当作字段。
+
+    参数：
+        text: 文档全文
+
+    返回：
+        表头区域文本；未找到字段表时返回空串
+    """
+    lines = text.splitlines()
+    start = None
+    in_fence = False
+    for index, line in enumerate(lines):
+        # 跳过代码围栏内的内容：正文里的模板示例不应被当作真表头
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        if re.match(r"^\|\s*字段\s*\|\s*值\s*\|\s*$", line):
+            start = index
+            break
+    if start is None:
+        return ""
+    collected = []
+    for line in lines[start:]:
+        if not line.strip().startswith("|"):
+            break
+        collected.append(line)
+    return "\n".join(collected)
+
 
 def check_generator_mark():
-    """检查 6：草稿状态的文档是否带生成器标记（证明走了技能）。
+    """检查 6：能力文档的生成器字段是否存在且取值合法。
+
+    与旧实现的三点差异：
+    - 字段解析后比对确切取值，不做子串匹配（避免空值、任意文本蒙混通过）；
+    - 不再只查草稿态，所有能力文档一律适用（填完内容改状态后不会失去检查）；
+    - 分级为错误，与「新增能力必须经技能生成骨架」的强制力对齐。
+
+    局限：只能证明文件头声明了来源，不能证明内容经过推演。
 
     返回：
         缺口列表
@@ -440,14 +546,22 @@ def check_generator_mark():
         text = read_text(path)
         if text is None:
             continue
-        fields = parse_head_fields(text)
-        if fields.get("状态") != "草稿":
-            continue
-        if "| 生成器 |" not in text:
-            rel = path.relative_to(PROJECT_ROOT).as_posix()
+        rel = path.relative_to(PROJECT_ROOT).as_posix()
+        header = extract_header_table(text)
+        if not header:
+            continue  # 缺表由「字段齐全」检查报，避免同一根因报两条
+        fields = parse_head_fields(header, HEADER_FIELDS)
+        value = fields.get(GENERATOR_FIELD)
+        if value is None:
             findings.append(Finding(
-                LEVEL_WARN, "生成标记",
-                rel + " 为草稿但无生成器标记（可能未走 project-extension-capability-guard new）",
+                LEVEL_ERROR, "生成标记",
+                rel + " 缺少「" + GENERATOR_FIELD + "」字段（应由 new 生成，不得手工省略）",
+            ))
+        elif value not in GENERATOR_VALUES:
+            findings.append(Finding(
+                LEVEL_ERROR, "生成标记",
+                rel + " 的「" + GENERATOR_FIELD + "」取值为「" + value + "」，不在合法集合内："
+                + "、".join(sorted(GENERATOR_VALUES)),
             ))
     return findings
 
@@ -695,16 +809,21 @@ def run_new(name):
     today = date.today().isoformat()
     created = []
     for template, target in targets:
-        text = read_text(template) or ""
+        text = read_text(template)
+        if text is None:
+            die("模板读取失败：" + template.relative_to(PROJECT_ROOT).as_posix())
         text = text.replace("<能力名>", name)
         text = text.replace("YYYY-MM-DD", today)
-        text = text.replace("| 状态 | 草稿 |", "| 状态 | 草稿 |\n| 生成器 | project-extension-capability-guard/new |")
+        text = text.replace("{{generator}}", sorted(GENERATOR_VALUES)[0])
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(text, encoding="utf-8")
         created.append(target.relative_to(PROJECT_ROOT).as_posix())
 
-    new_row = "| " + name + " | 草稿 | design/" + name + ".md | plans/" + name + "-plan.md | " \
-        + PLACEHOLDER_DASH + " | testing/" + name + "-testing.md | " + PLACEHOLDER_DASH + " |"
+    # 路径列加反引号，与总览表现有行风格一致（split_row 解析时会剥离，不影响判定）
+    new_row = (
+        "| " + name + " | 草稿 | `design/" + name + ".md` | `plans/" + name + "-plan.md` | "
+        + PLACEHOLDER_DASH + " | `testing/" + name + "-testing.md` | " + PLACEHOLDER_DASH + " |"
+    )
     updated = insert_table_row(readme_text, new_row)
     if updated is None:
         for target in created:
@@ -758,6 +877,96 @@ def insert_table_row(text, new_row):
 # ---------------------------------------------------------------------------
 
 
+def _render_template(template_name, values):
+    """读取模板并替换占位符，返回正文。
+
+    参数：
+        template_name: templates/ 下的模板文件名
+        values: 占位符键到替换值的映射（键形如 "<能力名>"）
+
+    返回：
+        替换后的正文
+    """
+    template = DOCS_DIR / "templates" / template_name
+    if not template.exists():
+        die("缺少模板：" + template.relative_to(PROJECT_ROOT).as_posix())
+    text = read_text(template)
+    if text is None:
+        die("模板读取失败：" + template.relative_to(PROJECT_ROOT).as_posix())
+    text = text.replace("{{generator}}", sorted(GENERATOR_VALUES)[0])
+    text = text.replace("YYYY-MM-DD", date.today().isoformat())
+    for key, value in values.items():
+        text = text.replace(key, value)
+    if "{{" in text:
+        die("模板存在未替换的占位符：" + template_name)
+    return text
+
+
+def run_deviation(name):
+    """为已登记能力补一份实施偏差记录。
+
+    偏差文档不在 new 的三件套里（多数能力无偏差），因此单独提供入口：
+    没有它时，「确实发生了偏差」的能力只能手工复制模板，而那会被 audit 判为未走技能。
+
+    参数：
+        name: 能力名，须已在总览表登记
+
+    返回：
+        退出码
+    """
+    if not CAPABILITY_NAME_RE.fullmatch(name):
+        die("能力名必须是英文 kebab-case，如 config-overrides。收到：" + name)
+
+    readme_text = read_text(README_PATH)
+    if readme_text is None:
+        die("未找到 extensions_docs/README.md")
+    rows, error = parse_capability_table(readme_text)
+    if error:
+        die("总览表不可解析，已中止：" + error)
+    if not any(row["能力"] == name for row in rows):
+        die("能力未登记，请先执行 new " + name + " 或手工登记总览表")
+
+    target = DOCS_DIR / "plans" / (name + "-deviation.md")
+    if target.exists():
+        die("偏差记录已存在，不覆盖：" + target.relative_to(PROJECT_ROOT).as_posix())
+
+    text = _render_template("deviation.md", {"<能力名>": name})
+    target.write_text(text, encoding="utf-8")
+    print("已生成：" + target.relative_to(PROJECT_ROOT).as_posix())
+    print("下一步：填写每条偏差的「计划 / 实际 / 原因 / 影响」，并把总览表的偏差列指向它。")
+    return 0
+
+
+def run_adr(slug):
+    """新建一份 ADR（不可变决策快照）。
+
+    ADR 序号按现有文件最大序号加一，只增不复用。
+
+    参数：
+        slug: 决策标题的英文 kebab-case 片段
+
+    返回：
+        退出码
+    """
+    if not CAPABILITY_NAME_RE.fullmatch(slug):
+        die("决策标识必须是英文 kebab-case，如 choose-overrides-location。收到：" + slug)
+
+    decisions_dir = DOCS_DIR / "decisions"
+    decisions_dir.mkdir(parents=True, exist_ok=True)
+    existing = sorted(p.name for p in decisions_dir.glob("[0-9][0-9][0-9][0-9]-*.md"))
+    next_number = int(existing[-1][:4]) + 1 if existing else 1
+    target = decisions_dir / ("%04d-%s.md" % (next_number, slug))
+    if target.exists():
+        die("目标已存在，不覆盖：" + target.relative_to(PROJECT_ROOT).as_posix())
+
+    text = _render_template("adr.md", {"<决策标题>": slug, "<slug>": slug, "<能力名>": "全局"})
+    text = text.replace("# ADR", "# ADR-%04d" % next_number, 1)
+    target.write_text(text, encoding="utf-8")
+    print("已生成：" + target.relative_to(PROJECT_ROOT).as_posix())
+    print("下一步：填写背景、候选、结论与影响面。ADR 一经定稿不可改写——被推翻时新建一份并指向被取代者。")
+    return 0
+
+
 def main(argv):
     """命令行入口。
 
@@ -778,6 +987,14 @@ def main(argv):
         if len(argv) < 2:
             die("new 需要能力名，如：new config-overrides")
         return run_new(argv[1])
+    if command == "deviation":
+        if len(argv) < 2:
+            die("deviation 需要能力名，如：deviation config-overrides")
+        return run_deviation(argv[1])
+    if command == "adr":
+        if len(argv) < 2:
+            die("adr 需要决策标识，如：adr choose-overrides-location")
+        return run_adr(argv[1])
 
     print("未知命令：" + command, file=sys.stderr)
     print(USAGE, file=sys.stderr)
@@ -789,6 +1006,8 @@ USAGE = """扩展能力守卫
 用法：
   extension_capability_guard.py audit              体检文档契约与代码落位
   extension_capability_guard.py new <能力名>      生成能力文档骨架并登记总览表
+  extension_capability_guard.py deviation <能力名> 为已登记能力补实施偏差记录
+  extension_capability_guard.py adr <决策标识>     新建 ADR（序号自动递增）
 
 退出码：0 通过 / 1 警告 / 2 错误
 """
