@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_comment": "本文件为 git-commit 的项目配置：提交摘要的格式（pattern）、type 枚举及含义、长度上限、subject 语言、禁用结尾字符。本文件是 Git 提交摘要约定的唯一来源：配置缺失、损坏或字段非法时校验脚本报错退出（退出码 3），不回退默认值。pattern 是判定依据（正则 + 命名组 type/scope/subject），format 仅供展示；两者不一致时以 pattern 为准。与 svn_commit.config 相互独立——两者的摘要格式允许不同（本项目 SVN 侧为 [<scope>] <type>: <subject>）。",
+  "_comment": "本文件为 git-commit 的项目配置：提交摘要的格式（pattern）、type 枚举及含义、长度上限、subject 语言、禁用结尾字符。本文件是 Git 提交摘要约定的唯一来源：配置缺失、损坏或字段非法时校验脚本报错退出（退出码 3），不回退默认值。pattern 是判定依据（正则 + 命名组 type/scope/subject），format 仅供展示；两者不一致时以 pattern 为准。与 svn_commit.config 相互独立——两者的摘要格式允许不同（svn 侧配置当前为占位：本项目未接入 SVN）。",
   "commit_subject": {
     "format": "<type>(<scope>): <subject>",
     "pattern": "^(?P<type>[a-z]+)(?:\\((?P<scope>[^)]+)\\))?: (?P<subject>.+)$",
