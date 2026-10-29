@@ -22,7 +22,7 @@
 框架从 `config` 读取类路径并实例化，语法是二元组 `[模块路径, 类名]`：
 
 ```python
-# extensions/tasks/my_task.py
+# extensions/capabilities/my_task/task.py
 from src.tasks.MyBaseTask import MyBaseTask
 
 class MyNewTask(MyBaseTask):
@@ -33,11 +33,17 @@ class MyNewTask(MyBaseTask):
         self.icon = "icons/icon.png"
         self.default_config = {"参数": 1}
 
-# extensions/bootstrap.py 中注册
-config.setdefault("onetime_tasks", []).append(
-    ["extensions.tasks.my_task", "MyNewTask"]
-)
+# extensions/capabilities/my_task/__init__.py —— 能力包契约
+from extensions.capabilities.my_task import task
+
+def register(config):
+    config.setdefault("onetime_tasks", []).append(
+        ["extensions.capabilities.my_task.task", "MyNewTask"]
+    )
 ```
+
+新增能力包后**在 `extensions/capabilities/registry.py` 的 `CAPABILITIES` 里追加一行**，
+它才会被装载。`bootstrap.py` 与 `app_globals.py` 不需要改。
 
 可注册的 config 键：
 
@@ -58,7 +64,7 @@ config.setdefault("onetime_tasks", []).append(
 框架把装配逻辑拆成了独立方法，可以覆写：
 
 ```python
-# extensions/core/my_ok.py
+# extensions/capabilities/my_ok/my_ok.py
 from ok import OK
 
 class MyOK(OK):
@@ -89,22 +95,51 @@ def on_show_main_window(self):
 ## 目录结构
 
 ```
-extensions/                 # 只放运行时代码
+extensions/                          # 只放运行时代码
 ├── __init__.py
-├── bootstrap.py            # 唯一入口，串起下面几层
-├── overrides.py            # config 值覆写（带键存在性校验）
-├── core/                   # 核心能力扩展（patch、hook、框架行为调整）
-├── tasks/                  # 任务与触发器
-└── patches/                # monkey patch，一个目标一个文件
+├── bootstrap.py                     # 装配基础设施：只串顺序
+├── overrides.py                     # 装配基础设施：config 值覆写（带键存在性校验）
+├── app_globals.py                   # 装配基础设施：全局单例 + 生命周期派发
+├── capabilities/                    # 一个能力一个包（唯一的能力代码区）
+│   ├── registry.py                  #   能力清单 CAPABILITIES（唯一登记点）
+│   ├── log_noise_filter/            #   能力 log-noise-filter
+│   │   ├── __init__.py              #     契约：register(config)
+│   │   └── noise_filter.py          #     实现
+│   └── update_check_guard/          #   能力 update-check-guard
+│       ├── __init__.py              #     契约：register(config) + on_show_main_window
+│       └── guard.py                 #     实现
+└── patches/                         # 侵入式 monkey patch，一个目标一个文件
 
-extensions_tests/           # 只放测试（与 extensions/ 分目录）
+extensions_tests/                    # 只放测试（与 extensions/ 分目录）
 ├── __init__.py
 └── Test<能力名>.py
 ```
 
-扩展**不止任务**：凡是上游没有、本项目要加的运行时能力都放 `extensions/`，
-按性质分 `core/`（框架级）、`tasks/`（任务）、`patches/`（侵入式 patch）。
-新增一类能力时新建子目录，不要往 `bootstrap.py` 里堆逻辑。
+**按能力分包，不按技术层次分包。** 目录名就是能力名（snake_case），包内自包含该能力的
+实现、任务类、页面类与私用常量。曾经按 `core/` `tasks/` `ui/` 分类，问题是那两个基本问题
+都答不上来：这个文件属于哪个能力？删掉某个能力要动哪些文件？
+
+**能力名三处一致**，由体检脚本机械核对：
+
+| 位置 | 形态 | 示例 |
+|---|---|---|
+| 能力包目录 | `extensions/capabilities/<snake_case>/` | `log_noise_filter/` |
+| `registry.py` 的 `CAPABILITIES` | 完整模块路径 | `extensions.capabilities.log_noise_filter` |
+| `extensions_docs/README.md` 总览表 | kebab-case 能力名 | `log-noise-filter` |
+
+新增能力的完整步骤：
+
+1. 建 `extensions/capabilities/<能力名 snake_case>/` 目录与 `__init__.py`；
+2. 在 `__init__.py` 里实现 `register(config)`（无事可做写空实现并说明理由）；
+3. 在 `registry.py` 的 `CAPABILITIES` 里追加模块路径；
+4. 按文档流程登记到 `extensions_docs/README.md` 总览表；
+5. 补 `extensions_tests/Test<能力名>.py`；
+6. 跑体检：`audit` 会核对目录、清单、`register` 契约与总览表是否一致。
+
+`bootstrap.py` 与 `app_globals.py` **不需要改**——它们只经 `registry` 访问能力。
+
+**能力之间不得互相 import**。需要共享的代码上升为装配基础设施或独立工具模块，
+否则被依赖的能力就无法单独删除或迁移。
 
 `src/config.py` 相对上游**只允许一行差异**——末尾的接线：
 
@@ -125,18 +160,19 @@ python .codebuddy.project/skills/project/project-upstream-compat-guard/scripts/u
 
 ## 常见判断
 
-| 需求 | 走哪条路 |
-|---|---|
-| 加一个自动化任务 | 路径 1（`onetime_tasks`） |
-| 加载模型给多个任务用 | 路径 1（`my_app`） |
-| 截图后做处理 | 路径 1（`screenshot_processor`） |
-| 自定义输入方式 | 路径 1（`windows.interaction` 放类对象） |
-| 换任务管理器 | 路径 2（覆写 `do_init`） |
-| 主窗口显示后做事 | 路径 3（`on_show_main_window`） |
-| 换配置存储后端 | 路径 4（patch，需登记） |
+| 需求 | 走哪条路 | 代码落点 |
+|---|---|---|
+| 加一个自动化任务 | 路径 1（`onetime_tasks`） | 该能力包内的任务类 + `register()` |
+| 加载模型给多个任务用 | 路径 1（`my_app`） | 能力包 + `app_globals.py` 派发 |
+| 截图后做处理 | 路径 1（`screenshot_processor`） | 该能力包的 `register()` |
+| 自定义输入方式 | 路径 1（`windows.interaction` 放类对象） | 该能力包的 `register()` |
+| 换任务管理器 | 路径 2（覆写 `do_init`） | 能力包内的 `MyOK` 子类 |
+| 主窗口显示后做事 | 路径 3（`on_show_main_window`） | 能力包的 `on_show_main_window` 钩子 |
+| 换配置存储后端 | 路径 4（patch，需登记） | `extensions/patches/<目标名>.py` |
 
 ## 相关文档
 
-- 规则正文：`.codebuddy.project/rules/project/project-upstream-compat/`
+- 规则正文：`.codebuddy.project/rules/project/project-extension-capability/`
+- 上游差异登记规则：`.codebuddy.project/rules/project/project-upstream-compat/`
 - 差异清单：`.codebuddy.project/configs/upstream/divergence.yaml`
 - 能力清单：`extensions_docs/README.md` 的能力总览表

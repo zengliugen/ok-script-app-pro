@@ -17,7 +17,7 @@
 
 | 批次 | 内容 | 涉及文件 | 验收标准 |
 |---|---|---|---|
-| 一 | 实现过滤器与安装入口 | `extensions/core/log_noise_filter.py` | `NoiseFilter` 可独立构造；`install()` 幂等 |
+| 一 | 实现过滤器与安装入口 | `extensions/capabilities/log_noise_filter/noise_filter.py` | `NoiseFilter` 可独立构造；`install()` 幂等 |
 | 二 | 接入 bootstrap 装载链 | `extensions/bootstrap.py` | `bootstrap.apply()` 后 ok logger 上恰有一个过滤器 |
 | 三 | 补测试 | `extensions_tests/TestLogNoiseFilter.py` | 折叠、放行、计数守恒、幂等四类行为均有用例 |
 | 四 | 修正本机设备绑定 | `configs/devices.json` | 不再指向输入法窗口 |
@@ -26,7 +26,7 @@
 
 | 文件 | 动作 | 说明 |
 |---|---|---|
-| `extensions/core/log_noise_filter.py` | 新增 | 过滤器实现与 `install()` |
+| `extensions/capabilities/log_noise_filter/noise_filter.py` | 新增 | 过滤器实现与 `install()` |
 | `extensions/bootstrap.py` | 修改 | `_register_capabilities` 中调用 `log_noise_filter.install()` |
 | `extensions_tests/TestLogNoiseFilter.py` | 新增 | 11 个用例 |
 | `configs/devices.json` | 修改 | 目标窗口改绑 `Unity.exe` / hwnd `1184012` |

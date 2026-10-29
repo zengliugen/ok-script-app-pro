@@ -100,11 +100,21 @@ python .codebuddy.project/skills/project/project-extension-capability-guard/scri
 ```
 
 能力名必须是**英文 kebab-case**（如 `config-overrides`）——它同时是文件名、总览表「能力」列
-与文件头「关联能力」字段的值。
+与文件头「关联能力」字段的值，也是代码侧的落位依据：
+
+| 位置 | 形态 | 示例 |
+|---|---|---|
+| 代码目录 | `extensions/capabilities/<snake_case>/` | `config_overrides/` |
+| 能力清单 | `extensions/capabilities/registry.py` 的 `CAPABILITIES` | `extensions.capabilities.config_overrides` |
+| 文档总览表 | 本文件「能力」列 | `config-overrides` |
+
+三者由 `audit` 双向核对：目录与清单必须互相登记，包名换算成 kebab-case 后必须能在总览表找到
+（未登记报**提示**，因为先写代码后补文档是正常顺序）。
 
 **不是所有改动都算新增能力**：修 bug、调参数、内部重构、补测试都不需要走这套流程。
 判据是「是否向用户或框架暴露了新的行为面」，详见 `rules/project/project-extension-capability/RULE.mdc`。
-该节另附一张**装配基础设施清单**（`bootstrap.py` / `overrides.py` / `patches/` 目录）——这类文件改变用户可见行为但**不是能力**，不进本表。
+该节另附一张**装配基础设施清单**（`bootstrap.py` / `overrides.py` / `app_globals.py` /
+`capabilities/registry.py` / `patches/` 目录）——这类文件改变用户可见行为但**不是能力**，不进本表。
 
 完整的约束与检查项见 `rules/project/project-extension-capability/docs.mdc`。
 

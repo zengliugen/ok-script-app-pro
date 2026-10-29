@@ -73,6 +73,12 @@ python -m mkdocs build --strict
 接线（`from extensions import bootstrap; bootstrap.apply(config)`），其余 config 改动走
 `extensions/overrides.py`。扩展测试放 `extensions_tests/`。
 
+**代码按能力分包**：一个能力一个包，落点是 `extensions/capabilities/<能力名>/`，包内自包含
+该能力的实现与注册契约 `register(config)`；新增能力只需在 `extensions/capabilities/registry.py`
+的清单里追加一行。目录名、清单条目与 `extensions_docs/` 能力总览表的「能力」列三者必须一致。
+不按 `core/`、`tasks/`、`ui/` 这类技术层次分目录——那样改一个能力要翻几个目录，
+删一个能力必然漏文件。
+
 扩展能力的设计、实施计划、测试策略与决策记录见 **[extensions_docs/](extensions_docs/README.md)**；
 该目录只放文档，不参与运行时与打包。新建能力用 `project-extension-capability-guard` 技能生成骨架并体检。
 

@@ -43,7 +43,7 @@ entries:
 
   - path: run_tests.ps1
     kind: M
-    reason: 上游只 glob tests/*.py 这一层，项目扩展测试在 extensions_tests/ 下会被漏测；改为遍历 tests 与 extensions_tests 两个根递归收集，并显式传文件路径给 unittest（discover 不递归无 __init__.py 的子目录）
+    reason: 上游只 glob tests/*.py 这一层，项目扩展测试在 extensions_tests/ 下会被漏测；改为遍历 tests 与 extensions_tests 两个根递归收集，并显式传文件路径给 unittest（discover 不递归无 __init__.py 的子目录）。另有三处项目必需差异：① 编码加 UTF-8 BOM——Windows PowerShell 5.1 读无 BOM 的 UTF-8 会退回 cp936，中文字符尾字节吞掉紧随的 ASCII 字符（引号/括号/换行），本文件原先因此有 2 处语法错误、脚本完全无法执行；② 含中文行用 CRLF，使被吞的是 CR 而非 LF，避免下一行并入注释造成「代码未执行却返回退出码 0」；③ 解释器优先用 .venv，裸 python 常解析到无 PySide6 的系统解释器，测试会以 ImportError 失败
     method: necessary
     authorization: 用户明确授权
 

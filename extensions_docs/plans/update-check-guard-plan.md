@@ -17,8 +17,8 @@
 
 | 批次 | 内容 | 涉及文件 | 验收标准 |
 |---|---|---|---|
-| 一 | 实现守卫 | `extensions/core/update_check_guard.py` | 启动器缺失时摘卡片、可用时不动；层级不符时崩溃并指名 |
-| 二 | 定义项目全局单例 | `extensions/core/app_globals.py` | 继承上游 `Globals`，`on_show_main_window` 调守卫 |
+| 一 | 实现守卫 | `extensions/capabilities/update_check_guard/guard.py` | 启动器缺失时摘卡片、可用时不动；层级不符时崩溃并指名 |
+| 二 | 定义项目全局单例 | `extensions/app_globals.py` | 继承上游 `Globals`，`on_show_main_window` 调守卫 |
 | 三 | 替换 `my_app` 注册项 | `extensions/overrides.py` | 新增 `LIST_OVERRIDES` 并纳入缺键校验 |
 | 四 | 补测试 | `extensions_tests/TestUpdateCheckGuard.py` | 三条判据 + 崩溃语义 + 继承关系 |
 
@@ -26,8 +26,8 @@
 
 | 文件 | 动作 | 说明 |
 |---|---|---|
-| `extensions/core/update_check_guard.py` | 新增 | 摘卡片逻辑与容器定位 |
-| `extensions/core/app_globals.py` | 新增 | `AppGlobals` 子类 |
+| `extensions/capabilities/update_check_guard/guard.py` | 新增 | 摘卡片逻辑与容器定位 |
+| `extensions/app_globals.py` | 新增 | `AppGlobals` 子类 |
 | `extensions/overrides.py` | 修改 | 新增 `LIST_OVERRIDES`，缺键校验覆盖两张表 |
 | `extensions_tests/TestUpdateCheckGuard.py` | 新增 | 7 个用例 |
 | `configs/devices.json` | 修改 | 目标窗口改绑 Unity.exe |
