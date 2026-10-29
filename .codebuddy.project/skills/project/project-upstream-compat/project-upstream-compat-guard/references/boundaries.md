@@ -18,8 +18,9 @@
 - **Python 3.8+**，仅用标准库 + `PyYAML`。
 - **PyYAML 缺失**时导入即 `ModuleNotFoundError`，报错里不含修复提示。
   遇到时执行 `pip install pyyaml`；若需长期免装，改成读 JSON 需同步改规则侧字段定义，不建议。
-- **必须在 git 仓库内、且项目根可上溯**。脚本用 `Path(__file__).resolve().parents[5]`
-  定位项目根，因此**不能把脚本复制到别处执行**——复制后上溯层数不对，会读到错误的配置路径或以退出码 3 失败。
+- **必须在 git 仓库内、且项目根可上溯**。脚本自 `__file__` 向上查找含 `.codebuddy` 的目录
+  作为项目根（`resolve_project_root`），**不依赖脚本所在的层数**，因此技能收进族目录后仍能正确定位。
+  但**不能把脚本复制到项目树之外执行**——上溯不到 `.codebuddy` 会直接抛 `RuntimeError`。
 - **Windows / Linux / macOS 均可**。路径统一 `replace("\\", "/")` 后再比对，
   与 YAML 里的正斜杠一致；不做大小写归一（git 本身在大小写不敏感文件系统上已处理）。
 

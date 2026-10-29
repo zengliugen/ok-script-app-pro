@@ -10,9 +10,9 @@
 ## 怎么用
 
 ```bash
-python .codebuddy.project/skills/project/project-upstream-compat-guard/scripts/upstream_compat_guard.py            # 全量盘点
-python .codebuddy.project/skills/project/project-upstream-compat-guard/scripts/upstream_compat_guard.py --changed  # 只查工作区
-python .codebuddy.project/skills/project/project-upstream-compat-guard/scripts/upstream_compat_guard.py --add <路径> # 生成条目
+python .codebuddy.project/skills/project/project-upstream-compat/project-upstream-compat-guard/scripts/upstream_compat_guard.py            # 全量盘点
+python .codebuddy.project/skills/project/project-upstream-compat/project-upstream-compat-guard/scripts/upstream_compat_guard.py --changed  # 只查工作区
+python .codebuddy.project/skills/project/project-upstream-compat/project-upstream-compat-guard/scripts/upstream_compat_guard.py --add <路径> # 生成条目
 ```
 
 建议时机：改动上游文件后、提交前、以及每次上游同步的前后。

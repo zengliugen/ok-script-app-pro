@@ -28,7 +28,7 @@ description: 盘点本项目相对上游 ok-script-app 的代码差异、校验�
 在项目根目录执行：
 
 ```bash
-GUARD=.codebuddy.project/skills/project/project-upstream-compat-guard/scripts/upstream_compat_guard.py
+GUARD=.codebuddy.project/skills/project/project-upstream-compat/project-upstream-compat-guard/scripts/upstream_compat_guard.py
 
 python $GUARD                                       # 全量盘点：锚点 → HEAD 与登记清单比对
 python $GUARD --changed                             # 只查工作区未提交变更

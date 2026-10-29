@@ -58,7 +58,7 @@ entries:
 
 ## project-upstream-compat-guard 技能
 
-技能位于 `.codebuddy.project/skills/project/project-upstream-compat-guard/`。三种模式：
+技能位于 `.codebuddy.project/skills/project/project-upstream-compat/project-upstream-compat-guard/`。三种模式：
 
 | 命令 | 行为 |
 |---|---|

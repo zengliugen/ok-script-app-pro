@@ -20,7 +20,7 @@
 ## 怎么用
 
 ```bash
-S=.codebuddy.project/skills/project/project-extension-capability-guard/scripts/extension_capability_guard.py
+S=.codebuddy.project/skills/project/project-extension-capability/project-extension-capability-guard/scripts/extension_capability_guard.py
 
 python $S audit    # 先委托 devflow-guard 体检文档契约，再体检代码落位，合并结论
 ```

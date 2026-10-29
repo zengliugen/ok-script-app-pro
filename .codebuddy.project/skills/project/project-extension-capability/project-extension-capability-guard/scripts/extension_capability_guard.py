@@ -10,7 +10,7 @@
     它读的是 extensions/ 下的 Python 源码，与文档体系无关。
 
 用法：
-    python .codebuddy.project/skills/project/project-extension-capability-guard/scripts/extension_capability_guard.py audit
+    python .codebuddy.project/skills/project/project-extension-capability/project-extension-capability-guard/scripts/extension_capability_guard.py audit
 
 退出码：
     0 通过 / 1 警告 / 2 错误 / 3 配置或环境不可用
@@ -20,8 +20,29 @@ import subprocess
 import sys
 from pathlib import Path
 
-# 项目根：scripts/ -> project-extension-capability-guard/ -> project/ -> skills/ -> .codebuddy.project/ -> 项目根
-PROJECT_ROOT = Path(__file__).resolve().parents[5]
+def resolve_project_root(start):
+    """自 start 向上查找含 `.codebuddy` 的目录，返回项目根。
+
+    需求探索：技能所在的族目录层级会随项目侧收纳结构调整（把技能收进族目录后深度增加一层），
+    固定用 `parents[N]` 定位会在每次收纳调整后静默指错，故改为按标记目录上溯。
+
+    参数：
+        start：定位起点（通常为脚本自身路径）。
+
+    返回：
+        项目根的 Path。
+
+    异常：
+        RuntimeError：上溯到盘根仍未找到 `.codebuddy`，说明脚本被移出项目结构。
+    """
+    current = Path(start).resolve()
+    for candidate in [current] + list(current.parents):
+        if (candidate / ".codebuddy").is_dir():
+            return candidate
+    raise RuntimeError("未能定位项目根：脚本不在含 .codebuddy 的目录树下（%s）" % start)
+
+# 项目根经标记目录上溯定位，不依赖脚本所在目录的层数（族目录收纳后层数会变）
+PROJECT_ROOT = resolve_project_root(__file__)
 
 EXTENSIONS_DIR = PROJECT_ROOT / "extensions"
 

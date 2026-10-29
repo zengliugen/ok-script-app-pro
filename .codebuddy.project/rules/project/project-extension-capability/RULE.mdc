@@ -113,7 +113,7 @@ provider:
 ## 加载机制说明
 
 - 本文件是**规范规则**（`alwaysApply: false`），承载核心底线与路由，由
-  `project-extension-capability-guard` 技能按需加载；强制入口在同目录上层的
+  `project-extension-capability-guard` 技能按需加载；强制入口在本族目录下的
   `project-extension-capability-guard.entry/`。
 - 四条子规则同样**按需加载**（`alwaysApply: false`），涉及对应场景时主动读取。
 - 本族位于项目侧 `.codebuddy.project/rules/project/project-extension-capability/`，经

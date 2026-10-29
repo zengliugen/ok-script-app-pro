@@ -5,7 +5,7 @@
 改 `SKILL.md` 的 `description` 或 `evals/trigger_cases.json` 后必须重跑，否则描述漂移不会被发现：
 
 ```bash
-BASE=.codebuddy.project/skills/project/project-extension-capability-guard
+BASE=.codebuddy.project/skills/project/project-extension-capability/project-extension-capability-guard
 TOOL=.codebuddy/skills/yao-meta-skill/yao-meta-skill/scripts/trigger_eval.py
 
 python $TOOL \

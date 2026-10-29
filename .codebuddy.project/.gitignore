@@ -32,6 +32,8 @@ Thumbs.db
 #
 # 例外：reports/skill-ir.json 是 manifest.skill_ir_source 指向的规范化产物，
 # 缺失会让 yao.py validate 报 declared-source-missing。必须入库。
-skills/project/*/reports/*
-!skills/project/*/reports/output-risk-profile.md
-!skills/project/*/reports/skill-ir.json
+# 用 ** 而非 * 匹配族目录：技能可收进 .codebuddy.project/skills/project/<族>/<技能>/reports/，
+# 单层的 skills/project/*/reports/* 在嵌套后不再命中，会让过程稿静默入库。
+skills/project/**/reports/*
+!skills/project/**/reports/output-risk-profile.md
+!skills/project/**/reports/skill-ir.json

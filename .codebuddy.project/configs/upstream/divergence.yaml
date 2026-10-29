@@ -8,7 +8,7 @@
 # 授权是把口头同意固化成书面记录的机制；「待授权」条目不得提交。
 #
 #
-# 校验：python .codebuddy.project/skills/project/project-upstream-compat-guard/scripts/upstream_compat_guard.py
+# 校验：python .codebuddy.project/skills/project/project-upstream-compat/project-upstream-compat-guard/scripts/upstream_compat_guard.py
 
 # 已同步的上游基线（校验基准）。每次执行 git merge upstream/master 后必须更新。
 synced_upstream_commit: f134d07ce064c49060068c0511b5592b0e78a081

@@ -81,7 +81,7 @@ python $D status <能力名> <状态>
 python $D archive <能力名>
 
 # 5. 提交前体检（文档契约 + 代码落位，合并结论）
-python .codebuddy.project/skills/project/project-extension-capability-guard/scripts/extension_capability_guard.py audit
+python .codebuddy.project/skills/project/project-extension-capability/project-extension-capability-guard/scripts/extension_capability_guard.py audit
 ```
 
 能力名必须是**英文 kebab-case**（如 `config-overrides`），因为它同时用作文件名、总览表「能力」列

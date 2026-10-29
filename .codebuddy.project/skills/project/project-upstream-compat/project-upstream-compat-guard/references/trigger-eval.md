@@ -6,9 +6,9 @@
 
 ```bash
 python .codebuddy/skills/yao-meta-skill/yao-meta-skill/scripts/trigger_eval.py \
-  --description-file .codebuddy.project/skills/project/project-upstream-compat-guard/SKILL.md \
-  --cases .codebuddy.project/skills/project/project-upstream-compat-guard/evals/trigger_cases.json \
-  --semantic-config .codebuddy.project/skills/project/project-upstream-compat-guard/evals/semantic_config.json
+  --description-file .codebuddy.project/skills/project/project-upstream-compat/project-upstream-compat-guard/SKILL.md \
+  --cases .codebuddy.project/skills/project/project-upstream-compat/project-upstream-compat-guard/evals/trigger_cases.json \
+  --semantic-config .codebuddy.project/skills/project/project-upstream-compat/project-upstream-compat-guard/evals/semantic_config.json
 ```
 
 退出码 0 表示零误判；非 0 时输出的 `misfires` 会给出每条失败用例命中了哪些概念、

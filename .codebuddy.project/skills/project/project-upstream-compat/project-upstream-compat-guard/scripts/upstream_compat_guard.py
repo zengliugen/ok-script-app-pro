@@ -2,9 +2,9 @@
 """上游差异守护：盘点本项目相对上游的改动、校验登记完整性、生成登记条目。
 
 用法（在项目根目录执行）：
-    python .codebuddy.project/skills/project/project-upstream-compat-guard/scripts/upstream_compat_guard.py
-    python .codebuddy.project/skills/project/project-upstream-compat-guard/scripts/upstream_compat_guard.py --changed
-    python .codebuddy.project/skills/project/project-upstream-compat-guard/scripts/upstream_compat_guard.py --add src/config.py
+    python .codebuddy.project/skills/project/project-upstream-compat/project-upstream-compat-guard/scripts/upstream_compat_guard.py
+    python .codebuddy.project/skills/project/project-upstream-compat/project-upstream-compat-guard/scripts/upstream_compat_guard.py --changed
+    python .codebuddy.project/skills/project/project-upstream-compat/project-upstream-compat-guard/scripts/upstream_compat_guard.py --add src/config.py
 
 配置路径（项目侧固定位置，不经索引）：
     .codebuddy.project/configs/upstream/divergence.yaml     —— 上游差异登记清单
@@ -30,8 +30,29 @@ from pathlib import Path
 
 import yaml
 
-# 项目根：本脚本位于 <项目根>/.codebuddy.project/skills/project/project-upstream-compat-guard/scripts/
-PROJECT_ROOT = Path(__file__).resolve().parents[5]
+def resolve_project_root(start):
+    """自 start 向上查找含 `.codebuddy` 的目录，返回项目根。
+
+    需求探索：技能所在的族目录层级会随项目侧收纳结构调整（把技能收进族目录后深度增加一层），
+    固定用 `parents[N]` 定位会在每次收纳调整后静默指错，故改为按标记目录上溯。
+
+    参数：
+        start：定位起点（通常为脚本自身路径）。
+
+    返回：
+        项目根的 Path。
+
+    异常：
+        RuntimeError：上溯到盘根仍未找到 `.codebuddy`，说明脚本被移出项目结构。
+    """
+    current = Path(start).resolve()
+    for candidate in [current] + list(current.parents):
+        if (candidate / ".codebuddy").is_dir():
+            return candidate
+    raise RuntimeError("未能定位项目根：脚本不在含 .codebuddy 的目录树下（%s）" % start)
+
+# 项目根经标记目录上溯定位，不依赖脚本所在目录的层数（族目录收纳后层数会变）
+PROJECT_ROOT = resolve_project_root(__file__)
 
 # 配置路径：项目专有技能的配置属项目侧内容，直接定位，不经 .codebuddy/project.index.json。
 # 索引是引擎与项目侧之间的注册表、随引擎共享并对所有消费项目一致；

@@ -64,5 +64,5 @@ provider:
 ## 加载机制说明
 
 无子规则；流程细节位于
-`.codebuddy.project/skills/project/project-extension-capability-guard/`
+`.codebuddy.project/skills/project/project-extension-capability/project-extension-capability-guard/`
 （`SKILL.md` 与 `references/`），一律 `alwaysApply: false`，由技能读取，不自动注入。

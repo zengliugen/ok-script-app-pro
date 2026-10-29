@@ -32,7 +32,7 @@ description: 约束扩展能力的开发流程：管 extensions/ 代码落位体
 ## 一个模式
 
 ```bash
-DIR=.codebuddy.project/skills/project/project-extension-capability-guard
+DIR=.codebuddy.project/skills/project/project-extension-capability/project-extension-capability-guard
 
 python $DIR/scripts/extension_capability_guard.py audit
 ```

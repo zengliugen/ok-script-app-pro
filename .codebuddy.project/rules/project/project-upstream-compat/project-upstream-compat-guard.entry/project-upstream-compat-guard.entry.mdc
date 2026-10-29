@@ -40,5 +40,5 @@ provider:
 ## 加载机制说明
 
 无子规则；触发范围（上游来源文件清单）、登记字段与同步流程位于
-`.codebuddy.project/skills/project/project-upstream-compat-guard/`
+`.codebuddy.project/skills/project/project-upstream-compat/project-upstream-compat-guard/`
 与 `project-upstream-compat/`，一律 `alwaysApply: false`，由技能读取，不自动注入。
