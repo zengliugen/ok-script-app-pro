@@ -1,21 +1,60 @@
 {
   "version": 1,
-  "_comment": "本文件为 git-commit 的项目配置：提交摘要的 type 枚举、subject/scope 长度上限与 subject 语言。本文件是提交摘要约定的唯一来源：配置缺失、损坏或字段非法时校验脚本报错退出（退出码 3），不回退默认值。",
+  "_comment": "本文件为 git-commit 的项目配置：提交摘要的格式（pattern）、type 枚举及含义、长度上限、subject 语言、禁用结尾字符。本文件是 Git 提交摘要约定的唯一来源：配置缺失、损坏或字段非法时校验脚本报错退出（退出码 3），不回退默认值。pattern 是判定依据（正则 + 命名组 type/scope/subject），format 仅供展示；两者不一致时以 pattern 为准。与 svn_commit.config 相互独立——两者的摘要格式允许不同（本项目 SVN 侧为 [<scope>] <type>: <subject>）。",
   "commit_subject": {
+    "format": "<type>(<scope>): <subject>",
+    "pattern": "^(?P<type>[a-z]+)(?:\\((?P<scope>[^)]+)\\))?: (?P<subject>.+)$",
     "types": [
-      "feat",
-      "fix",
-      "docs",
-      "style",
-      "refactor",
-      "perf",
-      "test",
-      "chore",
-      "ci",
-      "revert"
+      {
+        "name": "feat",
+        "description": "新功能"
+      },
+      {
+        "name": "fix",
+        "description": "Bug 修复"
+      },
+      {
+        "name": "docs",
+        "description": "文档变更"
+      },
+      {
+        "name": "style",
+        "description": "代码格式调整（不影响逻辑）"
+      },
+      {
+        "name": "refactor",
+        "description": "代码重构（不新增功能、不修复 Bug）"
+      },
+      {
+        "name": "perf",
+        "description": "性能优化"
+      },
+      {
+        "name": "test",
+        "description": "添加或修改测试"
+      },
+      {
+        "name": "chore",
+        "description": "构建流程、工具链、依赖管理等杂项"
+      },
+      {
+        "name": "ci",
+        "description": "CI/CD 配置变更"
+      },
+      {
+        "name": "revert",
+        "description": "回退之前的提交"
+      }
     ],
     "subject_max_len": 50,
     "scope_max_len": 40,
-    "subject_language": "zh"
+    "subject_language": "zh",
+    "forbid_trailing": [
+      "。",
+      "；",
+      "：",
+      ".",
+      ";"
+    ]
   }
 }
