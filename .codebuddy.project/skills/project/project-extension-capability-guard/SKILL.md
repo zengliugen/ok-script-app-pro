@@ -1,57 +1,58 @@
 ---
 name: project-extension-capability-guard
-description: 约束扩展能力的开发流程：新建扩展能力时生成设计/计划/测试三份文档骨架并登记能力总览表，体检文档契约与代码落位并按三档报缺口。用户说"新建扩展能力"、"加个新任务"、"扩展文档"、"检查扩展文档"、"文档缺口"、"扩展能力体检"、"audit 一下扩展"、"这个能力登记了吗"时使用。也用于判断某个改动算不算新增扩展能力。
+description: 约束扩展能力的开发流程：管 extensions/ 代码落位体检（patch 断言、sys.path、__init__.py、幂等与崩溃语义），并把文档流程转交引擎侧 devflow-guard（需求探索、生成骨架、登记总览表、改状态、归档、文档契约体检）。用户说"检查扩展文档"、"文档缺口"、"扩展能力体检"、"audit 一下扩展"、"代码落位"时使用。
 ---
 
 # 扩展能力守卫
 
 本项目把扩展能力当作一门独立的工程来做：能力怎么写（手段选择）、代码放哪（落位）、
-过程怎么记录（文档体系）、由谁验收（本技能）。规则约束见 `rules/project/project-extension-capability/`。
+过程怎么记录（文档体系）、由谁验收（本技能）。规则约束见
+`rules/project/project-extension-capability/`。
 
-本技能只做两件规则做不到的事：**生成骨架**与**机械体检**。它不修改既有文档内容——
+本技能只做两件规则做不到的事：**守入口**与**机械体检代码落位**。它不修改既有文档内容——
 判断与措辞由人负责。
 
-## 两个模式
+## 职责分工（先读这一节）
+
+文档流程与文档契约体检**一律不在本技能内**，由引擎侧 `devflow` 包的 `devflow-guard` 提供：
+
+| 事项 | 由谁做 | 命令 |
+|---|---|---|
+| 需求探索记录 | `devflow-guard` | `explore <主题名>` |
+| 生成能力文档骨架并登记 | `devflow-guard` | `new <能力名> --from-explore <主题名>` |
+| 决策记录 | `devflow-guard` | `adr <slug>` |
+| 状态同步（表 + 四份文档头） | `devflow-guard` | `status <能力名> <状态>` |
+| 能力归档 | `devflow-guard` | `archive <能力名>` |
+| 文档契约体检（11 项） | `devflow-guard` | `audit` |
+| **代码落位体检** | **本技能** | `audit` |
+
+**为什么不各写一份**：判定逻辑写两处，改一处漏一处就会出现「一边报错一边放行」，
+而这类分叉不会报错，只会让体检结论失去可信度。
+
+## 一个模式
 
 ```bash
 DIR=.codebuddy.project/skills/project/project-extension-capability-guard
 
-python $DIR/scripts/extension_capability_guard.py new <能力名>   # 生成骨架并登记总览表
-python $DIR/scripts/extension_capability_guard.py audit           # 体检文档契约与代码落位
+python $DIR/scripts/extension_capability_guard.py audit
 ```
 
-### `new` 做什么
+`audit` 分两段输出，最后给合并结论：
 
-从 `extensions_docs/templates/` 复制三份骨架，填充文件头（状态=草稿、关联能力=能力名、日期=今天、
-生成器标记），并在 `extensions_docs/README.md` 的能力总览表末尾追加一行。
+1. **委托段**：调 `devflow_guard.py audit`，原样转发其输出与退出码。委托目标不存在
+   （未安装 devflow 包）时该段报错误，整体退出码 3。
+2. **代码落位段**：本技能独有的四项检查，读 `extensions/` 下的 Python 源码。
 
-**三道运行时保护**，任一不满足即中止且不写任何文件：
+### 代码落位检查什么
 
-| 保护 | 触发条件 |
-|---|---|
-| 能力名格式 | 非英文 kebab-case（如输入中文名）即报错并给出示例 |
-| 目标文件已存在 | 任一目标文件存在即中止，列出全部冲突文件 |
-| 表头契约 | 总览表不可解析即中止；插入点定位失败则回滚已生成的文件 |
+| 检查项 | 判据 | 为什么脚本能判 |
+|---|---|---|
+| patch 断言 | `patches/*.py` 的 `apply()` 内必须有 `raise` | ast 解析函数体，不靠文本匹配（注释里的 raise 不算） |
+| sys.path 污染 | `extensions/` 内不得 `sys.path.insert/append` 自己 | 文本匹配 + 同行含 extensions |
+| 包结构 | `extensions/` 每层目录必须有 `__init__.py` | 目录遍历 |
+| 登记同步提示 | `extensions/` 有改动但总览表未变 | `git status` 比对，仅为提示 |
 
-**不提供 `--force`**：覆盖会毁掉已写的内容，而 design 文档往往是唯一副本。
-
-### `audit` 检查什么
-
-九项，全部机械可判定：
-
-| 组 | 检查项 |
-|---|---|
-| 文档契约 | 文件头四字段齐全、状态值合法 |
-| 文档契约 | 总览表↔磁盘双向对账（表引用的文件必须存在；磁盘上的能力文档必须在表里有行）|
-| 文档契约 | 表头七列契约（不符即报错，不静默降级）|
-| 文档契约 | ADR 编号连续、无重复、文件名合规 |
-| 文档契约 | plan/deviation 配对完整（状态为已定/已实施时必须有偏差文档或显式写「无偏差」）|
-| 文档契约 | 生成器字段存在且取值合法（全部能力文档，不限状态；分级为错误）|
-| 代码落位 | patch 模块的 `apply()` 内有 raise 断言（用 ast 解析，不靠文本匹配）|
-| 代码落位 | `extensions/` 内不得把 extensions 加入 `sys.path` |
-| 代码落位 | `extensions/` 每层目录有 `__init__.py` |
-
-另有一项**提示**级信号：`extensions/` 有未提交改动但总览表未变——可能是新能力未登记，也可能只是改了个 bug。
+**不查「用哪条扩展路径」「落位是否符合语义」**——那要读懂框架能力，脚本判断不了，走评审。
 
 ### 三档分级与退出码
 
@@ -59,7 +60,10 @@ python $DIR/scripts/extension_capability_guard.py audit           # 体检文档
 |---|---|---|
 | 错误 | 确定的违规，需修复 | 2 |
 | 警告 | 可能违规，需人工判断 | 1 |
-| 提示 | 仅供参考 | 0（有输出但通过）|
+| 提示 | 仅供参考 | 0（有输出但通过） |
+| 环境不可用 | 委托目标缺失、配置不可用或执行失败 | 3 |
+
+**环境不可用优先于一切**：此时检查没真正跑完，报出的 0 或 1 都不代表代码合规。
 
 **不设豁免机制**：缺口就该一直报，直到被修复。已知缺口的可见性比输出的整洁更重要。
 
@@ -67,10 +71,11 @@ python $DIR/scripts/extension_capability_guard.py audit           # 体检文档
 
 | 请求 | 该去哪 |
 |---|---|
+| 生成文档骨架、登记总览表、改状态、归档 | `devflow-guard` 技能——本技能已不含这些命令 |
 | 决定用哪条扩展路径 | 规则 `project-extension-capability/methods.mdc`——需要读框架能力，脚本判断不了 |
 | 判断某个改动该不该改上游文件 | 规则 `project-upstream-compat`——本技能不管上游 |
 | 登记上游改动、校验差异清单 | 技能 `project-upstream-compat-guard` |
-| 修改文档内容、补写设计文档 | 人写。本技能只生成空骨架，不生成内容 |
+| 修改文档内容、补写设计文档 | 人写。本技能不生成内容 |
 | 执行测试 | `run_tests.ps1`——本技能不跑测试 |
 
 ## 什么算「新增扩展能力」

@@ -1,20 +1,21 @@
 {
   "positive_concepts": {
-    "capability_docs": {
-      "weight": 0.36,
+    "code_layout": {
+      "weight": 0.34,
       "phrases": [
-        "扩展能力",
-        "扩展文档",
-        "能力文档",
-        "文档骨架",
-        "extensions_docs",
-        "能力总览表",
-        "总览表",
-        "能力登记"
+        "代码落位",
+        "patch 断言",
+        "断言",
+        "sys.path",
+        "__init__.py",
+        "命名空间包",
+        "幂等",
+        "崩溃并指名",
+        "hasattr"
       ]
     },
     "audit_check": {
-      "weight": 0.3,
+      "weight": 0.34,
       "phrases": [
         "体检",
         "审计",
@@ -27,34 +28,37 @@
         "是否齐全",
         "有没有遗漏",
         "登记了吗",
-        "写文档吗",
         "合不合适",
-        "文档流程"
+        "盘点",
+        "文档状态",
+        "文档+代码",
+        "文档和代码"
       ]
     },
-    "scaffold": {
+    "capability_docs": {
       "weight": 0.2,
       "phrases": [
-        "新建能力",
-        "生成骨架",
-        "建文档",
-        "起文档",
-        "new "
+        "扩展能力",
+        "扩展文档",
+        "能力文档",
+        "extensions_docs",
+        "能力总览表",
+        "总览表",
+        "文件头",
+        "文档契约"
       ]
     },
-    "adr": {
-      "weight": 0.14,
+    "delegation": {
+      "weight": 0.12,
       "phrases": [
-        "ADR",
-        "决策记录",
-        "编号",
-        "不可改",
-        "归档"
+        "devflow",
+        "开发流程",
+        "文档流程"
       ]
     }
   },
   "fallback_positive_concepts": [
-    "capability_docs",
+    "code_layout",
     "audit_check"
   ],
   "negative_concepts": {
@@ -71,16 +75,26 @@
         "登记上游"
       ]
     },
-    "code_impl": {
+    "scaffold_only": {
       "weight": 0.26,
       "exclusive": true,
       "phrases": [
-        "用哪条路径",
-        "选继承还是 patch",
-        "放在哪个子目录",
-        "放哪个子目录",
-        "怎么写 patch",
-        "sys.path"
+        "新建一个扩展能力",
+        "生成骨架",
+        "帮我把能力文档建起来",
+        "建文档",
+        "起文档",
+        "加个新任务"
+      ]
+    },
+    "adr_only": {
+      "weight": 0.22,
+      "exclusive": true,
+      "phrases": [
+        "ADR",
+        "决策记录",
+        "编号",
+        "归档"
       ]
     },
     "run_tests": {
@@ -108,7 +122,11 @@
       "phrases": [
         "算不算",
         "怎么加一行",
-        "怎么加"
+        "怎么加",
+        "应该放哪个子目录",
+        "该放哪个子目录",
+        "用哪条路径",
+        "选继承还是"
       ]
     }
   }

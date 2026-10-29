@@ -1,7 +1,7 @@
 interface:
   display_name: "扩展能力守卫"
-  short_description: "生成扩展能力文档骨架并体检文档契约与代码落位，按三档报缺口"
-  default_prompt: "使用 $project-extension-capability-guard new <能力名> 生成设计/计划/测试三份文档骨架并登记能力总览表；或使用 audit 体检文档契约与代码落位。"
+  short_description: "体检扩展代码落位并委托 devflow-guard 体检文档契约，按三档报缺口"
+  default_prompt: "使用 $project-extension-capability-guard audit 体检扩展代码落位（文档契约体检委托 devflow-guard）；新建能力文档请用 devflow-guard 的 explore/new。"
 compatibility:
   canonical_format: "agent-skills"
   adapter_targets:
@@ -18,7 +18,7 @@ compatibility:
       - keyword: "文档缺口"
       - keyword: "能力登记"
       - keyword: "扩展体检"
-      - keyword: "new 能力"
+      - keyword: "代码落位"
   execution:
     context: "inline"
     shell: "bash"
@@ -43,5 +43,5 @@ compatibility:
     vscode: "agent-skills-source-with-vscode-notes"
     codebuddy-code: "native"
 name: project-extension-capability-guard
-version: "0.1.0"
+version: "0.2.0"
 mode: Production
