@@ -2,7 +2,6 @@
   "version": 1,
   "installed": [
     "devflow",
-    "devflow-strict",
     "grilling",
     "python",
     "yao-meta-skill"
