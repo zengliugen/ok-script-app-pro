@@ -1,8 +1,8 @@
 ---
-description: 扩展能力文档体系 —— extensions_docs/ 的结构与准入、文档字段契约、新增能力的流程强制、project-extension-capability-guard 技能的职责与验收标准。新增扩展能力、编写或检查扩展文档时加载。
+description: 扩展能力文档体系 —— extensions_docs/ 的结构与准入、文档字段契约、新增能力的流程强制、文档流程与代码落位体检的职责分工。新增扩展能力、编写或检查扩展文档时加载。
 alwaysApply: false
 enabled: true
-updatedAt: 2026-10-25T00:00:00.000Z
+updatedAt: 2026-10-29T00:00:00.000Z
 provider:
 ---
 
@@ -17,24 +17,46 @@ provider:
 
 ## 目录结构
 
-```
+```text
 extensions_docs/
 ├── README.md          # 目录说明 + 扩展能力总览表 + 命名规范 + 文件头字段
+├── explore/           # 动手前：需求探索记录，可反复改写，确认后才允许建能力文档
 ├── design/            # 做之前：方案推演、候选比较、取舍理由、实测证据
 ├── plans/             # 做之中：<能力>-plan.md 与 <能力>-deviation.md
 ├── testing/           # 做之后：测试策略、验收结论、已知盲区
 ├── decisions/         # 贯穿：NNNN-<slug>.md，定稿后不可改写
-├── templates/         # design / plan / deviation / testing / adr 五份骨架
 └── archive/           # 收尾：已完成能力整包归档
 ```
 
+**没有 `templates/` 目录**：文档骨架由引擎侧 `devflow` 包内置，`new` / `adr` 落盘那一刻现场实例化。
+项目侧不再持有副本——副本零消费者，且它与源模板的差异无法机械判定，漂移就没有兜底。
+
 各子目录的准入判据见其自身 `README.md`。
+
+## 职责分工（先读这一节）
+
+文档流程与文档契约体检**全部由引擎侧 `devflow` 包的 `devflow-guard` 提供**；本项目技能只承担
+它查不了的那部分——需要读懂 `extensions/` 源码结构的代码落位约束。
+
+| 事项 | 由谁做 | 命令 |
+|---|---|---|
+| 需求探索记录 | `devflow-guard` | `explore <主题名>` |
+| 生成能力文档骨架并登记总览表 | `devflow-guard` | `new <能力名> --from-explore <主题名>` |
+| 决策记录 | `devflow-guard` | `adr <slug>` |
+| 状态同步（总览表 + 四份文档头） | `devflow-guard` | `status <能力名> <状态>` |
+| 能力归档 | `devflow-guard` | `archive <能力名>` |
+| 文档契约体检 | `devflow-guard` | `audit` |
+| 代码落位体检 | `project-extension-capability-guard` | `audit`（内部先委托上者） |
+
+**为什么文档逻辑只写一处**：判定逻辑写两份，改一份漏一份就会出现「一边报错一边放行」。
+这类分叉不会报错，只会让「体检通过」这句话失去意义。项目技能因此删掉了全部文档契约实现
+与其 `new` / `adr` / `deviation` 命令。
 
 ## 流程强制
 
 ### 新增能力的标准动作
 
-**动手前先判一步**：要加的东西是不是**能力**？
+**第一步先判**：要加的东西是不是**能力**？
 
 - 若是**装配基础设施**（`bootstrap.py` / `overrides.py` / `patches/` 这类改 `config` 或装 patch、
   但自身不注册任务与页面的文件）→ **不登记、不写过程文档**，其取舍写进规则。
@@ -43,25 +65,39 @@ extensions_docs/
 两张判据表在 `RULE.mdc`：「什么算「新增扩展能力」」与「不属于能力：装配基础设施」。
 
 ```bash
-# 1. 生成骨架（在设计开始前）
-python .codebuddy.project/skills/project/project-extension-capability-guard/scripts/extension_capability_guard.py new <能力名>
+D=.codebuddy/lib/devflow/skills/devflow-guard/scripts/devflow_guard.py
 
-# 2. 填写 design，方案定稿后补 plan，开发完成后补 testing
+# 1. 需求探索（动手前，可反复改写）
+python $D explore <主题名>
+#    填写「要解决的问题」「已确认的决定」「未定项」「结论」，把状态推进一档
 
-# 3. 提交前体检
+# 2. 生成骨架并登记（--from-explore 必填，记录未确认会被拒绝）
+python $D new <能力名> --from-explore <主题名>
+
+# 3. 阶段推进（同时改总览表与四份文档头，共五处）
+python $D status <能力名> <状态>
+
+# 4. 完成后归档
+python $D archive <能力名>
+
+# 5. 提交前体检（文档契约 + 代码落位，合并结论）
 python .codebuddy.project/skills/project/project-extension-capability-guard/scripts/extension_capability_guard.py audit
 ```
 
 能力名必须是**英文 kebab-case**（如 `config-overrides`），因为它同时用作文件名、总览表「能力」列
-与文件头「关联能力」字段。中文名会被技能拒绝并给出修正建议。
+与文件头「关联能力」字段。
+
+**`new` 一次产四份**（设计 / 计划 / 偏差 / 测试），并在总览表「实施偏差」列直接填好路径。
+空偏差记录不算违规——模板自带「只有实际做法 ≠ 计划才记」的准入判据，实施顺利时保持原样即可。
 
 ### 硬约束
 
 | 约束 | 说明 |
 |---|---|
-| 必须经技能生成 | 骨架中的「生成器」标记由技能写入，`audit` 校验该标记；手工创建的文档在 audit 中报「未走技能」 |
+| 必须经技能生成 | 骨架中的「生成器」标记由 `new` / `adr` 写入，`audit` 校验该标记；手工创建的文档报错误 |
+| 先探索后承诺 | `new` 不接受没有已确认探索记录的调用；探索记录建立能力文档后冻结 |
 | `extensions_docs/` 只放文档 | 不得放任何可执行代码、脚本或配置；它不参与 import，不进运行时 |
-| 决策定稿后不可改写 | `decisions/` 下的 ADR 若被推翻，新写一份并指向被取代者，不修订原文；已被取代的 ADR 留在原处，不移入 `archive/` |
+| 决策定稿后不可改写 | `decisions/` 下的 ADR 若被推翻，新写一份并在「取代」字段指向被取代者；`audit` 校验该编号确实存在 |
 | ADR 只记结论与判据 | 不记录讨论过程中的反复——未落地方案在讨论中被推翻属正常，不构成「决策变更」 |
 | `testing/` 不复制用例 | 只写策略与验收结论，用例引用文件名与方法名，代码只存在于 `extensions_tests/` |
 | 文件名英文 kebab-case | 正文用简体中文；ADR 加四位序号前缀，只增不复用 |
@@ -76,8 +112,8 @@ python .codebuddy.project/skills/project/project-extension-capability-guard/scri
 
 ## 文档字段契约
 
-每份**能力文档**（`design/*.md`、`plans/*.md`、`testing/*.md`、`decisions/NNNN-*.md`）
-开头必须有一张**五行**字段表：
+每份**能力文档**（`explore/*.md`、`design/*.md`、`plans/*.md`、`testing/*.md`、
+`decisions/NNNN-*.md`）开头必须有一张字段表：
 
 ```markdown
 | 字段 | 值 |
@@ -86,30 +122,26 @@ python .codebuddy.project/skills/project/project-extension-capability-guard/scri
 | 关联能力 | 能力名；跨能力决策写「全局」 |
 | 创建日期 | YYYY-MM-DD |
 | 更新日期 | YYYY-MM-DD |
-| 生成器 | project-extension-capability-guard/new |
+| 生成器 | devflow-guard/new |
 ```
 
-**不适用于**：根 `README.md`、各子目录 `README.md`（目录说明，不是能力文档）、`templates/*.md`。
+**不适用于**：根 `README.md`、各子目录 `README.md`（目录说明，不是能力文档）。
 
 「状态」字段的价值在于让**已废弃但仍存在**的文档可被检索识别，避免被误读为现行方案。
 
 ### 生成器字段
 
-校验规则（`audit` 检查项，分级为**错误**）：
+校验规则（`audit` 检查项，分级为**错误**，适用于全部能力文档、不限状态）：
 
 | 情形 | 判定 |
 |---|---|
 | 文件头字段表缺失 | 错误——无法确认是否经技能生成 |
-| 缺 `生成器` 字段 | 错误——应由 `new` 生成，不得手工省略 |
-| 取值不在合法集合内 | 错误——合法值仅 `project-extension-capability-guard/new` |
-
-与旧实现的差异及原因：旧检查只对**草稿态**做子串匹配（`"| 生成器 |" in text`），因此值为空、值为任意文本、
-标记写在正文中段都能通过；且文档填完内容把状态改为「评审中」后，检查立即失效。现改为**解析字段后比对取值、
-不限状态、错误级**，与该约束的强制力对齐。
+| 缺 `生成器` 字段 | 错误——应由 `new` / `adr` 生成，不得手工省略 |
+| 取值不在合法集合内 | 错误——合法值仅 `devflow-guard/new` |
 
 **这个字段证明什么、不证明什么**：它证明骨架由技能写入，**不证明**内容经过推演或判断成立。
-标记只在写文件那一刻存在，之后文档被整体重写不会被察觉。要真正证明「生成时走过技能」需要 git 历史基线，
-本项目不做该检查（与 ADR 正文不可变性同属一类取舍）。因此**audit 全绿不等于流程合规**。
+标记只在写文件那一刻存在，之后文档被整体重写不会被察觉。要真正证明「生成时走过技能」需要
+git 历史基线，本项目不做该检查（与 ADR 正文不可变性同属一类取舍）。因此**体检全绿不等于流程合规**。
 
 ## 能力总览表
 
@@ -128,29 +160,26 @@ python .codebuddy.project/skills/project/project-extension-capability-guard/scri
 **「待补」是契约内的正式标记，不是占位符。** 它表示「知道该有、暂时没有」，与 `—`（还没到那一步）
 语义不同。空白单元格才算违规。
 
-## 技能职责
+**路径单元格不写反引号**：体检脚本按单元格文本直接拼路径，反引号会被当作路径的一部分。
+需要强调时用普通文本，不用行内代码标记。
 
-`project-extension-capability-guard` 是本族的唯一执行入口，两个模式：
-
-| 模式 | 作用 |
-|---|---|
-| `new <能力名>` | 生成 design/plan/testing 三份骨架并登记总览表；写入生成标记 |
-| `audit` | 体检：文档契约 + 代码落位，按三档输出缺口 |
-
-`audit` 的三档分级与退出码：
+## 体检的三档分级
 
 | 档位 | 含义 | 退出码 |
 |---|---|---|
-| 错误 | 确定的违规（缺文件、状态非法、表头被改、ADR 编号重复或文件名不合规、patch 无断言） | 2 |
-| 警告 | 可能违规需人工判断（状态已定/已实施但缺计划或偏差、文档存在但未登记） | 1 |
-| 提示 | 仅供参考（代码有变更但总览表未变） | 0 |
+| 错误 | 确定的违规（缺文件、状态非法、表头被改、生成器取值非法、ADR 编号重复或不连续、归档不一致、patch 无断言、包结构缺 `__init__.py`） | 2 |
+| 警告 | 可能违规需人工判断（状态已定/已实施但缺计划或偏差、文档存在但未登记、归档缺文件） | 1 |
+| 提示 | 仅供参考（代码有变更但总览表未变、已废弃文档仍留活跃目录） | 0 |
+| 环境不可用 | 委托目标缺失、配置不可用或执行失败 | 3 |
 
 **不设豁免机制**：缺口就该一直报，直到被修复。已知缺口的可见性比输出的整洁更重要。
 
+**环境不可用优先于一切**：此时检查没真正跑完，报出的 0 或 1 都不代表合规。
+
 技能只做检查与生成，**不修改文档内容**——判断与措辞由人负责。
 
-**ADR 正文的不可变性不做机械检查**：需要 git 历史基线，且当前文档体系尚未提交。
-脚本只校验编号连续、无重复、文件名合规；「不修订原文」这条靠人遵守，靠评审兜底。
+**ADR 正文的不可变性不做机械检查**：需要 git 历史基线。脚本只校验编号连续、无重复、文件名合规、
+取代链指向存在；「不修订原文」这条靠人遵守，靠评审兜底。
 
 ## 与相邻内容的分工
 
