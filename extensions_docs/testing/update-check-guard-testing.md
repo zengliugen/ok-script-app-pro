@@ -3,7 +3,7 @@
 | 字段 | 值 |
 |---|---|
 | 状态 | 已实施 |
-| 生成器 | project-extension-capability-guard/new |
+| 生成器 | devflow-guard/new |
 | 关联能力 | update-check-guard |
 | 创建日期 | 2026-10-26 |
 | 更新日期 | 2026-10-26 |
