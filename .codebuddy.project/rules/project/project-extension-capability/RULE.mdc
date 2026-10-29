@@ -34,10 +34,19 @@ provider:
    `extensions/` 是常规包（每层 `__init__.py`），`__path__` 唯一；**禁止**把它加入 `sys.path`。
    详见 `layout.mdc`。
 
-3. **侵入性改动必须可失效**。任何 patch 或对框架内部符号的假设，必须在启动时断言目标存在，
+3. **代码按能力分包，一个能力一个包**。落点是 `extensions/capabilities/<能力名 snake_case>/`，
+   包内自包含该能力的实现、任务类、页面类与私用常量。**禁止**按 `core/`、`tasks/`、`ui/` 这类
+   技术层次拆目录——层次目录回答不了「这个文件属于哪个能力」，改一个能力要翻三个目录，
+   删一个能力必然漏文件。能力包名、`registry.py` 清单条目、文档总览表「能力」列
+   **三者必须机械对应**（`log-noise-filter` ↔ `log_noise_filter`）。能力包必须提供
+   `register(config)`（无事可做也要显式写空实现），**能力之间不得互相 import**。
+   `extensions/` 顶层只允许白名单条目（`bootstrap.py` / `overrides.py` / `app_globals.py` /
+   `capabilities/` / `patches/` / `__init__.py`）。详见 `layout.mdc`。
+
+4. **侵入性改动必须可失效**。任何 patch 或对框架内部符号的假设，必须在启动时断言目标存在，
    并在目标消失时**立即崩溃且指名缺失项**，不得静默降级。patch 还必须幂等并保留原实现引用。
 
-4. **新增扩展能力必须走文档体系，且文档流程必须经 `devflow` 包的 `devflow-guard` 技能**。
+5. **新增扩展能力必须走文档体系，且文档流程必须经 `devflow` 包的 `devflow-guard` 技能**。
    先 `explore` 确认需求，再 `new --from-explore` 生成骨架并登记总览表；未落设计文档、未登记总览表
    的能力，**不算完成**——不因其代码已能运行而视为交付。走技能的具体形态见 `docs.mdc`。
    本项目技能 `project-extension-capability-guard` 只负责它查不了的那部分——代码落位体检。
@@ -66,26 +75,30 @@ provider:
 
 ### 不属于能力：装配基础设施
 
-`extensions/` 下有一类文件**不暴露任何行为面**，它们的职责是让 `config` 达到可用状态，
+`extensions/` 顶层有一类文件**不暴露任何行为面**，它们的职责是让 `config` 达到可用状态，
 本身不注册任务、不装页面、不挂钩子。它们**不进能力总览、不写过程文档**：
 
 | 文件 | 职责 | 为什么不登记 |
 |---|---|---|
-| `bootstrap.py` | 装配器：按固定顺序串起下面两步与各能力 | 无独立行为面 |
+| `bootstrap.py` | 装配器：按固定顺序串起 overrides、patches、`registry.register_all` | 无独立行为面；不引用任何具体能力 |
 | `overrides.py` | 覆写 `config` 的字面值（链接、标题、`my_app`） | 只改值，不新增行为；机制取舍见 `project-upstream-compat` 族的 `upstream-sync.mdc`「`src/config.py` 的特殊地位」 |
+| `app_globals.py` | 继承上游 `Globals`，把生命周期事件派发给各能力 | 只派发，不含业务 |
+| `capabilities/registry.py` | 能力清单与派发实现 | 无独立行为面；它是**唯一登记点**，不是能力 |
 | `patches/` | 目录本身只是承载位置 | 目录不算能力；**但新增一个 patch 文件算能力**，见上表 |
 
 **判据**（按顺序，命中任一即算能力）：
 
-1. 出现在 `bootstrap.apply()` 的装配序列里——含 `_register_capabilities()`、`config['my_app']` 等
-   注册项，以及注册类上的 `on_show_main_window` 之类回调；
+1. 出现在 `bootstrap.apply()` 的装配序列里——含 `registry.register_all()` 的清单条目、
+   `config['my_app']` 注册项，以及能力包上的 `on_show_main_window` 之类回调；
 2. 自行安装钩子、注册任务/Tab/页面、或引入新的用户可见行为。
 
-**不能只看 `_register_capabilities()`**：现役的 `update_check_guard.py` 由 `app_globals.on_show_main_window`
-间接调用、`app_globals.py` 经 `my_app` 注册项装载——两者都不在该函数里，但都是能力。
+**不能只看 `register_all()` 的调用**：现役的 `update_check_guard` 能力包装配期
+`register()` 是空实现，真正动作在 `on_show_main_window`，由 `app_globals.py`
+经 `registry.dispatch_hook()` 触达——它不在任何 `register` 调用链里，但显然是能力。
 以「是否被 `bootstrap.apply()` 直接或间接触达」为准，才能正确分类。
 
-**其余文件**（各层 `__init__.py`、空占位目录 `tasks/` `ui/`）同属基础设施，随首个能力落入即转为能力载体。
+**其余文件**（`extensions/__init__.py`、`capabilities/__init__.py`）同属基础设施，
+它们承载分包约定说明，不承载行为。
 
 **为什么必须区分**：两者都改变用户可见行为，字面上都像「新增能力」。但基础设施的取舍
 属于**机制设计**，已作为强制约束沉淀在规则里（集中覆写的理由见
@@ -98,7 +111,7 @@ provider:
 | 场景 | 子规则文件 | 内容 |
 |------|-----------|------|
 | 需要选实现手段、判断某个改法是否合规 | `methods.mdc` | 四条路径的优先级与适用边界、patch 准入条件、红线清单 |
-| 新建扩展模块、确定目录结构、写 bootstrap/overrides/patch | `layout.mdc` | `extensions/` 目录职责、注入时序、覆写键校验与崩溃语义、测试落位 |
+| 新建能力包、确定目录结构、写 bootstrap/overrides/patch | `layout.mdc` | 按能力分包结构、能力包契约（`register` / 钩子）、三处命名一致、装配基础设施、顶层白名单、注入时序、覆写键校验与崩溃语义、测试落位 |
 | 需要为扩展能力写设计/计划/测试文档，或判断文档是否合规 | `docs.mdc` | `extensions_docs/` 结构与流程强制、字段契约、文档流程与代码落位体检的职责分工、验收标准 |
 | 上游合并时发现某改动本可用扩展承接 | `sync-conflict.mdc` | 冲突场景下的迁移判据、迁移步骤、迁移后验证 |
 

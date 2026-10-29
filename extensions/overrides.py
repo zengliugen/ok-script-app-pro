@@ -20,7 +20,7 @@ OVERRIDES = {
 # 避免追加后上游实现仍被优先选用。当前只有 my_app 一项：换成项目子类
 # AppGlobals（继承上游 Globals），其 on_show_main_window 负责启动期界面修正。
 LIST_OVERRIDES = {
-    "my_app": ["extensions.core.app_globals", "AppGlobals"],
+    "my_app": ["extensions.app_globals", "AppGlobals"],
 }
 
 _SEP = "."

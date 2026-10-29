@@ -70,5 +70,60 @@ class TestExtensionOverrides(unittest.TestCase):
         self.assertEqual(first, config["gui_title"])
 
 
+class TestCapabilityRegistry(unittest.TestCase):
+    """验证能力清单与能力包契约一致。
+
+    这一组用例只依赖标准库与项目自身代码，不需要 ok / PySide6——结构错误
+    必须在无运行依赖时也能被发现，否则最该拦住的问题只在特定机器上暴露。
+    """
+
+    def setUp(self):
+        """导入清单，缺运行依赖时跳过整类。"""
+        try:
+            from extensions.capabilities import registry
+        except ModuleNotFoundError as exc:  # 缺 ok / PySide6 等运行依赖
+            self.skipTest(f"缺少运行依赖，跳过能力清单用例：{exc}")
+        self.registry = registry
+
+    def test_every_capability_provides_register(self):
+        """清单内每个能力包都提供 register(config)，缺契约会让能力静默不生效。"""
+        from importlib import import_module
+
+        for module_path in self.registry.CAPABILITIES:
+            with self.subTest(capability=module_path):
+                module = import_module(module_path)
+                self.assertTrue(
+                    callable(getattr(module, "register", None)),
+                    f"{module_path} 未提供可调用的 register(config)",
+                )
+
+    def test_capabilities_list_has_no_duplicates(self):
+        """清单不得重复登记同一能力，否则 register 会被调用两次。"""
+        names = list(self.registry.CAPABILITIES)
+        self.assertEqual(len(names), len(set(names)), "CAPABILITIES 存在重复条目")
+
+    def test_capability_names_are_snake_case_module_paths(self):
+        """清单条目是 `extensions.capabilities.<能力包>` 形式，与目录一一对应。"""
+        for module_path in self.registry.CAPABILITIES:
+            with self.subTest(capability=module_path):
+                self.assertTrue(
+                    module_path.startswith("extensions.capabilities."),
+                    f"{module_path} 不在能力包根下",
+                )
+                leaf = module_path.rsplit(".", 1)[-1]
+                self.assertRegex(leaf, r"^[a-z0-9]+(_[a-z0-9]+)*$")
+
+    def test_register_all_raises_on_missing_contract(self):
+        """缺 register 的能力包必须报错并指名，不得静默跳过。"""
+        original = self.registry.CAPABILITIES
+        self.registry.CAPABILITIES = ("extensions.capabilities.registry",)
+        try:
+            with self.assertRaises(AttributeError) as ctx:
+                self.registry.register_all({})
+        finally:
+            self.registry.CAPABILITIES = original
+        self.assertIn("extensions.capabilities.registry", str(ctx.exception))
+
+
 if __name__ == "__main__":
     unittest.main()

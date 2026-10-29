@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """更新检查守卫测试。
 
-被测对象是 `extensions/core/update_check_guard.py` 与 `extensions/core/app_globals.py`。
+被测对象是 `extensions/capabilities/update_check_guard/guard.py` 与 `extensions/app_globals.py`。
 卡片摘除涉及 Qt 控件生命周期，用轻量替身验证「什么条件下摘、摘的是哪个对象」，
 不启动真实 GUI——GUI 装配本身由上游保证，这里只关心本项目的判据与副作用。
 """
 
 import unittest
 
-from extensions.core import update_check_guard
+from extensions.capabilities.update_check_guard import guard as update_check_guard
 from extensions.overrides import LIST_OVERRIDES
 
 try:
@@ -138,11 +138,11 @@ class TestMyAppOverride(unittest.TestCase):
 
     def test_my_app_points_to_project_globals(self) -> None:
         """my_app 指向 AppGlobals，而不是上游 Globals。"""
-        self.assertEqual(["extensions.core.app_globals", "AppGlobals"], config["my_app"])
+        self.assertEqual(["extensions.app_globals", "AppGlobals"], config["my_app"])
 
     def test_app_globals_inherits_upstream(self) -> None:
         """AppGlobals 继承上游 Globals，保证上游行为不被丢弃。"""
-        from extensions.core.app_globals import AppGlobals
+        from extensions.app_globals import AppGlobals
         from src.globals import Globals as UpstreamGlobals
 
         self.assertTrue(issubclass(AppGlobals, UpstreamGlobals))

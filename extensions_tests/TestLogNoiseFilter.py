@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """日志噪音过滤器测试。
 
-被测对象是 `extensions/core/log_noise_filter.py`。折叠逻辑的用例不依赖 ok / PySide6：
+被测对象是 `extensions/capabilities/log_noise_filter/noise_filter.py`。折叠逻辑的用例不依赖 ok / PySide6：
 过滤器本身只用标准库 logging，因此用自行构造的 LogRecord 验证，避免把「环境没装」
 误判成「代码坏了」。只有安装用例需要 ok，缺依赖时整条用例跳过。
 """
@@ -9,7 +9,7 @@
 import logging
 import unittest
 
-from extensions.core.log_noise_filter import COOLDOWN_SECONDS, NOISE_PATTERNS, NoiseFilter
+from extensions.capabilities.log_noise_filter.noise_filter import COOLDOWN_SECONDS, NOISE_PATTERNS, NoiseFilter
 
 NOISE_TEXT = "capture:get_exe_by_hwnd process.cmdline() error Traceback (most recent call last):\n  File ...\n"
 
@@ -134,7 +134,7 @@ class TestInstall(unittest.TestCase):
     def test_install_is_idempotent(self) -> None:
         """重复安装后过滤器数量精确为 1，且已挂载时不再重复 addFilter。"""
         try:
-            from extensions.core import log_noise_filter
+            from extensions.capabilities.log_noise_filter import noise_filter as log_noise_filter
 
             ok_logger = log_noise_filter._get_ok_logger()
         except (ModuleNotFoundError, RuntimeError) as exc:
@@ -157,7 +157,7 @@ class TestInstall(unittest.TestCase):
     def test_install_skips_when_filter_already_present(self) -> None:
         """已有过滤器时，install() 不重复挂载（覆盖 addFilter 去重分支）。"""
         try:
-            from extensions.core import log_noise_filter
+            from extensions.capabilities.log_noise_filter import noise_filter as log_noise_filter
 
             ok_logger = log_noise_filter._get_ok_logger()
         except (ModuleNotFoundError, RuntimeError) as exc:

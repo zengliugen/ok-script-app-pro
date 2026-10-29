@@ -12,7 +12,11 @@
     "extensions 里的 patch 有没有加断言",
     "检查 extensions 有没有把包加进 sys.path",
     "extensions 下每层都有 __init__.py 吗",
-    "评估一下 extensions/bootstrap.py 这个 patch 写得合不合适。"
+    "评估一下 extensions/bootstrap.py 这个 patch 写得合不合适。",
+    "extensions 的目录结构太乱了，帮我盘一下",
+    "能力包有没有漏登记到 CAPABILITIES",
+    "检查一下能力包是不是都提供了 register",
+    "能力之间有没有互相 import"
   ],
   "should_not_trigger": [
     "盘点一下上游差异",
@@ -36,6 +40,8 @@
     "ADR 可以改吗",
     "能力总览表怎么加一行",
     "新建一个扩展能力",
-    "帮我把能力文档建起来"
+    "帮我把能力文档建起来",
+    "把这个能力拆成单独的包",
+    "新增的能力该叫什么名字"
   ]
 }

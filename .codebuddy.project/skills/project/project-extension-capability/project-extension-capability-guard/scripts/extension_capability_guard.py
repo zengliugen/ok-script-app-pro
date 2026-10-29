@@ -291,6 +291,403 @@ def check_code_changed_hint():
 
 
 # ---------------------------------------------------------------------------
+# 目录结构检查：一个能力一个包
+#
+# 这一组回答的是「这个文件属于哪个能力、这个能力还在不在」。按技术层次
+# （core/ tasks/ ui/）拆目录时这些问题没有答案：改一个能力要翻三个目录，
+# 删一个能力会漏掉散落在别处的文件。判据因此落在「能力包 ↔ 清单 ↔ 总览表」
+# 这条链上，三处任一处对不上都报错。
+# ---------------------------------------------------------------------------
+
+# extensions/ 顶层允许出现的条目。新增条目必须在规则 layout.mdc 里同步说明，
+# 否则「临时放一个文件在顶层」会逐次累积成第二个大杂烩目录。
+ALLOWED_TOP_LEVEL = {
+    "__init__.py",
+    "bootstrap.py",
+    "overrides.py",
+    "app_globals.py",
+    "capabilities",
+    "patches",
+}
+
+PATCHES_DIR_NAME = "patches"
+CAPABILITIES_DIR_NAME = "capabilities"
+REGISTRY_MODULE_NAME = "registry.py"
+
+
+def read_capability_list():
+    """解析 CAPABILITIES 清单，返回 (完整模块路径列表, 错误说明列表)。
+
+    用 ast 读字面量而不是 import：体检不能因为某个能力包 import 失败就整段
+    不可用——那种情况下更需要看清楚清单本身写了什么。
+
+    返回：
+        (清单, 错误说明)。清单解析失败时返回空列表与若干说明。
+    """
+    import ast
+
+    registry_path = EXTENSIONS_DIR / CAPABILITIES_DIR_NAME / REGISTRY_MODULE_NAME
+    rel = registry_path.relative_to(PROJECT_ROOT).as_posix()
+    if not registry_path.is_file():
+        return [], [
+            rel + " 不存在：能力清单是结构体检的入口，缺失时无法判断能力包归属"
+        ]
+    text = read_text(registry_path)
+    if text is None:
+        return [], [rel + " 无法读取"]
+
+    try:
+        tree = ast.parse(text)
+    except SyntaxError as exc:
+        return [], [rel + " 语法错误：" + str(exc)]
+
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        targets = [t.id for t in node.targets if isinstance(t, ast.Name)]
+        if "CAPABILITIES" not in targets:
+            continue
+        try:
+            value = ast.literal_eval(node.value)
+        except ValueError:
+            return [], [
+                rel + " 的 CAPABILITIES 不是字面量元组/列表，体检无法静态读取"
+            ]
+        if not isinstance(value, (tuple, list)):
+            return [], [rel + " 的 CAPABILITIES 不是序列"]
+        entries = [item for item in value if isinstance(item, str)]
+        if len(entries) != len(value):
+            return [], [rel + " 的 CAPABILITIES 含非字符串条目"]
+        return entries, []
+
+    return [], [rel + " 未定义 CAPABILITIES 清单"]
+
+
+def _capability_package_dirs():
+    """返回 extensions/capabilities 下的能力包目录名集合（不含 __pycache__）。"""
+    root = EXTENSIONS_DIR / CAPABILITIES_DIR_NAME
+    if not root.is_dir():
+        return set()
+    return {
+        path.name
+        for path in root.iterdir()
+        if path.is_dir() and path.name != "__pycache__"
+    }
+
+
+def check_capability_layout():
+    """检查 5：extensions/ 按能力分包，清单与实际目录双向一致。
+
+    四项判据：
+
+    1. 顶层只允许装配基础设施与 capabilities/、patches/；
+    2. 能力清单条目必须指向真实存在且提供 `register` 的包；
+    3. capabilities/ 下的目录必须在清单里登记（否则永不生效）；
+    4. 每个能力包必须提供 `register(config)`（缺契约会静默不生效）。
+
+    返回：
+        缺口列表
+    """
+    import ast
+
+    findings = []
+    if not EXTENSIONS_DIR.is_dir():
+        return findings
+
+    # 判据 1：顶层白名单。扩展代码一旦散落到顶层，就重新变成按层次堆放。
+    for entry in sorted(EXTENSIONS_DIR.iterdir()):
+        name = entry.name
+        if name == "__pycache__":
+            continue
+        if name in ALLOWED_TOP_LEVEL:
+            continue
+        rel = entry.relative_to(PROJECT_ROOT).as_posix()
+        findings.append(
+            Finding(
+                LEVEL_ERROR,
+                "能力分包",
+                rel + " 不在顶层白名单内：能力代码应放 extensions/capabilities/<能力名>/，"
+                "装配基础设施只允许 bootstrap.py / overrides.py / app_globals.py",
+            )
+        )
+
+    entries, errors = read_capability_list()
+    for message in errors:
+        findings.append(Finding(LEVEL_ERROR, "能力分包", message))
+    if errors:
+        return findings
+
+    registry_rel = (
+        EXTENSIONS_DIR / CAPABILITIES_DIR_NAME / REGISTRY_MODULE_NAME
+    ).relative_to(PROJECT_ROOT).as_posix()
+    registered_dirs = set()
+
+    for module_path in entries:
+        prefix = "extensions." + CAPABILITIES_DIR_NAME + "."
+        if not module_path.startswith(prefix):
+            findings.append(
+                Finding(
+                    LEVEL_ERROR,
+                    "能力分包",
+                    registry_rel + " 的条目「" + module_path + "」不在 extensions.capabilities 下",
+                )
+            )
+            continue
+        package_name = module_path[len(prefix) :]
+        registered_dirs.add(package_name)
+        package_dir = EXTENSIONS_DIR / CAPABILITIES_DIR_NAME / package_name
+        package_rel = package_dir.relative_to(PROJECT_ROOT).as_posix()
+
+        # 判据 2：清单条目指向真实存在的包。
+        if not package_dir.is_dir():
+            findings.append(
+                Finding(
+                    LEVEL_ERROR,
+                    "能力分包",
+                    registry_rel + " 登记的能力包不存在：" + package_rel,
+                )
+            )
+            continue
+        init_path = package_dir / "__init__.py"
+        init_text = read_text(init_path) if init_path.is_file() else None
+        if init_text is None:
+            findings.append(
+                Finding(
+                    LEVEL_ERROR,
+                    "能力分包",
+                    package_rel + " 缺少可读的 __init__.py，能力契约无处声明",
+                )
+            )
+            continue
+
+        # 判据 4：能力包必须显式提供 register(config)。
+        has_register = False
+        try:
+            tree = ast.parse(init_text)
+        except SyntaxError as exc:
+            findings.append(
+                Finding(LEVEL_ERROR, "能力分包", package_rel + "/__init__.py 语法错误：" + str(exc))
+            )
+            continue
+        for node in tree.body:
+            if isinstance(node, ast.FunctionDef) and node.name == "register":
+                has_register = True
+                break
+        if not has_register:
+            findings.append(
+                Finding(
+                    LEVEL_ERROR,
+                    "能力分包",
+                    package_rel + "/__init__.py 未定义 register(config)："
+                    "缺此契约的能力不会被告装配，等于静默不生效",
+                )
+            )
+
+    # 判据 3：目录必须登记，否则永不被装载。
+    for package_name in sorted(_capability_package_dirs() - registered_dirs):
+        findings.append(
+            Finding(
+                LEVEL_ERROR,
+                "能力分包",
+                "extensions/"
+                + CAPABILITIES_DIR_NAME
+                + "/"
+                + package_name
+                + " 未在 "
+                + registry_rel
+                + " 的 CAPABILITIES 中登记，永远不会被装载",
+            )
+        )
+    return findings
+
+
+def check_capability_naming():
+    """检查 6：能力包名、清单条目与文档总览表的能力名三者一致。
+
+    能力名是唯一的「能力标识」，它同时出现在包目录（snake_case）、清单条目
+    （模块路径）与总览表（kebab-case）。三者对不上时，文档说的能力和代码里的
+    包就是两回事，而这种不一致不会报错，只会让登记失去意义。
+
+    文档根与总览表位置从 devflow 配置读，不内置路径——配置不可用时本项跳过，
+    文档契约段已由委托体检覆盖。
+
+    返回：
+        缺口列表
+    """
+    findings = []
+    doc_root, overview_file = _read_devflow_overview_location()
+    if doc_root is None:
+        return findings
+
+    registered = set(_read_overview_capabilities(doc_root / overview_file))
+    if not registered:
+        return findings
+
+    entries, errors = read_capability_list()
+    if errors:
+        return findings
+
+    prefix = "extensions." + CAPABILITIES_DIR_NAME + "."
+    for module_path in entries:
+        if not module_path.startswith(prefix):
+            continue
+        package_name = module_path[len(prefix) :]
+        capability_name = package_name.replace("_", "-")
+        if capability_name in registered:
+            continue
+        # 尚未登记文档的能力：报提示而非错误。新建能力时先写代码再补文档是
+        # 常见顺序，此时报错误会迫使人绕过体检。
+        findings.append(
+            Finding(
+                LEVEL_INFO,
+                "能力命名",
+                "能力包 " + package_name + " 对应能力名「" + capability_name
+                + "」未在文档总览表登记——新增能力需登记，纯内部重构可忽略",
+            )
+        )
+    return findings
+
+
+def _read_devflow_overview_location():
+    """从项目索引读 devflow 的文档根与总览表文件名。
+
+    索引缺失、条目缺失或文件不可读时返回 (None, None)——此时文档契约段
+    已经报了环境问题，本项不重复报。
+
+    返回：
+        (文档根 Path, 总览表相对文件名)；不可用时为 (None, None)。
+    """
+    import json
+
+    index_path = PROJECT_ROOT / ".codebuddy" / "project.index.json"
+    text = read_text(index_path)
+    if text is None:
+        return None, None
+    try:
+        index = json.loads(text)
+    except json.JSONDecodeError:
+        return None, None
+
+    entry = (index.get("files") or {}).get("devflow.docs.config")
+    if not isinstance(entry, dict):
+        return None, None
+    config_rel = entry.get("path")
+    if not isinstance(config_rel, str):
+        return None, None
+    config_text = read_text(PROJECT_ROOT / config_rel)
+    if config_text is None:
+        return None, None
+    try:
+        config = json.loads(config_text)
+    except json.JSONDecodeError:
+        return None, None
+
+    docs_root = config.get("docs_root")
+    overview_file = (config.get("overview") or {}).get("file")
+    if not isinstance(docs_root, str) or not isinstance(overview_file, str):
+        return None, None
+    return PROJECT_ROOT / docs_root, overview_file
+
+
+def _read_overview_capabilities(overview_path):
+    """读取文档总览表第一列的能力名集合。
+
+    只取第一列，不解析其余列——本项只关心能力名集合。表头与分隔行用
+    「首格是能力名、次格是状态值」判不出来，因此跳过前两行。
+
+    返回：
+        能力名集合；文件不可读时返回空集合。
+    """
+    text = read_text(overview_path)
+    if text is None:
+        return set()
+
+    names = set()
+    in_table = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|"):
+            in_table = False
+            continue
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        if not cells:
+            continue
+        if cells[0] == "能力":
+            in_table = True
+            continue
+        if not in_table:
+            continue
+        if set(cells[0]) <= {"-", ":", " "}:
+            continue
+        if cells[0]:
+            names.add(cells[0])
+    return names
+
+
+def check_capability_isolation():
+    """检查 7：能力之间不得互相 import。
+
+    能力包自包含是「按能力分包」的前提。一旦 A 能力 import 了 B 能力的实现，
+    B 就不再能被单独删除或迁移，而这条依赖在目录结构上完全看不见。
+
+    只查顶层 `extensions.capabilities.<其他能力>` 的直接引用（含 from ... import
+    与 import ...）；对模块内部同名函数的引用不在本项范围。
+
+    返回：
+        缺口列表
+    """
+    root = EXTENSIONS_DIR / CAPABILITIES_DIR_NAME
+    if not root.is_dir():
+        return []
+
+    findings = []
+    prefix = "extensions." + CAPABILITIES_DIR_NAME + "."
+    for package_dir in sorted(p for p in root.iterdir() if p.is_dir()):
+        if package_dir.name == "__pycache__":
+            continue
+        own_module = prefix + package_dir.name
+        for path in sorted(package_dir.rglob("*.py")):
+            text = read_text(path)
+            if text is None:
+                continue
+            rel = path.relative_to(PROJECT_ROOT).as_posix()
+            for lineno, line in enumerate(text.splitlines(), start=1):
+                target = _capability_import_target(line, prefix)
+                if target is None or target == own_module:
+                    continue
+                findings.append(
+                    Finding(
+                        LEVEL_ERROR,
+                        "能力隔离",
+                        rel + ":" + str(lineno) + " 引用了其他能力 " + target
+                        + "——能力之间不得互相 import，共享代码应上升为装配基础设施",
+                    )
+                )
+    return findings
+
+
+def _capability_import_target(line, prefix):
+    """从一行源码里取出它引用的能力模块路径，非能力引用返回 None。
+
+    参数：
+        line: 源码行
+        prefix: `extensions.capabilities.` 前缀
+
+    返回：
+        被引用的能力模块路径（截断到能力包一级）；非能力引用时为 None。
+    """
+    import re
+
+    pattern = re.compile(
+        r"^\s*(?:from|import)\s+(" + re.escape(prefix) + r"[a-z0-9_]+)"
+    )
+    match = pattern.match(line)
+    if not match:
+        return None
+    return match.group(1)
+
+
+# ---------------------------------------------------------------------------
 # audit 模式
 # ---------------------------------------------------------------------------
 
@@ -329,6 +726,9 @@ def run_audit():
     findings.extend(check_patch_assertion())
     findings.extend(check_sys_path_pollution())
     findings.extend(check_package_structure())
+    findings.extend(check_capability_layout())
+    findings.extend(check_capability_naming())
+    findings.extend(check_capability_isolation())
     findings.extend(check_code_changed_hint())
 
     errors = [item for item in findings if item.level == LEVEL_ERROR]

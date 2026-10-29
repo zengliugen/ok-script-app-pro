@@ -95,7 +95,11 @@ Web 侧无 `MainWindow` 类，唯一注入口是 `run_web(..., ok_instance=)`；
 | 行为 | 判定 |
 |---|---|
 | 直接修改 `src/config.py` 的字典内容 | 禁止——迁移到 `extensions/overrides.py` |
-| 在 `src/tasks/`、`src/ui/` 新增项目文件 | 禁止——写入 `extensions/tasks/`、`extensions/ui/` |
+| 在 `src/tasks/`、`src/ui/` 新增项目文件 | 禁止——写入 `extensions/capabilities/<能力名>/` |
+| 按 `core/`、`tasks/`、`ui/` 等技术层次在 `extensions/` 下分目录 | 禁止——按能力分包，见 `layout.mdc` |
+| 能力包未提供 `register(config)` | 禁止——缺契约会让能力静默不生效（无事可做写空实现） |
+| 能力包之间互相 `import` | 禁止——共享代码上升为装配基础设施或独立工具模块 |
+| 在 `extensions/` 顶层放白名单之外的文件 | 禁止——顶层会重新退化成大杂烩目录 |
 | patch 已有 config 通道的组件 | 禁止 |
 | patch 可覆写的 `OK`/`App` 方法 | 禁止 |
 | 隐式加载（`.pth`、`sitecustomize`、`usercustomize`） | 禁止——打包后行为不确定，且难以排查 |
@@ -108,15 +112,15 @@ Web 侧无 `MainWindow` 类，唯一注入口是 `run_web(..., ok_instance=)`；
 
 ## 典型判定速查
 
-| 需求 | 应走路径 |
-|---|---|
-| 新增一个自动化任务 | 路径 1（`onetime_tasks` / `trigger_tasks`） |
-| 新增侧边栏页面 | 路径 1（`custom_tabs`） |
-| 新增 Web 页面 | 路径 1（`web_tabs` + `WebCustomTab`） |
-| 加载重资源模型供任务共享 | 路径 1（`my_app`） |
-| 截图后处理 | 路径 1（`screenshot_processor`） |
-| 自定义输入方式 | 路径 1（`windows.interaction` 放类对象） |
-| 替换任务管理器 / 执行器 / 设备管理器 | 路径 2（覆写 `do_init` / `init_device_manager`） |
-| 主窗口显示后做事 | 路径 3（`on_show_main_window`） |
-| 任务列表变化时刷新 | 路径 3（`communicate.task_list_updated`） |
+| 需求 | 应走路径 | 代码落点 |
+|---|---|---|
+| 新增一个自动化任务 | 路径 1（`onetime_tasks` / `trigger_tasks`） | 该能力包内的任务类 |
+| 新增侧边栏页面 | 路径 1（`custom_tabs`） | 该能力包内的页面类 |
+| 新增 Web 页面 | 路径 1（`web_tabs` + `WebCustomTab`） | 该能力包内的页面类 |
+| 加载重资源模型供任务共享 | 路径 1（`my_app`） | 能力包 + `app_globals.py` 派发 |
+| 截图后处理 | 路径 1（`screenshot_processor`） | 该能力包的 `register()` |
+| 自定义输入方式 | 路径 1（`windows.interaction` 放类对象） | 该能力包的 `register()` |
+| 替换任务管理器 / 执行器 / 设备管理器 | 路径 2（覆写 `do_init` / `init_device_manager`） | 能力包内的 `MyOK` 子类 |
+| 主窗口显示后做事 | 路径 3（`on_show_main_window`） | 能力包的 `on_show_main_window` 钩子 |
+| 任务列表变化时刷新 | 路径 3（`communicate.task_list_updated`） | 该能力包的 `register()` |
 | 换配置存储后端 / 改 web 路由 / 换截图实现 | 路径 4（patch，需登记） |

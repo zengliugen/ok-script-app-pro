@@ -198,12 +198,12 @@ def _get_ok_logger() -> logging.Logger:
         from ok.util.logger import Logger
     except ModuleNotFoundError as exc:
         raise RuntimeError(
-            "日志过滤器目标缺失：ok.util.logger.Logger 不存在，请检查 ok-script 升级后更新 extensions/core/log_noise_filter.py"
+            "日志过滤器目标缺失：ok.util.logger.Logger 不存在，请检查 ok-script 升级后更新 extensions/capabilities/log_noise_filter/noise_filter.py"
         ) from exc
 
     ok_logger = Logger.get_logger(__name__).logger
     if not isinstance(ok_logger, logging.Logger):
         raise RuntimeError(
-            "日志过滤器目标缺失：Logger.get_logger() 未返回 logging.Logger，请检查 ok-script 升级后更新 extensions/core/log_noise_filter.py"
+            "日志过滤器目标缺失：Logger.get_logger() 未返回 logging.Logger，请检查 ok-script 升级后更新 extensions/capabilities/log_noise_filter/noise_filter.py"
         )
     return ok_logger

@@ -40,7 +40,7 @@ def apply(main_window: object, launcher_probe: Callable[[], str | None] | None =
     except AttributeError as exc:
         raise RuntimeError(
             "更新检查守卫的目标缺失：MainWindow 上不存在 about_tab 属性，"
-            "请检查 ok-script 升级后更新 extensions/core/update_check_guard.py"
+            "请检查 ok-script 升级后更新 extensions/capabilities/update_check_guard/guard.py"
         ) from exc
 
     # 上游在没有 get_version_list 时本就不建卡片，属正常分支，保持静默。
@@ -80,7 +80,7 @@ def _probe_launcher() -> str | None:
     except ModuleNotFoundError as exc:
         raise RuntimeError(
             "更新检查守卫的目标缺失：pyappify.find_pyappify_executable 不存在，"
-            "请检查依赖升级后更新 extensions/core/update_check_guard.py"
+            "请检查依赖升级后更新 extensions/capabilities/update_check_guard/guard.py"
         ) from exc
     return find_pyappify_executable()
 
@@ -105,6 +105,6 @@ def _find_card_container(update_card: object) -> object:
     if container is None or not hasattr(container, "titleLabel"):
         raise RuntimeError(
             "更新检查守卫的目标缺失：期望 UpdateCard.parent().parent() 是带标题的 Card 容器，"
-            "请检查 ok-script 升级后更新 extensions/core/update_check_guard.py"
+            "请检查 ok-script 升级后更新 extensions/capabilities/update_check_guard/guard.py"
         )
     return container

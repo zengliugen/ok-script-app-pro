@@ -1,8 +1,8 @@
 ---
-description: 扩展代码落位 —— extensions/ 的目录职责、bootstrap 注入时序、overrides 键校验与崩溃语义、patch 写法、extensions_tests/ 的测试落位。新建扩展模块或编写 bootstrap/overrides/patch 时加载。
+description: 扩展代码落位 —— extensions/ 的按能力分包结构、能力包契约（register/钩子）、三处命名一致、装配基础设施、顶层白名单、bootstrap 注入时序、overrides 键校验与崩溃语义、patch 写法、extensions_tests/ 的测试落位。新建扩展能力包或编写 bootstrap/overrides/patch 时加载。
 alwaysApply: false
 enabled: true
-updatedAt: 2026-10-25T00:00:00.000Z
+updatedAt: 2026-10-29T00:00:00.000Z
 provider:
 ---
 
@@ -13,7 +13,7 @@ provider:
 `extensions/` 在上游不存在，是本项目**唯一自有代码区**。放顶层有三个好处：
 
 1. **判定成本为零**——`git status` 里出现 `extensions/` 下的改动，一定不涉及上游文件。
-2. **语义边界清晰**——`extensions.tasks` 与 `src.tasks` 一眼可辨，不用靠记忆区分「哪一层」。
+2. **语义边界清晰**——`extensions.xxx` 与 `src.xxx` 一眼可辨，不用靠记忆区分「哪一层」。
 3. **上游无论如何演进都碰不到它**——上游即使重构 `src/`，也不会改到一个它不知道存在的目录。
 
 ### 为什么不放 `src/extensions/`
@@ -43,37 +43,100 @@ $ PYTHONPATH="extensions" python -c "import src; print(list(src.__path__))"
 常规包的 `__path__` 只有一处，不参与命名空间合并，进一步杜绝劫持。
 
 **禁止把 `extensions/` 加入 `sys.path`**。它是包，只能以 `extensions.xxx` 形式引用。
-一旦把 `extensions` 当路径根，`extensions/tasks` 就会与上游可能存在的顶层 `tasks` 包合并。
+一旦把 `extensions` 当路径根，`extensions.capabilities` 就会与上游可能存在的同名顶层包合并。
 
-## 目录结构
+## 目录结构：按能力分包
 
-```
+`extensions/` 的二级目录**只有一种含义**：一个能力一个包。目录名是能力名的 snake_case 形式，
+包内自包含该能力的全部实现（实现模块、任务类、页面类、私用常量）。
+
+```text
 extensions/
 ├── __init__.py
-├── bootstrap.py          # 唯一入口：串起 overrides、patches、各能力
-├── overrides.py          # config 值覆写（集中，带键存在性校验）
-├── patches/              # monkey patch，一个目标一个文件
-│   └── <目标名>.py
-├── core/                 # 框架级扩展（非任务类：hook、行为调整）
-├── tasks/                # 任务与触发器
-└── ui/                   # Tab 与页面
+├── bootstrap.py                    # 装配基础设施：只串顺序，不含能力逻辑
+├── overrides.py                    # 装配基础设施：config 值覆写（带键存在性校验）
+├── app_globals.py                  # 装配基础设施：app_globals 单例 + 生命周期派发
+├── capabilities/
+│   ├── __init__.py                 # 分包约定（本文档的精简版，供读代码时直接看到）
+│   ├── registry.py                 # 能力清单 CAPABILITIES + register_all + dispatch_hook
+│   ├── log_noise_filter/           # 能力 log-noise-filter
+│   │   ├── __init__.py             #   契约：register(config)
+│   │   └── noise_filter.py         #   实现
+│   └── update_check_guard/         # 能力 update-check-guard
+│       ├── __init__.py             #   契约：register(config) + on_show_main_window
+│       └── guard.py                #   实现
+└── patches/                        # 侵入式 monkey patch，一个目标一个文件
+    └── <目标名>.py
 ```
 
-| 子目录 | 放什么 | 典型内容 |
-|---|---|---|
-| `core/` | 与具体任务无关的框架级扩展 | 全局 hook、启动流程调整、跨能力工具 |
-| `tasks/` | 任务与触发器 | 继承 `BaseTask`/`TriggerTask` 的新任务 |
-| `ui/` | Tab 与页面 | 继承 `CustomTab`/`WebCustomTab` 的新页面 |
-| `patches/` | 侵入式 monkey patch | 一个目标一个文件，须断言目标存在 |
+### 为什么不按 `core/` `tasks/` `ui/` 分
 
-新增一类能力时**新建子目录**，不要往 `bootstrap.py` 里堆逻辑。
+这是**早期结构**，已废弃。那三个目录按「技术层次」分类，回答不了两个最基本的问题：
+
+| 问题 | 按层次分 | 按能力分 |
+|---|---|---|
+| 这个文件属于哪个能力？ | 看不出来，要靠读 import 反推 | 目录名就是答案 |
+| 删掉某个能力要动哪些文件？ | 要翻遍三层，漏一个就留下死代码 | 删一个目录即可 |
+
+更实际的代价是：新增一个稍复杂的能力（既有 hook、又要注册任务、还要装页面），
+会被迫拆到三个目录里，而这三份代码的耦合关系在目录上完全不可见。能力是**行为面**
+（见 `RULE.mdc` 的判定表），不是文件——目录结构必须与这个概念对齐。
+
+### 三处命名必须一致
+
+| 位置 | 形态 | 示例 |
+|---|---|---|
+| 能力包目录 | `extensions/capabilities/<snake_case>/` | `log_noise_filter/` |
+| `registry.py` 的 `CAPABILITIES` 条目 | 完整模块路径 | `extensions.capabilities.log_noise_filter` |
+| `extensions_docs/README.md` 总览表「能力」列 | kebab-case 能力名 | `log-noise-filter` |
+
+三者由体检脚本双向核对（目录↔清单、清单↔总览表），任一处对不上即报错。
+对应关系是纯机械的：`log-noise-filter` ↔ `log_noise_filter`（`-` ↔ `_`）。
+
+### 能力包契约
+
+每个能力包的 `__init__.py` **必须**提供：
+
+| 成员 | 必需性 | 作用 |
+|---|---|---|
+| `register(config)` | **必需** | 装配期动作：装钩子、向 `config` 追加任务/Tab 等 |
+| `on_show_main_window(main_window)` | 可选 | 主窗口构造完成、尚未显示时的回调 |
+
+`register` 的必需性不是形式主义：没有它就无法区分「这个能力装配期无事可做」与
+「这个能力忘了写装配代码」。后者会让新能力**静默不生效**——代码都在、测试也过，
+只是从来没被调用过。无事可做时写空实现并说明理由，是显式回答这个问题。
+
+**能力之间不得互相 import**。需要共享的代码上升为装配基础设施（`bootstrap.py`、
+`overrides.py`、`app_globals.py`）或独立工具模块。否则被依赖的能力就不能单独删除
+或迁移，而这条依赖在目录结构上完全看不见。
+
+### 装配基础设施（不是能力）
+
+这几个文件不暴露任何独立行为面，职责只是把 `config` 装配到可用状态，
+因此**不进能力总览表、不写过程文档**：
 
 | 路径 | 职责 | 约束 |
 |---|---|---|
-| `bootstrap.py` | 按固定顺序调用 `overrides.apply(config)`、各 patch 的 `apply()`、能力注册 | 只做装配，不写业务；必须幂等 |
+| `bootstrap.py` | 按固定顺序调用 `overrides.apply(config)`、各 patch 的 `apply()`、`registry.register_all(config)` | 只做装配，不写业务；**不引用任何具体能力** |
 | `overrides.py` | 对 `config` 字典做值覆写，并校验每个键在上游仍存在 | 键清单集中声明；校验失败一次列全 |
+| `app_globals.py` | 继承上游 `Globals`，把生命周期事件按清单派发给各能力 | 只派发，不含业务 |
+| `capabilities/registry.py` | 能力清单与派发实现 | **唯一登记点**；顺序即装载顺序 |
 | `patches/` | 每个文件一个 `apply()`，返回前断言目标存在 | 见 `methods.mdc` 路径 4 的准入条件 |
-| `core/`、`tasks/`、`ui/` | 各能力的全部实现 | 不得反向被 `src/tasks/`、`src/ui/` 引用 |
+
+`bootstrap.py` 与 `app_globals.py` 都只经 `registry` 访问能力，因此**新增能力不必改它们**——
+在 `CAPABILITIES` 里追加一行即可。这是「能力清单只有一处」的实际价值：
+装配逻辑不会因为能力增减而反复变动。
+
+### 顶层白名单
+
+`extensions/` 顶层**只允许**下列条目，新增条目必须先改本节与体检脚本的白名单：
+
+```text
+__init__.py  bootstrap.py  overrides.py  app_globals.py  capabilities/  patches/
+```
+
+白名单是硬约束而非建议：顶层任意放文件，几个月后就会重新长出一个大杂烩目录，
+而这正是本次重构要解决的问题。
 
 ## 注入时序
 
@@ -150,10 +213,16 @@ extensions_tests/
 └── Test<能力名>.py
 ```
 
+测试文件名同样是三处命名的一环：能力名 `log-noise-filter` 对应的测试文件是
+`extensions_tests/TestLogNoiseFilter.py`（kebab-case 去掉连字符、各段首字母大写）。
+对应关系不是强制的（一个能力可以拆多个测试文件），但**不得出现无法归属到任何能力的
+测试文件**——那说明它在测装配基础设施，应改名为机制测试（如 `TestExtensions.py`）
+并在文件 docstring 里写明被测对象。
+
 | 测试类型 | 位置 | 说明 |
 |---|---|---|
 | 扩展能力单元测试 | `extensions_tests/Test*.py` | 被测对象是本项目自有代码；新增文件不属改上游 |
-| 覆写正确性 | `extensions_tests/` | 验证 `overrides` 已生效且未破坏原有键 |
+| 装配机制测试 | `extensions_tests/TestExtensions.py` | 覆写正确性、能力清单与契约一致性；不含具体能力 |
 | 上游基线回归 | `tests/TestMain.py`（**不得修改**） | 上游示例任务的行为基线，随上游更新自动跟进 |
 
 ### 两层测试的结论必须分开读
