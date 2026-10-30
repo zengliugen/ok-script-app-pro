@@ -1,0 +1,96 @@
+{
+  "schema_version": "2.0.0",
+  "name": "project-ok-script-release",
+  "title": "ok-script 版本发布",
+  "job_to_be_done": "编排 ok-script 项目的版本发布：确认待发布改动、跑发布前验证、计算下一个版本 tag、交提交给版本控制链路、创建带注释的 tag 并核验推送结果。用户说\"发布版本\"、\"deploy\"、\"打个 tag\"、\"发 beta\"时使用。提交必须走 vcs-router，本技能不自建提交流程。",
+  "trigger_surface": {
+    "description": "编排版本发布：算下一个 tag（release / beta / alpha）、验证、交 vcs-router 提交、打注释 tag、授权后推送并核验。",
+    "should_trigger": [
+      "发布一个新版本",
+      "deploy 一下",
+      "发个 beta 版",
+      "release alpha",
+      "帮我打个 tag 发布",
+      "下一个版本号是多少"
+    ],
+    "should_not_trigger": [
+      "帮我提交这段代码",
+      "把 feature 分支合并到 main",
+      "新建一个任务类",
+      "根据截图生成点击步骤",
+      "跑一下 ruff 检查"
+    ],
+    "edge_cases": [
+      "提交后要推送到远端吗",
+      "怎么触发 GitHub Actions 构建",
+      "build.yml 的触发条件是什么",
+      "只本地打 tag 不推送"
+    ]
+  },
+  "workflow": {
+    "steps": [
+      "用 git status 与 diff 确认待发布改动范围，排除无关改动。",
+      "跑项目现有验证；失败即停，除非用户明确接受。",
+      "用 next_tag.py 计算下一个 tag，带 --remote 纳入远端已有 tag。",
+      "把提交交给 vcs-router 链路完成，不自行 git commit。",
+      "在提交上创建带注释 tag，风格与既有 tag 一致。",
+      "按 push_initiation 配置处理推送：默认须用户显式授权，未授权则停在本地。",
+      "核验推送结果，分别汇报推送成功与 CI 触发情况。"
+    ],
+    "decision_points": [
+      "选 release、beta 还是 alpha 渠道",
+      "验证失败时是否继续发布",
+      "用户是否已授权推送"
+    ],
+    "failure_modes": [
+      "版本号与远端已有 tag 撞名",
+      "在已发正式版的基线后继续加预发布后缀",
+      "本地 tag 被当作发布完成",
+      "绕过 vcs-router 自行提交"
+    ]
+  },
+  "resources": {
+    "references": [
+      "references/release-checklist.md"
+    ],
+    "scripts": [
+      "scripts/next_tag.py"
+    ],
+    "assets": [],
+    "reports": [
+      "reports/output-risk-profile.md"
+    ]
+  },
+  "eval_plan": {
+    "trigger": [
+      "evals/semantic_config.json",
+      "evals/trigger_cases.json"
+    ],
+    "output": [],
+    "adversarial": [],
+    "baseline": "without_skill"
+  },
+  "risk": {
+    "output_risk": "medium",
+    "execution_risk": "high",
+    "trust_boundary": "project"
+  },
+  "governance": {
+    "owner": "zengliugen",
+    "maturity": "production",
+    "review_cadence": "quarterly",
+    "review_due": "2027-01-30"
+  },
+  "targets": [
+    "openai",
+    "claude",
+    "generic",
+    "agent-skills-compatible",
+    "vscode"
+  ],
+  "source_files": [
+    "SKILL.md",
+    "manifest.json",
+    "agents/interface.yaml"
+  ]
+}

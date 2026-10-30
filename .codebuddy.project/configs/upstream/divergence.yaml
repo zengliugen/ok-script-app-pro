@@ -149,3 +149,15 @@ entries:
     reason: 英文发布流程对齐本项目
     method: doc
     authorization: 用户明确授权
+
+  - path: docs/tasks.md
+    kind: M
+    reason: 该页「AI 辅助开发」小节列的是 `.agents/skills` 下的旧技能名（ok-script-tasks / codegen / i18n），这些技能已迁到 .codebuddy.project 并改名加 project- 前缀；不改正则文档指向不存在的技能
+    method: doc
+    authorization: 用户明确授权
+
+  - path: docs/en/tasks.md
+    kind: M
+    reason: 中文版 docs/tasks.md 的英文对应页，旧技能名同步改为 project-ok-script-* 并补上技能落位路径
+    method: doc
+    authorization: 用户明确授权

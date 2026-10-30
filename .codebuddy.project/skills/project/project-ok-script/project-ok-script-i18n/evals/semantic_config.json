@@ -1,0 +1,98 @@
+{
+  "positive_concepts": {
+    "i18n_work": {
+      "weight": 0.42,
+      "phrases": [
+        "翻译",
+        "国际化",
+        "多语言",
+        "i18n",
+        "同步翻译",
+        "补条目",
+        "新增语言",
+        "繁体"
+      ]
+    },
+    "catalog_files": {
+      "weight": 0.32,
+      "phrases": [
+        "ok.po",
+        "ok.mo",
+        "msgid",
+        "msgstr",
+        "编译 po",
+        "gettext",
+        "语言目录"
+      ]
+    },
+    "ui_strings": {
+      "weight": 0.2,
+      "phrases": [
+        "任务名",
+        "配置项说明",
+        "界面文案",
+        "选项文字",
+        "界面显示"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "i18n_work",
+    "catalog_files"
+  ],
+  "negative_concepts": {
+    "task_scaffold": {
+      "weight": 0.28,
+      "exclusive": true,
+      "phrases": [
+        "新建任务",
+        "任务类",
+        "BaseTask",
+        "TriggerTask",
+        "注册到 config",
+        "default_config"
+      ]
+    },
+    "codegen_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "生成点击步骤",
+        "根据截图",
+        "相对坐标",
+        "模板匹配",
+        "run 方法里"
+      ]
+    },
+    "release_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "发布版本",
+        "打个 tag",
+        "deploy",
+        "beta",
+        "alpha"
+      ]
+    },
+    "vcs_only": {
+      "weight": 0.26,
+      "exclusive": true,
+      "phrases": [
+        "提交代码",
+        "commit",
+        "push"
+      ]
+    },
+    "explain_only": {
+      "weight": 0.24,
+      "exclusive": true,
+      "phrases": [
+        "解释一下",
+        "什么意思",
+        "是什么原理",
+        "协议是什么"
+      ]
+    }
+  }
+}

@@ -38,9 +38,12 @@ With `custom_tasks` enabled, scripts can also be created and edited in the GUI.
 
 The repository includes these Agent Skills:
 
-- `$ok-script-tasks`: create, modify, and register task classes.
-- `$ok-script-codegen`: generate automation logic from descriptions or screenshots.
-- `$ok-script-i18n`: synchronize translations for tasks and configuration.
+- `$project-ok-script-tasks`: create, modify, and register task classes.
+- `$project-ok-script-codegen`: generate automation logic from descriptions or screenshots.
+- `$project-ok-script-i18n`: synchronize translations for tasks and configuration.
+
+They live under `.codebuddy.project/skills/project/project-ok-script/` and are tracked with the project.
+Use `$project-ok-script-release` to publish a version.
 
 ## Verify
 

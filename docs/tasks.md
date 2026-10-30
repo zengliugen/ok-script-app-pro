@@ -38,9 +38,12 @@
 
 仓库内置以下 Agent Skills：
 
-- `$ok-script-tasks`：创建、修改和注册任务类。
-- `$ok-script-codegen`：根据需求或截图生成任务自动化逻辑。
-- `$ok-script-i18n`：同步任务名称、描述和配置项翻译。
+- `$project-ok-script-tasks`：创建、修改和注册任务类。
+- `$project-ok-script-codegen`：根据需求或截图生成任务自动化逻辑。
+- `$project-ok-script-i18n`：同步任务名称、描述和配置项翻译。
+
+这三个技能位于 `.codebuddy.project/skills/project/project-ok-script/`，随项目入库。
+发布版本用 `$project-ok-script-release`。
 
 ## 验证
 
