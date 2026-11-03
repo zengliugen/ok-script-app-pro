@@ -1,0 +1,38 @@
+{
+  "name": "project-ok-script-tasks",
+  "version": "0.1.0",
+  "owner": "zengliugen",
+  "updated_at": "2026-10-30",
+  "review_due": "2027-01-30",
+  "status": "active",
+  "maturity_tier": "production",
+  "lifecycle_stage": "production",
+  "context_budget_tier": "production",
+  "review_cadence": "quarterly",
+  "skill_ir_source": "reports/skill-ir.json",
+  "target_platforms": [
+    "openai",
+    "claude",
+    "generic",
+    "vscode",
+    "codebuddy-code",
+    "agent-skills-compatible"
+  ],
+  "factory_components": [
+    "agents",
+    "references",
+    "evals",
+    "reports"
+  ],
+  "output_contract": "任务类代码 + 注册行 + 需要时同步的翻译条目",
+  "rollback_boundary": "只读取目标项目并产出代码建议，不写文件；回滚即丢弃建议",
+  "input_files": [
+    "目标项目的任务目录与 config",
+    "ok-script 库的公开 API"
+  ],
+  "upstream_source": {
+    "path": ".agents/skills/ok-script-tasks",
+    "skill_md_sha256_prefix": "2902589a2676",
+    "migrated_at": "2026-10-30"
+  }
+}

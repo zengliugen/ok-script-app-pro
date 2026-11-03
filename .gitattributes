@@ -1,0 +1,27 @@
+# 行尾策略：由仓库属性钉死，不依赖各机器的 core.autocrlf
+#
+# 为什么需要这份文件：项目根原先没有 .gitattributes，行尾完全取决于本机
+# core.autocrlf，换机器或 CI 上会变成另一套，而 .ps1 / .cmd / .bat 对行尾敏感。
+#
+# .ps1 为什么必须 CRLF（不只是 Windows 惯例）：
+#   Windows PowerShell 5.1 读无 BOM 的 UTF-8 脚本会退回 cp936（简中系统），
+#   中文字符的尾字节可能落在 GBK 前导区，把紧随的 ASCII 字节一起吞掉当双字节字符。
+#   若行尾是 LF，被吞的就是 LF —— 下一行代码会并进注释，代码从未执行而脚本
+#   仍返回退出码 0（静默失效）。用 CRLF 时被吞的是 CR，还剩 LF 仍算换行，
+#   行结构得以保留，问题退化为可发现的语法报错而不是静默成功。
+#   结论：.ps1 一律 UTF-8 带 BOM + CRLF，两者缺一都可能出问题。
+
+# 默认：文本文件入库用 LF
+* text=auto eol=lf
+
+# Windows 专有脚本：强制 CRLF
+*.ps1   text eol=crlf
+*.cmd   text eol=crlf
+*.bat   text eol=crlf
+
+# 明确声明为二进制，避免 git 尝试做行尾转换或文本 diff
+*.png   binary
+*.jpg   binary
+*.ico   binary
+*.dll   binary
+*.exe   binary

@@ -1,0 +1,55 @@
+# 第三方依赖
+
+依赖声明分三层，**唯一直接依赖来源是 `pyproject.toml`**，其余为生成物或派生清单。
+
+| 文件 | 性质 | 维护方式 |
+|------|------|---------|
+| `pyproject.toml` | 直接依赖 + profile（`qt`/`web`/`docs`） | **手动维护，改依赖只改这里** |
+| `requirements.txt` | Qt profile 的 pip-compile 锁定文件 | 生成物，禁止手改 |
+| `requirements-web.txt` | `-r requirements.txt` 的兼容别名（ok-script 3 起无独立 Web profile） | 生成物，禁止手改 |
+| `requirements-docs.txt` | 文档 profile 的锁定文件 | 生成物，禁止手改 |
+
+## 包管理器依赖
+
+全部依赖经 PyPI 安装，无自建源。直接依赖（`pyproject.toml`）：
+
+| 依赖 | 版本 | profile | 用途 |
+|------|------|---------|------|
+| `ok-script[adb,default,ocr,qt]` | `3.0.0b3` | `qt` | 自动化框架（Qt 界面） |
+| `openvino` | `2026.4.1` | `qt`/`web` | OCR 推理加速（`config['ocr']['params']['use_openvino']=True`） |
+| `opencv-python` | `5.0.0.93` | `qt`/`web` | 图像处理与模板匹配 |
+| `mkdocs` | `1.6.1` | `docs` | 文档站点 |
+
+`web` extra 只是 `["ok-script-app[qt]"]` 兼容别名——ok-script 3 移除了 Web 前端，不再有独立的
+`web` extra 依赖集。
+
+`ok-script` 带出的关键传递依赖（锁定版本见 `requirements.txt`）：`ok-pyside-minimal==6.12.0.post2`、
+`shiboken6==6.12.0`、`adbutils==2.12.0`、`onnxocr-ppocrv5==0.0.22`、
+`ok-d3dshot==0.1.5`、`pyappify==1.0.13`、`numpy==2.5.4`、`pillow==13.0.0`。
+
+**已知约束**：
+- Qt profile 以 `--no-deps` 安装（`pyproject.toml` 与 CI 均如此），因此锁定文件必须自洽完整。
+- ok-script 3 改用 `ok-pyside-minimal` 提供 Qt 绑定，**不再需要**手动删除 `pyside6` /
+  `pyside6-addons` 条目（ok-script 2 时期的做法）。
+- `ok-script==3.0.0b3` 是预发布版本：`pip` 需能识别预发布（锁文件已钉死版本，安装时无需额外开关），
+  且国内镜像可能对该 wheel 返回 403，拉取失败时改用 `--index-url https://pypi.org/simple/`。
+
+**版本约束**：`requires-python = ">=3.12,<3.13"`；`pyappify.yml` 两个 profile（`China`/`Global`）
+均要求 `3.12`，CI 矩阵同样为 `3.12`。使用 3.13 会在依赖解析或打包阶段出问题。
+
+## 本地与私有依赖
+
+**无**。项目不含本地 wheel、私有索引或 `vendor` 目录；全部能力来自 PyPI 上的
+`ok-script` 及其传递依赖。运行时动态加载的模型资源（OCR 模型、字体）由 `ok-script`
+按需下载或手工放置，属资源而非代码依赖，且已被 `.gitignore` 忽略（见 `git-ignore.mdc`）。
+
+## 手动安装依赖
+
+**无**。CI（`.github/workflows/build.yml`）只执行 `pip install --no-deps -r requirements.txt`，
+无额外的手动安装步骤或系统级依赖。
+
+唯一与「安装」相关的手工动作是文档站点依赖：
+
+```bash
+python -m pip install --index-url https://pypi.org/simple/ -r requirements-docs.txt
+```

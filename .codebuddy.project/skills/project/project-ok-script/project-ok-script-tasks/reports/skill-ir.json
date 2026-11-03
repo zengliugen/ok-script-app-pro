@@ -1,0 +1,95 @@
+{
+  "schema_version": "2.0.0",
+  "name": "project-ok-script-tasks",
+  "title": "ok-script 任务开发",
+  "job_to_be_done": "创建与修改基于 PyPI ok-script 库的自动化任务类：BaseTask 一次性任务、TriggerTask 后台触发任务、任务配置界面元数据、在应用 config 中注册、ok_tasks 自定义脚本，以及中英双语匹配文本。用户说\"新建任务\"、\"加个后台任务\"、\"改任务配置项\"、\"任务怎么注册\"、\"BaseTask 怎么写\"时使用。",
+  "trigger_surface": {
+    "description": "创建与修改基于 PyPI ok-script 库的自动化任务类。用户说\"新建任务\"、\"加个后台任务\"、\"改任务配置项\"、\"任务怎么注册\"时使用；只写 run 方法体用 codegen，只同步翻译用 i18n。",
+    "should_trigger": [
+      "帮我新建一个一键日常任务",
+      "这个功能我想做成后台自动检查的任务",
+      "TriggerTask 的 trigger_interval 该设多少",
+      "给任务加两个配置项，一个下拉一个多选",
+      "任务怎么注册到 config 里",
+      "新建的任务类要不要继承 MyBaseTask"
+    ],
+    "should_not_trigger": [
+      "帮我把这段 run 方法里的点击改成相对坐标",
+      "同步一下任务的翻译",
+      "发布一个 beta 版本",
+      "帮我提交代码",
+      "跑一下测试看有没有破坏现有行为"
+    ],
+    "edge_cases": [
+      "这个任务的 run 方法怎么写",
+      "任务名在界面上显示英文，怎么翻译",
+      "扩展能力里能注册任务吗",
+      "自定义任务脚本放哪个目录"
+    ]
+  },
+  "workflow": {
+    "steps": [
+      "先读目标项目现有的任务、应用配置与项目专有基类，优先继承项目基类。",
+      "定任务类型：用户点击跑一次用 BaseTask，持续轮询用 TriggerTask。",
+      "在 __init__ 里设置 name、description、default_config、config_description、config_type、supported_languages 等元数据。",
+      "实现 run()，拆成可观察的小步骤，等待用框架方法而非自建轮询。",
+      "按项目风格注册：onetime_tasks / trigger_tasks 配置列表，或 ok_tasks 自定义目录。",
+      "需要翻译时交给 project-ok-script-i18n。",
+      "验证：import 模块并实例化类；有测试或无头路径时优先用它们。"
+    ],
+    "decision_points": [
+      "任务类型选择：BaseTask 还是一次性 / TriggerTask 后台",
+      "继承项目基类还是直接继承框架基类",
+      "注册位置：内置 config 列表还是 ok_tasks 自定义目录"
+    ],
+    "failure_modes": [
+      "元数据写在 super().__init__ 之前被覆盖",
+      "config_type 的键不在 default_config 里导致控件不渲染",
+      "触发任务未设 trigger_interval 造成过度轮询",
+      "触发任务 run 返回真值语义用错，饿死其他触发任务"
+    ]
+  },
+  "resources": {
+    "references": [
+      "references/task-api.md",
+      "references/templates.md"
+    ],
+    "scripts": [],
+    "assets": [],
+    "reports": [
+      "reports/output-risk-profile.md"
+    ]
+  },
+  "eval_plan": {
+    "trigger": [
+      "evals/semantic_config.json",
+      "evals/trigger_cases.json"
+    ],
+    "output": [],
+    "adversarial": [],
+    "baseline": "without_skill"
+  },
+  "risk": {
+    "output_risk": "medium",
+    "execution_risk": "low",
+    "trust_boundary": "project"
+  },
+  "governance": {
+    "owner": "zengliugen",
+    "maturity": "production",
+    "review_cadence": "quarterly",
+    "review_due": "2027-01-30"
+  },
+  "targets": [
+    "openai",
+    "claude",
+    "generic",
+    "agent-skills-compatible",
+    "vscode"
+  ],
+  "source_files": [
+    "SKILL.md",
+    "manifest.json",
+    "agents/interface.yaml"
+  ]
+}

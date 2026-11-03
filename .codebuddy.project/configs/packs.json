@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "installed": [
+    "devflow",
+    "grilling",
+    "python",
+    "yao-meta-skill"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "name": "project-ok-script-release",
+  "version": "0.1.0",
+  "owner": "zengliugen",
+  "updated_at": "2026-10-30",
+  "review_due": "2027-01-30",
+  "status": "active",
+  "maturity_tier": "production",
+  "lifecycle_stage": "production",
+  "context_budget_tier": "production",
+  "review_cadence": "quarterly",
+  "skill_ir_source": "reports/skill-ir.json",
+  "target_platforms": [
+    "openai",
+    "claude",
+    "generic",
+    "vscode",
+    "codebuddy-code",
+    "agent-skills-compatible"
+  ],
+  "factory_components": [
+    "agents",
+    "references",
+    "scripts",
+    "evals",
+    "reports",
+    "security"
+  ],
+  "output_contract": "下一个版本号 tag + 发布结果汇报（提交摘要、tag、远端、推送是否成功、CI 是否触发）",
+  "rollback_boundary": "提交与推送前可完全回退；tag 创建后不得删除或移动，只能新增下一个版本",
+  "input_files": [
+    "工作区改动与验证结果",
+    "本地与远端已有的 v* tag"
+  ],
+  "upstream_source": {
+    "path": ".agents/skills/deploy",
+    "skill_md_sha256_prefix": "6bc9d369acc1",
+    "migrated_at": "2026-10-30",
+    "local_changes": [
+      "提交改由 vcs-router 链路执行，本技能不再自建提交流程",
+      "推送保留在本技能但须用户显式授权（vcs-router 的路由范围不含 tag 与 push）",
+      "版本号规则与脚本中文化，逻辑与来源一致"
+    ]
+  }
+}

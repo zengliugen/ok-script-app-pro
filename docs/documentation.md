@@ -23,14 +23,21 @@ python -m mkdocs build --strict
 
 ## GitHub Pages
 
-仓库提供 `.github/workflows/docs.yml`：
+仓库为公开仓库，已启用 GitHub Pages（**Build and deployment → Source = GitHub Actions**），站点地址：
 
-1. 打开仓库的 **Settings → Pages**。
-2. 将 **Build and deployment → Source** 设置为 **GitHub Actions**。
-3. 推送到 `master` 或 `main`，或手动运行 `Docs` workflow。
-4. 在 workflow 的 deployment URL 或仓库 Pages 设置中打开网站。
+```text
+https://zengliugen.github.io/ok-script-app-pro/
+```
 
-从模板创建新项目后，更新 `mkdocs.yml` 中的 `site_name`、`site_description`、`repo_name`、`repo_url` 和 `edit_uri`。
+`.github/workflows/docs.yml` 在推送到 `master`、`main` 或 `dev`（且改动涉及 `docs/`、`mkdocs.yml`、`requirements-docs.txt`）时自动构建并部署，也可手动运行 `Docs` workflow。
+
+本地校验：
+
+```powershell
+python -m mkdocs build --strict
+```
+
+`mkdocs.yml` 中的 `site_name`、`site_description`、`repo_name`、`repo_url` 和 `edit_uri` 已指向本项目，修改仓库或文档分支时同步更新。
 
 ## 文档结构
 

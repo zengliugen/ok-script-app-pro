@@ -1,0 +1,101 @@
+{
+  "positive_concepts": {
+    "codegen_action": {
+      "weight": 0.4,
+      "phrases": [
+        "生成代码",
+        "自动化代码",
+        "run 方法",
+        "run(self)",
+        "写一段",
+        "补全",
+        "这段代码怎么写"
+      ]
+    },
+    "detection_api": {
+      "weight": 0.32,
+      "phrases": [
+        "OCR",
+        "模板匹配",
+        "特征",
+        "wait_ocr",
+        "wait_click_ocr",
+        "wait_feature",
+        "wait_click_feature",
+        "find_one",
+        "click_relative",
+        "click_box"
+      ]
+    },
+    "screenshot": {
+      "weight": 0.22,
+      "phrases": [
+        "截图",
+        "根据这张图",
+        "相对坐标",
+        "坐标"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "codegen_action",
+    "detection_api"
+  ],
+  "negative_concepts": {
+    "task_scaffold": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "新建任务",
+        "任务类",
+        "BaseTask",
+        "TriggerTask",
+        "注册",
+        "default_config",
+        "config_type"
+      ]
+    },
+    "i18n_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "翻译",
+        "i18n",
+        "ok.po",
+        "编译 po",
+        "msgid"
+      ]
+    },
+    "release_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "发布版本",
+        "打个 tag",
+        "deploy",
+        "beta",
+        "alpha"
+      ]
+    },
+    "lint_review": {
+      "weight": 0.26,
+      "exclusive": true,
+      "phrases": [
+        "ruff",
+        "静态检查",
+        "代码审查",
+        "覆盖率",
+        "格式化"
+      ]
+    },
+    "explain_only": {
+      "weight": 0.22,
+      "exclusive": true,
+      "phrases": [
+        "解释一下",
+        "是什么意思",
+        "什么原理"
+      ]
+    }
+  }
+}

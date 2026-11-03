@@ -1,0 +1,46 @@
+interface:
+  display_name: "ok-script 翻译维护"
+  short_description: "维护 ok-script 的 gettext 目录：补条目、翻译、编译 .mo、检查重复 msgid"
+  default_prompt: "使用 $project-ok-script-i18n 维护翻译：先用 task_i18n_helper.py scan 收集任务里的界面可见文案，比对各语言 ok.po 补条目，改完必须 compile 成 .mo。任务文案本身由 $project-ok-script-tasks 负责。"
+compatibility:
+  canonical_format: "agent-skills"
+  adapter_targets:
+    - "openai"
+    - "claude"
+    - "generic"
+    - "vscode"
+    - "codebuddy-code"
+  activation:
+    mode: "manual"
+    triggers:
+      - keyword: "翻译|国际化|多语言|i18n"
+      - keyword: "ok\\.po|ok\\.mo|msgid|msgstr"
+      - keyword: "编译.*翻译|翻译.*编译"
+      - keyword: "任务名.*没翻译|配置项.*翻译"
+      - keyword: "加一种语言|新增语言"
+      - keyword: "gettext"
+  execution:
+    context: "inline"
+    shell: "powershell"
+    environment:
+      python: ">=3.12"
+      packages:
+        - "polib"
+    artifacts:
+      - "SKILL.md"
+      - "scripts/task_i18n_helper.py"
+      - "references/catalog-rules.md"
+      - "agents/interface.yaml"
+  trust:
+    source_tier: "local"
+    remote_inline_execution: "forbid"
+    remote_metadata_policy: "allow-metadata-only"
+  degradation:
+    openai: "metadata-adapter"
+    claude: "neutral-source-plus-adapter"
+    generic: "neutral-source"
+    vscode: "agent-skills-source-with-vscode-notes"
+    codebuddy-code: "native"
+name: project-ok-script-i18n
+version: "0.1.0"
+mode: Production

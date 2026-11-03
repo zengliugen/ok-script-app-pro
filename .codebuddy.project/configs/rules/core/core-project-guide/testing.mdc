@@ -1,0 +1,55 @@
+# 测试约束
+
+## 运行环境限制
+
+测试必须在 **Windows + 有图形环境**中运行，原因如下：
+
+- 测试会导入 `src.config`、`src.tasks.*`，进而导入 `ok`、`PySide6`、`qfluentwidgets`，
+  这些模块在导入阶段即需要 Qt 运行库。**Linux 容器或无显示服务器的环境中会直接失败**。
+- CI（`.github/workflows/build.yml`）使用 `windows-latest`，与本地开发环境一致。
+- 测试会读取真实设备相关配置：`config['windows']` 已配置截图与输入方式，但测试环境**无目标游戏窗口**；
+  涉及设备交互的逻辑必须可被 mock 或跳过，勿在 CI 中触发真实截图。
+- 需要 OCR / 模板匹配的测试依赖 `assets/` 与模型文件存在；缺失时应在测试内用 `skipUnless` 跳过，
+  而非令整套失败。
+- 新增测试应避免在模块顶层创建 Qt 窗口或读取真实设备（adb / 窗口句柄），此类逻辑放进任务方法内。
+
+## 断言与测试运行器
+
+| 项 | 事实 |
+|----|------|
+| 框架 | `unittest`（标准库），基类 `ok.test.TaskTestCase` |
+| 目录 | `tests/`（上游基线，**入库**；`test/` 与 `test_scripts/` 被 git 忽略但当前均不存在，勿混用）；`extensions_tests/`（项目扩展测试，顶层独立目录） |
+| 命名 | 文件 `Test*.py`，类 `Test*`，方法 `test_*` |
+| 现有测试 | 上游基线 `tests/TestMain.py` → `TestMyOneTimeTask`（勿改）；项目扩展 `extensions_tests/TestExtensions.py` → 覆写生效性与缺键语义 |
+
+现有测试写法约定：继承 `TaskTestCase`，类属性声明 `task_class` 与 `config`，
+在 `test_*` 方法中通过 `self.task` 访问任务实例，断言 `default_config`/`config_type` 等结构化数据。
+
+- 使用 `unittest` 的 `assertEqual`/`assertTrue`/`assertIsInstance` 等；**不引入 pytest**
+  （`requirements*.txt` 与 `pyproject.toml` 中均无 pytest）。
+- 运行器统一为 `python -m unittest`：
+
+```bash
+python -m unittest tests/TestMain.py                  # 上游基线
+python -m unittest extensions_tests/TestExtensions.py # 项目扩展
+powershell -File run_tests.ps1                        # 递归收集全部，逐文件短路失败（CI 调用同一脚本）
+```
+
+**不要用 `python -m unittest discover`**：它只递归含 `__init__.py` 的包，结构一变就
+**静默漏测**且仍报成功。`run_tests.ps1` 因此显式遍历 `tests` 与 `extensions_tests`
+两个根并逐个传文件路径。
+
+- 新增测试文件：**上游基线**放 `tests/` 根（一般不新增，改上游测试须登记 divergence）；
+   **项目扩展测试**放 `extensions_tests/`。两者都须以 `Test` 开头，否则 `run_tests.ps1` 不会执行。
+- **两层测试结论不可混用**：`tests/` 通过 = 上游行为未被破坏；`extensions_tests/` 通过 = 扩展自身
+  按预期工作，**不能**证明上游行为完好。
+- 测试失败应通过 `assert` 表达，避免仅打印日志后继续（CI 依退出码判定）。
+
+## 资源与性能约束
+
+- **重资源延迟加载**：OCR 模型（onnxocr / openvino）、模板匹配图片等应放在 `Globals`（`config['my_app']`）
+  或任务方法内按需加载，**不要在测试收集阶段或模块顶层加载**，否则单测启动即占用数百 MB 内存。
+- **图像不落盘**：测试中避免写 `screenshots/`（运行时会清空且在 git 忽略范围），
+  临时图像用 `tempfile` 或 `tests/images/` 下的固定资源。
+- **保持秒级**：打包（PyAppify / Tauri 编译，约 18 分钟）与测试在同一 workflow 中串行，
+  测试是发布链路的阻塞环节，应保持快速。

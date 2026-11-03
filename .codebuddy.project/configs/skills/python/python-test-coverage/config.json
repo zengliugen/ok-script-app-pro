@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "test_runner": "unittest",
+  "test_root": "extensions_tests",
+  "source": [
+    "extensions"
+  ],
+  "branch": true,
+  "fail_under": 0,
+  "report_formats": [
+    "term-missing",
+    "json"
+  ],
+  "app_python": ""
+}

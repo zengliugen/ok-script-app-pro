@@ -1,0 +1,45 @@
+interface:
+  display_name: "ok-script 代码生成"
+  short_description: "按描述与截图生成 ok-script 任务 run(self) 内的 OCR、模板匹配与等待代码"
+  default_prompt: "使用 $project-ok-script-codegen 生成 run(self) 里的自动化代码：只写 run 方法体，等待用 wait_ 系列，坐标用 0-1 相对值，每行带中文行内注释。任务类骨架用 $project-ok-script-tasks。"
+compatibility:
+  canonical_format: "agent-skills"
+  adapter_targets:
+    - "openai"
+    - "claude"
+    - "generic"
+    - "vscode"
+    - "codebuddy-code"
+  activation:
+    mode: "manual"
+    triggers:
+      - keyword: "生成.*自动化|自动化代码"
+      - keyword: "run 方法|run(self)"
+      - keyword: "根据截图|截图.*点击|点击.*坐标"
+      - keyword: "OCR.*点击|识别.*按钮"
+      - keyword: "模板匹配|特征匹配"
+      - keyword: "wait_ocr|wait_click_ocr|wait_click_feature"
+  execution:
+    context: "inline"
+    shell: "powershell"
+    environment:
+      python: ">=3.12"
+      packages:
+        - "ok-script==2.0.0b7"
+    artifacts:
+      - "SKILL.md"
+      - "references/frame-and-wait.md"
+      - "agents/interface.yaml"
+  trust:
+    source_tier: "local"
+    remote_inline_execution: "forbid"
+    remote_metadata_policy: "allow-metadata-only"
+  degradation:
+    openai: "metadata-adapter"
+    claude: "neutral-source-plus-adapter"
+    generic: "neutral-source"
+    vscode: "agent-skills-source-with-vscode-notes"
+    codebuddy-code: "native"
+name: project-ok-script-codegen
+version: "0.1.0"
+mode: Production

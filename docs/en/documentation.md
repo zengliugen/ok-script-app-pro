@@ -23,14 +23,21 @@ python -m mkdocs build --strict
 
 ## GitHub Pages
 
-The repository includes `.github/workflows/docs.yml`:
+The repository is public and GitHub Pages is enabled (**Build and deployment → Source = GitHub Actions**). The site is published at:
 
-1. Open **Settings → Pages** in the repository.
-2. Set **Build and deployment → Source** to **GitHub Actions**.
-3. Push to `master` or `main`, or run the `Docs` workflow manually.
-4. Open the deployment URL from the workflow or Pages settings.
+```text
+https://zengliugen.github.io/ok-script-app-pro/
+```
 
-After creating a project from this template, update `site_name`, `site_description`, `repo_name`, `repo_url`, and `edit_uri` in `mkdocs.yml`.
+`.github/workflows/docs.yml` builds and deploys on pushes to `master`, `main`, or `dev` that touch `docs/`, `mkdocs.yml`, `requirements-docs.txt`, or the workflow itself. It can also be run manually.
+
+Validate locally:
+
+```powershell
+python -m mkdocs build --strict
+```
+
+`site_name`, `site_description`, `repo_name`, `repo_url`, and `edit_uri` in `mkdocs.yml` already point at this project; update them if the repository or documentation branch changes.
 
 ## Layout
 

@@ -1,0 +1,39 @@
+# ============================================================
+#  项目侧配置目录（.codebuddy.project）忽略规则
+#
+#  caches/ 为运行时产物根目录（不持久化的临时结果：各技能 check_logs、
+#  .cache、.vcs-lock 等），由脚本执行生成，不入库；
+#  产物目录清单见 .codebuddy/project.index.json 的 artifacts.dirs。
+#  configs/ 与 store/ 为入库内容，不在此忽略。
+# ============================================================
+
+# 仓库根 .gitignore 的 configs/ 会匹配本项目侧 configs/ 目录（Python 运行时用户配置），
+# 此处反选恢复：项目侧 configs 为入库配置，必须随项目共享。
+# 两行缺一不可——目录级忽略（configs/）下，只写 !configs/ 无法恢复深层文件，
+# 须用 !configs/** 才能让 configs/skills/<pack>/... 等嵌套内容正常入库。
+!configs/
+!configs/**
+
+# 运行时产物根目录（整体忽略）
+caches/
+
+# 工具环境实例根目录（整体忽略，仅放行说明文件）
+#   envs/<包名>/.venv 由对应技能的 ensure 子命令生成，属可重建产物，不入库。
+#   依赖的定义与锁定在 .codebuddy/lib/<包名>/envs/（随引擎入库），本目录只持有实例。
+envs/*
+!envs/README.md
+
+# 系统/编辑器临时文件
+.DS_Store
+Thumbs.db
+
+# 技能工程产物：reports/ 下绝大多数文件由 yao-meta-skill 的各 render 命令生成，
+# 属一次性过程稿（含本机绝对路径、每次重跑都产生 diff），不入库。
+#
+# 例外：reports/skill-ir.json 是 manifest.skill_ir_source 指向的规范化产物，
+# 缺失会让 yao.py validate 报 declared-source-missing。必须入库。
+# 用 ** 而非 * 匹配族目录：技能可收进 .codebuddy.project/skills/project/<族>/<技能>/reports/，
+# 单层的 skills/project/*/reports/* 在嵌套后不再命中，会让过程稿静默入库。
+skills/project/**/reports/*
+!skills/project/**/reports/output-risk-profile.md
+!skills/project/**/reports/skill-ir.json

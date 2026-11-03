@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "python_version": "3.12",
+  "app_python": "",
+  "line_length": 120,
+  "select": [
+    "E",
+    "F",
+    "I",
+    "D"
+  ],
+  "ignore": [
+    "E501",
+    "D400",
+    "D415"
+  ],
+  "pydocstyle_convention": "google",
+  "target_version": "py312",
+  "include_patterns": [
+    "extensions/**/*.py",
+    "extensions_tests/**/*.py"
+  ],
+  "exclude_patterns": [
+    "**/__pycache__/**",
+    "**/.venv/**",
+    "**/envs/**"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "name": "project-ok-script-i18n",
+  "version": "0.1.0",
+  "owner": "zengliugen",
+  "updated_at": "2026-10-30",
+  "review_due": "2027-01-30",
+  "status": "active",
+  "maturity_tier": "production",
+  "lifecycle_stage": "production",
+  "context_budget_tier": "production",
+  "review_cadence": "quarterly",
+  "skill_ir_source": "reports/skill-ir.json",
+  "target_platforms": [
+    "openai",
+    "claude",
+    "generic",
+    "vscode",
+    "codebuddy-code",
+    "agent-skills-compatible"
+  ],
+  "factory_components": [
+    "agents",
+    "references",
+    "scripts",
+    "evals",
+    "reports"
+  ],
+  "output_contract": "修改后的 ok.po 与重新编译的 ok.mo，附本次新增/变更条目清单",
+  "rollback_boundary": "只改 i18n/ 下的 .po 与 .mo；回滚即从版本控制还原这两个目录",
+  "input_files": [
+    "任务类的界面可见文案",
+    "i18n/<locale>/LC_MESSAGES/ok.po"
+  ],
+  "upstream_source": {
+    "path": ".agents/skills/ok-script-i18n",
+    "skill_md_sha256_prefix": "6902c15d4c14",
+    "migrated_at": "2026-10-30"
+  }
+}

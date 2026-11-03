@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "_comment": "本文件为 svn-commit 的项目配置骨架：提交摘要的格式（pattern）、type 枚举及含义、长度上限、subject 语言、禁用结尾字符。**本项目当前没有 SVN 工作副本**（引擎提供了 vcs-svn-commit 能力，但本项目未使用），因此这里保留占位值、不填写具体约定。占位未填时校验脚本按配置缺失处理（退出码 3），不会把「未配置」误判成「摘要格式写错」。将来接入 SVN 时：先按实际格式填写 format 与 pattern（两者语义等价，pattern 用 (?P<type>...)/(?P<scope>...)/(?P<subject>...) 标记字段），再把 types 换成项目实际的 type 列表。**格式与 git_commit.config 可以不同**，两份配置互不继承。",
+  "commit_subject": {
+    "format": "<按团队 Subversion 使用习惯填写，如 [<scope>] <type>: <subject>>",
+    "pattern": "<与 format 等价的正则；用 (?P<type>...)/(?P<scope>...)/(?P<subject>...) 标记要校验的字段>",
+    "types": [
+      {
+        "name": "feat",
+        "description": "占位示例；接入 SVN 时改为项目实际 type 列表"
+      }
+    ],
+    "subject_max_len": 50,
+    "scope_max_len": 40,
+    "subject_language": "zh",
+    "forbid_trailing": [
+      "。",
+      "；",
+      "：",
+      ".",
+      ";"
+    ]
+  }
+}

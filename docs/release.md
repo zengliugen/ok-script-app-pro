@@ -9,34 +9,37 @@
 - `deploy.txt`：定义同步到独立更新仓库的文件。
 - `.github/workflows/mirrorchyan_*.yml`：可选的 Mirror酱上传和更新日志工作流。
 
-## 修改构建工作流
+## 构建工作流现状
 
-首次发布前，根据自己的项目修改 `.github/workflows/build.yml`：
+`.github/workflows/build.yml` 已按本项目调整：
 
-- 更新 Git 用户信息。
-- 更新源码库和更新库地址。
-- 更新安装包名称和 Release 下载链接。
-- 配置工作流需要的 GitHub Actions Secrets。
-- 删除不使用的 CNB、网盘或其他模板专用内容。
+- Git 身份改为 `zengliugen`。
+- 移除了 CNB 与独立更新仓库的 `Sync Repositories` 步骤，构建不再需要 `CNB_TOKEN`、`OK_GH` 等模板 secrets。
+- `pyappify-action` 固定 `version: v1.2.3`，避免上游更新导致构建结果漂移；同时开启 `add_version_name: true`，安装包文件名带发布版本号。
+- 声明 `permissions: contents: write`，否则默认只读的 `GITHUB_TOKEN` 无法创建 Release（报 403 `Resource not accessible by integration`）。
+- 产物共 4 个：两个 profile 安装包（`China`/`Global`，名称带版本号如 `ok-script-app-pro-win32-China-setup-1.1.3.exe`）、`ok-script-app-pro-win32-online-setup-<版本>.exe`（在线安装包）与 `ok-script-app-pro-win32.zip`（免安装压缩包）。ok-script 3 移除了 Web 前端，`pyappify.yml` 不再有 `Web` profile。
+- 更新日志使用本次 tag 的简要说明，不再依赖同步步骤的输出。
+
+构建约需 20 分钟，主要耗时在 PyAppify 的 Tauri/Rust 全量编译（约 18 分钟），GitHub Actions 未对该过程做缓存。如需加速，可以在 `pyappify-action` 步骤加 `use_release` 输入复用已构建的 launcher，但前提是本项目未改动图标与 `pyappify.yml`。
 
 ## Mirror酱
 
-### 接入 Mirror酱
-
-保留并修改：
+两个 MirrorChyan workflow 已保留，默认关闭：
 
 - `.github/workflows/mirrorchyan_uploading.yml`
 - `.github/workflows/mirrorchyan_release_note.yml`
 
-更新其中的 `owner`、`repo`、`mirrorchyan_rid` 和安装包文件名，保留 `build.yml` 中触发这两个工作流的步骤，并配置 `MirrorChyanUploadToken`。
+启用方式：
 
-PyAppify 会在安装包名称中加入发布版本，例如
-`ok-script-app-win32-China-setup-1.1.3.exe`。Mirror酱使用
-`ok-script-app-win32-China-setup-*.exe` 匹配所选版本的安装包。
+1. 在仓库 **Settings → Secrets and variables → Actions** 中新建 Variables `MIRRORCHYAN_ENABLED`，值为 `true`。
+2. 新建 Secrets `MirrorChyanUploadToken`。
+3. 向 MirrorChyan 申请资源并替换 workflow 中的 `mirrorchyan_rid`。
 
-### 不接入 Mirror酱
+PyAppify 会在安装包名称中加入发布版本（`add_version_name: true`），例如
+`ok-script-app-pro-win32-China-setup-1.1.3.exe`。Mirror酱使用
+`ok-script-app-pro-win32-China-setup-*.exe` 匹配所选版本的安装包。
 
-删除两个 MirrorChyan workflow 文件，并删除 `build.yml` 中的 `Trigger MirrorChyanUploading` 步骤。
+未启用时，两个 workflow 的 job 条件不满足，会被直接跳过，不会因缺少 secrets 而报错。`build.yml` 中的 `Trigger MirrorChyanUploading` 步骤同样受 `vars.MIRRORCHYAN_ENABLED` 控制。
 
 ## 推送版本 tag
 

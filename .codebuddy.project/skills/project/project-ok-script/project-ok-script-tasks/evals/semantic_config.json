@@ -1,0 +1,107 @@
+{
+  "positive_concepts": {
+    "task_scaffold": {
+      "weight": 0.4,
+      "phrases": [
+        "新建任务",
+        "加个任务",
+        "任务类",
+        "BaseTask",
+        "TriggerTask",
+        "任务基类",
+        "继承",
+        "写个新任务"
+      ]
+    },
+    "task_metadata": {
+      "weight": 0.3,
+      "phrases": [
+        "default_config",
+        "config_description",
+        "config_type",
+        "name",
+        "description",
+        "配置项",
+        "配置控件",
+        "下拉",
+        "多选",
+        "trigger_interval",
+        "_enabled",
+        "supported_languages"
+      ]
+    },
+    "registration": {
+      "weight": 0.2,
+      "phrases": [
+        "注册",
+        "config",
+        "onetime_tasks",
+        "trigger_tasks",
+        "ok_tasks",
+        "custom_tasks"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "task_scaffold",
+    "task_metadata"
+  ],
+  "negative_concepts": {
+    "codegen_only": {
+      "weight": 0.32,
+      "exclusive": true,
+      "phrases": [
+        "run 方法里",
+        "根据截图",
+        "生成点击步骤",
+        "相对坐标",
+        "模板匹配",
+        "OCR 识别这个按钮",
+        "这行代码怎么写"
+      ]
+    },
+    "i18n_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "翻译",
+        "i18n",
+        "ok.po",
+        "编译 po",
+        "同步翻译",
+        "msgid"
+      ]
+    },
+    "release_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "发布版本",
+        "打个 tag",
+        "deploy",
+        "beta",
+        "alpha",
+        "release"
+      ]
+    },
+    "vcs_only": {
+      "weight": 0.26,
+      "exclusive": true,
+      "phrases": [
+        "提交代码",
+        "commit",
+        "push",
+        "合并分支"
+      ]
+    },
+    "explain_only": {
+      "weight": 0.22,
+      "exclusive": true,
+      "phrases": [
+        "解释一下",
+        "是什么意思",
+        "是什么原理"
+      ]
+    }
+  }
+}

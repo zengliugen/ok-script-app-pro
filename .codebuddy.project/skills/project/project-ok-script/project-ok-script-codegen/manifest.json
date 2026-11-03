@@ -1,0 +1,39 @@
+{
+  "name": "project-ok-script-codegen",
+  "version": "0.1.0",
+  "owner": "zengliugen",
+  "updated_at": "2026-10-30",
+  "review_due": "2027-01-30",
+  "status": "active",
+  "maturity_tier": "production",
+  "lifecycle_stage": "production",
+  "context_budget_tier": "production",
+  "review_cadence": "quarterly",
+  "skill_ir_source": "reports/skill-ir.json",
+  "target_platforms": [
+    "openai",
+    "claude",
+    "generic",
+    "vscode",
+    "codebuddy-code",
+    "agent-skills-compatible"
+  ],
+  "factory_components": [
+    "agents",
+    "references",
+    "evals",
+    "reports"
+  ],
+  "output_contract": "run(self) 方法体的 Python 代码，逐行带中文行内注释",
+  "rollback_boundary": "只产出代码文本，不写项目文件；回滚即丢弃建议",
+  "input_files": [
+    "用户的文字描述",
+    "可选的界面截图",
+    "ok-script 公开 API 文档"
+  ],
+  "upstream_source": {
+    "path": ".agents/skills/ok-script-codegen",
+    "skill_md_sha256_prefix": "94cfe5454259",
+    "migrated_at": "2026-10-30"
+  }
+}

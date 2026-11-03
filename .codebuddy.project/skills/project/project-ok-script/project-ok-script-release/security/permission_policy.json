@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "_comment": "本文件声明 project-ok-script-release 允许执行的 git 子命令。本技能只做只读查询、打 tag 与推送；任何改写历史的操作（reset、rebase、amend、tag -d/-f、push --force）都不在白名单内，出现即应拒绝。",
+  "allowed_git_subcommands": [
+    {
+      "command": "status",
+      "reason": "读取工作区状态，确认待发布改动范围",
+      "write": false
+    },
+    {
+      "command": "log",
+      "reason": "读取提交历史，用于核对基线与提交摘要",
+      "write": false
+    },
+    {
+      "command": "diff",
+      "reason": "查看待发布改动内容",
+      "write": false
+    },
+    {
+      "command": "tag --list",
+      "reason": "列出本地已有 tag，供版本号计算",
+      "write": false
+    },
+    {
+      "command": "ls-remote",
+      "reason": "查询远端已有 tag，避免版本号撞名",
+      "write": false
+    },
+    {
+      "command": "show",
+      "reason": "核验 tag 与提交的指向关系",
+      "write": false
+    },
+    {
+      "command": "tag -a",
+      "reason": "在提交上创建带注释的版本 tag",
+      "write": true
+    },
+    {
+      "command": "push",
+      "reason": "把提交与 tag 推送到发布远端，须用户显式授权",
+      "write": true,
+      "requires_user_authorization": true
+    }
+  ],
+  "forbidden_git_subcommands": [
+    {
+      "command": "tag -d",
+      "reason": "删除已有 tag 会破坏已发布版本的不可变性"
+    },
+    {
+      "command": "tag -f",
+      "reason": "移动已有 tag 会让已发布的版本号指向另一份代码"
+    },
+    {
+      "command": "push --force",
+      "reason": "强推会覆盖远端历史"
+    },
+    {
+      "command": "reset --hard",
+      "reason": "会丢弃工作区改动"
+    },
+    {
+      "command": "rebase",
+      "reason": "改写历史，超出发布职责"
+    },
+    {
+      "command": "commit --amend",
+      "reason": "改写已存在的提交，超出发布职责"
+    }
+  ]
+}

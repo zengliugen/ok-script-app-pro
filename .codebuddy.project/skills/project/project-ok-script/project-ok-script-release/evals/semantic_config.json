@@ -1,0 +1,97 @@
+{
+  "positive_concepts": {
+    "release_act": {
+      "weight": 0.44,
+      "phrases": [
+        "发布版本",
+        "发版",
+        "release",
+        "deploy",
+        "打个 tag",
+        "打标签",
+        "发个 beta",
+        "发个 alpha",
+        "出个新版本"
+      ]
+    },
+    "version_number": {
+      "weight": 0.3,
+      "phrases": [
+        "版本号",
+        "下一个版本",
+        "递增",
+        "beta",
+        "alpha",
+        "v1",
+        "v2",
+        "v3"
+      ]
+    },
+    "publish_flow": {
+      "weight": 0.2,
+      "phrases": [
+        "推送",
+        "触发构建",
+        "CI",
+        "构建",
+        "发布前检查",
+        "上线"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "release_act",
+    "version_number"
+  ],
+  "negative_concepts": {
+    "commit_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "提交代码",
+        "commit",
+        "git add",
+        "帮我提交"
+      ]
+    },
+    "merge_only": {
+      "weight": 0.28,
+      "exclusive": true,
+      "phrases": [
+        "合并分支",
+        "merge",
+        "合到 main"
+      ]
+    },
+    "task_work": {
+      "weight": 0.28,
+      "exclusive": true,
+      "phrases": [
+        "新建任务",
+        "任务类",
+        "BaseTask",
+        "TriggerTask"
+      ]
+    },
+    "codegen_only": {
+      "weight": 0.28,
+      "exclusive": true,
+      "phrases": [
+        "生成点击步骤",
+        "根据截图",
+        "相对坐标",
+        "模板匹配"
+      ]
+    },
+    "explain_only": {
+      "weight": 0.24,
+      "exclusive": true,
+      "phrases": [
+        "解释一下",
+        "什么意思",
+        "规范是什么",
+        "是什么原理"
+      ]
+    }
+  }
+}

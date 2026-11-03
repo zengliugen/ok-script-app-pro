@@ -1,0 +1,63 @@
+# 常用命令
+
+> 所有命令在项目根执行；Shell 以 **bash** 为准（PowerShell 等价命令在括号内注明）。
+> 首次使用先创建虚拟环境：`py -3.12 -m venv .venv`。
+
+## 启动与运行
+
+```bash
+py -3.12 -m venv .venv
+source .venv/Scripts/activate            # PowerShell: .\\.venv\\Scripts\\Activate.ps1
+python -m pip install --index-url https://pypi.org/simple/ --upgrade pip
+# Qt profile（ok-script 3 起唯一的运行 profile，锁文件安装）
+python -m pip install --index-url https://pypi.org/simple/ --no-deps --upgrade -r requirements.txt
+```
+
+`requirements-web.txt` 只是 `-r requirements.txt` 的兼容别名，供旧命令继续可跑。
+
+索引地址必须带 `/simple/`，否则报 `No matching distribution found`。
+`ok-script==3.0.0b3` 是预发布版本，从国内镜像拉取可能返回 403，需改用官方源。
+
+```bash
+python main_debug.py         # Qt 调试模式（开发推荐）
+python main.py               # Qt 正式模式
+python web_main_debug.py     # 已废弃：ok-script 3 移除 Web 前端，仅转调桌面 UI
+python web_main.py           # 已废弃：同上
+python -m mkdocs serve       # 文档预览 http://127.0.0.1:8000/
+```
+
+## 构建
+
+Python 无编译步骤；「构建」指锁定文件生成与文档站点：
+
+```bash
+# 改 pyproject.toml 后重编译锁定文件
+python -m piptools compile --extra qt   --strip-extras --no-header --output-file requirements.txt pyproject.toml
+python -m piptools compile --extra docs --strip-extras --no-header --output-file requirements-docs.txt pyproject.toml
+# ok-script 3 使用 ok-pyside-minimal，无需再手动删除 pyside6 / pyside6-addons 条目
+# requirements-web.txt 保持引用 requirements.txt，不单独编译
+
+# 文档站点
+python -m mkdocs build --strict          # 输出到 site/
+```
+
+## 测试
+
+```bash
+python -m unittest tests/TestMain.py                    # 上游基线（单个模块）
+python -m unittest extensions_tests/TestExtensions.py   # 项目扩展（单个模块）
+powershell -File run_tests.ps1                          # 两个测试根全跑，CI 等价逻辑
+```
+
+## 发布与分发
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0       # 触发 .github/workflows/build.yml
+```
+
+本地打包由 PyAppify 完成（`pyappify.yml` 两个 profile：`China`/`Global`；ok-script 3 移除了 Web
+profile）；CI 使用 `ok-oldking/pyappify-action@master` 并固定 `version: v1.2.3`，
+同时开启 `add_version_name: true` 使安装包名带版本号。产物清单与注意事项见 `docs/release.md`。
+
+文档站点经 GitHub Pages（`.github/workflows/docs.yml`）发布，本地预览用 `python -m mkdocs serve`。

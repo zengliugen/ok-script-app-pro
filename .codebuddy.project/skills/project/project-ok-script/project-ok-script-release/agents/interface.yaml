@@ -1,0 +1,45 @@
+interface:
+  display_name: "ok-script 版本发布"
+  short_description: "编排发布：确认改动、跑验证、算下一个 tag、打注释 tag、按授权推送"
+  default_prompt: "使用 $project-ok-script-release 发布版本：先算下一个 tag（release / beta / alpha），验证通过后经 vcs-router 提交，再打注释 tag，推送前必须等用户显式授权。"
+compatibility:
+  canonical_format: "agent-skills"
+  adapter_targets:
+    - "openai"
+    - "claude"
+    - "generic"
+    - "vscode"
+    - "codebuddy-code"
+  activation:
+    mode: "manual"
+    triggers:
+      - keyword: "发布版本|发版|release"
+      - keyword: "deploy|deploy beta|deploy alpha"
+      - keyword: "打个 tag|打标签|创建.*tag"
+      - keyword: "beta|alpha"
+      - keyword: "下一个版本号|版本号是多少"
+      - keyword: "推送到.*远端|发布到远端"
+  execution:
+    context: "inline"
+    shell: "powershell"
+    environment:
+      python: ">=3.12"
+    artifacts:
+      - "SKILL.md"
+      - "scripts/next_tag.py"
+      - "references/release-checklist.md"
+      - "security/permission_policy.json"
+      - "agents/interface.yaml"
+  trust:
+    source_tier: "local"
+    remote_inline_execution: "forbid"
+    remote_metadata_policy: "allow-metadata-only"
+  degradation:
+    openai: "metadata-adapter"
+    claude: "neutral-source-plus-adapter"
+    generic: "neutral-source"
+    vscode: "agent-skills-source-with-vscode-notes"
+    codebuddy-code: "native"
+name: project-ok-script-release
+version: "0.1.0"
+mode: Production

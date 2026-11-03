@@ -1,0 +1,37 @@
+{
+  "skill": "project-ok-script-tasks",
+  "recommended_threshold": 0.3,
+  "should_trigger": [
+    "帮我新建一个一键日常任务",
+    "这个功能我想做成后台自动检查的任务",
+    "TriggerTask 的 trigger_interval 该设多少",
+    "给任务加两个配置项，一个下拉一个多选",
+    "任务怎么注册到 config 里",
+    "新建的任务类要不要继承 MyBaseTask",
+    "这个任务的 name 和 description 怎么填",
+    "任务的 default_config 和 config_description 有什么区别",
+    "帮我改一下现有任务的配置控件",
+    "任务跑完怎么自动关闭",
+    "supported_languages 怎么用",
+    "我想加一个需要抓取模拟器画面的任务"
+  ],
+  "should_not_trigger": [
+    "帮我把这段 run 方法里的点击改成相对坐标",
+    "根据截图生成点击步骤",
+    "同步一下任务的翻译",
+    "编译 i18n 目录",
+    "发布一个 beta 版本",
+    "帮我提交代码",
+    "跑一下测试看有没有破坏现有行为",
+    "这个报错是什么原因",
+    "Python 的装饰器怎么用"
+  ],
+  "near_neighbor": [
+    "这个任务的 run 方法怎么写",
+    "任务里 OCR 识别不到按钮怎么办",
+    "任务名在界面上显示英文，怎么翻译",
+    "扩展能力里能注册任务吗",
+    "任务的配置项存在哪个文件里",
+    "自定义任务脚本放哪个目录"
+  ]
+}

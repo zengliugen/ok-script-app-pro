@@ -1,0 +1,36 @@
+{
+  "skill": "project-ok-script-release",
+  "recommended_threshold": 0.3,
+  "should_trigger": [
+    "发布一个新版本",
+    "deploy 一下",
+    "发个 beta 版",
+    "release alpha",
+    "帮我打个 tag 发布",
+    "下一个版本号是多少",
+    "把这次改动发布出去",
+    "发布正式版",
+    "出个新版本给用户",
+    "推送 tag 触发构建",
+    "版本号该怎么递增",
+    "发布前要检查什么"
+  ],
+  "should_not_trigger": [
+    "帮我提交这段代码",
+    "把 feature 分支合并到 main",
+    "新建一个任务类",
+    "根据截图生成点击步骤",
+    "给任务加翻译",
+    "跑一下 ruff 检查",
+    "解释一下语义化版本规范",
+    "帮我写个发布说明文档"
+  ],
+  "near_neighbor": [
+    "提交后要推送到远端吗",
+    "怎么触发 GitHub Actions 构建",
+    "build.yml 的触发条件是什么",
+    "当前最新 tag 是哪个",
+    "只本地打 tag 不推送",
+    "发版前要不要跑测试"
+  ]
+}

@@ -1,10 +1,15 @@
 name: Docs
 
+# 仓库已转为 public 并启用 GitHub Pages（Source = GitHub Actions），
+# 推送到 dev/master 或手动运行本 workflow 会构建并部署文档站点。
+# 站点地址: https://zengliugen.github.io/ok-script-app-pro/
+
 on:
   push:
     branches:
       - master
       - main
+      - dev
     paths:
       - "docs/**"
       - "mkdocs.yml"

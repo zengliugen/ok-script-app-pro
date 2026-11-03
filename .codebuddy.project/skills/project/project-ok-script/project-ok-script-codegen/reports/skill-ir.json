@@ -1,0 +1,94 @@
+{
+  "schema_version": "2.0.0",
+  "name": "project-ok-script-codegen",
+  "title": "ok-script 代码生成",
+  "job_to_be_done": "按用户描述和可选截图，生成 ok-script 任务 run(self) 方法内的 Python 自动化代码（OCR、模板匹配、相对坐标点击、等待方法、帧刷新规则、逐行中文注释）。用户说\"生成自动化代码\"、\"根据截图写点击步骤\"、\"这段 run 怎么写\"时使用。不负责任务类骨架（用 tasks）与翻译目录（用 i18n）。",
+  "trigger_surface": {
+    "description": "按描述与截图生成 run(self) 内的自动化代码，逐行中文注释。任务骨架用 project-ok-script-tasks，翻译用 project-ok-script-i18n。",
+    "should_trigger": [
+      "帮我写一段自动点击开始的代码",
+      "根据这张截图生成点击步骤",
+      "OCR 识别到「确认」就点它，怎么写",
+      "这个任务的 run 方法体帮我补全",
+      "模板匹配怎么等待特征出现再点",
+      "为什么点击后要 sleep"
+    ],
+    "should_not_trigger": [
+      "帮我新建一个任务类",
+      "任务怎么注册到 config",
+      "同步任务名的翻译",
+      "发布一个 beta 版本",
+      "跑一下 ruff 检查"
+    ],
+    "edge_cases": [
+      "任务类骨架和 run 方法一起写",
+      "配置项的值要中英双语怎么写",
+      "点完这个按钮界面没反应怎么办",
+      "循环里要不要判退出"
+    ]
+  },
+  "workflow": {
+    "steps": [
+      "判断用户意图：要代码、要用法说明，还是两者都要。",
+      "确认需求边界：含糊时只在合理假设风险高时问 1-3 个问题。",
+      "从官方 API 文档或目标项目既有 API 中选方法，不编造。",
+      "依赖状态的跳转用 wait_ 系列，坐标用 0-1 相对值。",
+      "应用帧刷新规则：动作后取新帧，wait_ 前不加多余 sleep，循环内不判 exit_is_set。",
+      "逐行写中文行内注释，控制流与 import 也要注释。",
+      "输出前按自检清单核对一遍。"
+    ],
+    "decision_points": [
+      "用 wait_ 系列还是 find_/ocr 单帧方法",
+      "用 OCR、模板匹配还是相对坐标",
+      "是否需要 raise_if_not_found 终止任务"
+    ],
+    "failure_modes": [
+      "循环内不取新帧导致检测结果恒定",
+      "到处加 sleep 拉长任务时长",
+      "编造模板名或 API 参数",
+      "循环内判 exit_is_set 与框架中断路径不一致"
+    ]
+  },
+  "resources": {
+    "references": [
+      "references/frame-and-wait.md"
+    ],
+    "scripts": [],
+    "assets": [],
+    "reports": [
+      "reports/output-risk-profile.md"
+    ]
+  },
+  "eval_plan": {
+    "trigger": [
+      "evals/semantic_config.json",
+      "evals/trigger_cases.json"
+    ],
+    "output": [],
+    "adversarial": [],
+    "baseline": "without_skill"
+  },
+  "risk": {
+    "output_risk": "high",
+    "execution_risk": "low",
+    "trust_boundary": "project"
+  },
+  "governance": {
+    "owner": "zengliugen",
+    "maturity": "production",
+    "review_cadence": "quarterly",
+    "review_due": "2027-01-30"
+  },
+  "targets": [
+    "openai",
+    "claude",
+    "generic",
+    "agent-skills-compatible",
+    "vscode"
+  ],
+  "source_files": [
+    "SKILL.md",
+    "manifest.json",
+    "agents/interface.yaml"
+  ]
+}
