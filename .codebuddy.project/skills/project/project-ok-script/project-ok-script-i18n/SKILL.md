@@ -1,6 +1,6 @@
 ---
 name: project-ok-script-i18n
-description: 维护 ok-script 项目的 gettext 翻译目录（`i18n/<locale>/LC_MESSAGES/ok.po` 与编译产物 `ok.mo`）：扫描任务类的界面可见文案、补齐各语言 msgid、翻译缺失条目、编译 .po 为 .mo、检查重复 msgid。用户说"加翻译"、"同步 i18n"、"任务名没翻译"、"配置项说明要翻译"、"编译 po 文件"、"ok.po 里缺哪些串"、"翻译目录怎么加语言"时使用。不负责写任务类本身（用 project-ok-script-tasks）、不负责生成自动化动作代码（用 project-ok-script-codegen）。
+description: 维护 ok-script 项目的 gettext 翻译目录：上游 `i18n/<locale>/LC_MESSAGES/ok.po` 与扩展能力 `<能力包>/i18n/.../ok_ext.po`。做四件事——扫描界面可见文案（任务名、配置项说明、选项、按钮、Tab 名）、补齐各语言 msgid 并翻译、把 .po 编译成 .mo、校验 .po 与 .mo 是否同步以及是否漏译。用户说"加翻译"、"同步 i18n"、"任务名没翻译"、"配置项说明要翻译"、"编译 po 文件"、"ok.po 里缺哪些串"、"翻译目录怎么加语言"、"怎么新增一种语言"、"扩展能力要翻译"、"漏译"、"漏翻"、"ok_ext.po 和 ok_ext.mo 对不上"、"改了翻译界面没变"、"翻译文件要放哪个目录"时使用。不负责写任务类本身（用 project-ok-script-tasks）、不负责生成自动化动作代码（用 project-ok-script-codegen）、不判扩展代码落位（用 project-extension-capability-guard）。
 ---
 
 # ok-script 翻译目录维护
@@ -8,7 +8,18 @@ description: 维护 ok-script 项目的 gettext 翻译目录（`i18n/<locale>/LC
 ## 定位
 
 ok-script 用 gettext 做界面翻译：目录在 `i18n/<locale>/LC_MESSAGES/ok.po`，
-运行时读同名 `ok.mo`。**只改 `.po` 不编译 `.mo`，界面不会变**——这是本技能存在的主要理由。
+运行时读同名 `.mo`。**只改 `.po` 不编译 `.mo`，界面不会变**——这是本技能存在的主要理由。
+
+本技能管**两类目录**：
+
+| 对象 | 目录 | 域名 | 归属 |
+|---|---|---|---|
+| 上游框架文案 | `i18n/<locale>/LC_MESSAGES/ok.po` | `ok` | **上游文件**，改动须登记 `divergence.yaml` |
+| 扩展能力文案 | `extensions/capabilities/<能力>/i18n/<locale>/LC_MESSAGES/ok_ext.po` | `ok_ext` | 项目自有，随能力包入库 |
+
+扩展能力的译文走 `ok_ext` 域，由 `extension-i18n` 能力在启动时挂成
+「扩展域 → 上游域」的 fallback 链（`extensions/capabilities/extension_i18n/translator.py`）。
+**扩展文案一律不改上游 `i18n/` 目录**，否则每次合并上游都冲突。
 
 本技能与任务开发的关系：任务文案由 `project-ok-script-tasks` 写出来，本技能负责让这些文案
 在各语言目录里齐备并生效。
@@ -20,7 +31,7 @@ ok-script 用 gettext 做界面翻译：目录在 `i18n/<locale>/LC_MESSAGES/ok.
 | 拥有的任务 | 收集界面可见文案 → 比对各语言目录 → 补条目 → 翻译 → 编译 `.mo` → 校验 |
 | 输出 | 修改后的 `ok.po` 与重新编译的 `ok.mo`，附本次新增/变更条目清单 |
 | 排除 | 不改任务类的文案与配置键；不翻译纯日志串（除用户明确要求）；不新增语言目录除非用户要求 |
-| 前提 | 目标项目存在 `i18n/` 目录；编译需要 `polib`（ok-script 自身也用它） |
+| 前提 | 目标目录存在；**不需要 `polib`**——解析与编译均用标准库 |
 
 ## 工作流
 
@@ -39,19 +50,40 @@ ok-script 用 gettext 做界面翻译：目录在 `i18n/<locale>/LC_MESSAGES/ok.
 
 ## 辅助脚本
 
+`H=.codebuddy.project/skills/project/project-ok-script/project-ok-script-i18n/scripts/task_i18n_helper.py`
+
 ```powershell
-# 扫描任务文件，列出界面可见字符串
-.\.venv\Scripts\python.exe .codebuddy.project\skills\project\project-ok-script\project-ok-script-i18n\scripts\task_i18n_helper.py scan --task src\tasks\MyOneTimeTask.py
+# 扫描文件或目录，列出界面可见字符串
+.\.venv\Scripts\python.exe $H scan --path src\tasks
+.\.venv\Scripts\python.exe $H scan --path extensions\capabilities
 
-# 检查各语言目录的重复 msgid
-.\.venv\Scripts\python.exe .codebuddy.project\skills\project\project-ok-script\project-ok-script-i18n\scripts\task_i18n_helper.py check --i18n i18n
+# 检查重复 msgid
+.\.venv\Scripts\python.exe $H check --i18n i18n
 
-# 编译所有 .po 为 .mo
-.\.venv\Scripts\python.exe .codebuddy.project\skills\project\project-ok-script\project-ok-script-i18n\scripts\task_i18n_helper.py compile --i18n i18n
+# 编译所有 .po 为 .mo（改完 .po 必须跑）
+.\.venv\Scripts\python.exe $H compile --i18n i18n
+
+# 校验 .po 与 .mo 是否同步（改了 .po 忘编译会被发现）
+.\.venv\Scripts\python.exe $H check-mo --i18n i18n
+
+# 校验界面上文案是否都有译文
+.\.venv\Scripts\python.exe $H check-missing --i18n i18n --path src\tasks
+
+# 门禁：上面两项合并（供提交钩子与交付前检查调用）
+.\.venv\Scripts\python.exe $H gate --i18n i18n --path src\tasks
 ```
 
-扫描器只是辅助，**不能替代读任务文件**。它能找到常见的字面量字符串，但会漏掉经常量、
-导入、f-string、推导式或辅助函数拼出来的值。
+**扩展能力的目录不同，参数要换**：
+
+```powershell
+# 扩展每个能力包自带 i18n/，根目录传 extensions/capabilities（脚本会递归找 .po）
+.\.venv\Scripts\python.exe $H gate --i18n extensions\capabilities --path extensions\capabilities
+```
+
+退出码：`0` 通过；`1` 发现缺失或不同步；`3` 环境不可用（含不支持的 `.po` 构造）。
+
+扫描器只是辅助，**不能替代读代码**。它能找到常见的字面量字符串，但会漏掉经常量、
+导入、f-string、推导式或辅助函数拼出来的值——「扫描通过」不等于「没有漏译」。
 
 ## 目录规则
 
@@ -72,23 +104,45 @@ ok-script 用 gettext 做界面翻译：目录在 `i18n/<locale>/LC_MESSAGES/ok.
 - 简体（`zh_CN`）与繁体（`zh_TW`）同时存在时分开处理，不要混用字形。
 - 选项列表里的每个选项串都要翻译。
 
-## 与任务开发的衔接
+## 与任务开发、扩展开发的衔接
 
-新增或修改任务时：
+**新增或修改任务时**：
 
 1. 先用 `project-ok-script-tasks` 实现任务，并指明哪些串是界面可见的。
 2. 再用本技能同步这些串的 gettext 目录。
 3. 编译后，在改动摘要里同时列出 `.po` 与 `.mo`。
 
+**新增或修改扩展能力时**：
+
+1. 先判断该能力是否引入了**用户可见文案**——任务名、Tab 名、配置键、配置说明、
+   下拉与多选选项、按钮文字、弹窗提示，任一命中即需要本地化。
+2. 在能力包内建 `i18n/<locale>/LC_MESSAGES/ok_ext.po`（`.po` 与 `.mo` **都入库**）。
+3. 跑 `gate --i18n extensions\capabilities --path extensions\capabilities`，
+   缺条目就补、补完用 `compile` 重编。
+4. **不要改上游 `i18n/` 目录**。
+
+## 扩展 catalog 的三条硬约束
+
+| 约束 | 违反后果 |
+|---|---|
+| **不得留空 `msgstr`** | gettext 命中空串即返回空串，`translated or key` 会回落源串——这条会在链上传导，遮蔽上游同名条目的译文 |
+| **同一 `msgid` 不得出现在两个能力包里** | 加载按能力包名字典序，后者覆盖前者，胜负由目录名决定且不报错 |
+| **`.po` 与 `.mo` 必须同时提交** | 只提交 `.po` 时运行时读到的仍是旧 `.mo`，翻译改了界面不变 |
+
 ## 参考文献
 
 | 文件 | 内容 |
 |------|------|
-| `references/catalog-rules.md` | `.po`/`.mo` 的加载机制、msgid 精确匹配的成因、`polib` 依赖与缺失时的处理、常见失效现象 |
+| `references/catalog-rules.md` | `.po`/`.mo` 的加载机制、msgid 精确匹配的成因、编译产物的重要性、常见失效现象 |
 | `CHANGELOG.md` | 来源版本与本地改造记录 |
 
 ## 已知局限
 
-- 扫描器基于 AST 静态分析，动态拼接出来的文案它看不到，需人工补。
-- 本项目 `.venv` 未安装 `polib` 时 `compile` 会以退出码 3 报错并给出安装提示，不会静默跳过。
-  这是有意设计：翻译改了却不生效，比直接报错更难发现。
+- 扫描器基于 AST 静态分析，**只覆盖** `self.name` / `self.description` /
+  `self.default_config` / `self.config_description` / `self.config_type` 与
+  `CustomTab.name` 这类已知属性。动态拼接、`f-string`、经辅助函数或配置文件生成的文案
+  它看不到，`QLabel` 文本与弹窗文案也不在网内。因此 **gate 通过不等于没有漏译**，仍需人工过一遍。
+- `gate` 只校验「代码里的字面量都在 catalog 里」，**不校验译文质量**，
+  也不校验 catalog 里是否存在已无人使用的孤儿条目。
+- 不支持的 `.po` 构造（`msgctxt`、`msgid_plural`、`fuzzy`）会以退出码 3 中止。
+  本项目两份 catalog 均未使用这些构造；若日后需要复数形式，须先扩展解析器。

@@ -10,7 +10,10 @@
         "同步翻译",
         "补条目",
         "新增语言",
-        "繁体"
+        "繁体",
+        "漏译",
+        "漏翻",
+        "新增一种语言"
       ]
     },
     "catalog_files": {
@@ -18,11 +21,14 @@
       "phrases": [
         "ok.po",
         "ok.mo",
+        "ok_ext",
         "msgid",
         "msgstr",
         "编译 po",
         "gettext",
-        "语言目录"
+        "语言目录",
+        "po 文件",
+        "重复的 msgid"
       ]
     },
     "ui_strings": {
