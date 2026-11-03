@@ -244,12 +244,32 @@ def check_package_structure():
             continue
         if "__pycache__" in path.parts:
             continue
+        if _is_catalog_dir(path):
+            continue
         if not (path / "__init__.py").exists():
             rel = path.relative_to(PROJECT_ROOT).as_posix()
             findings.append(
                 Finding(LEVEL_ERROR, "包结构", rel + " 缺少 __init__.py，会退化为命名空间包")
             )
     return findings
+
+
+def _is_catalog_dir(path):
+    """判断目录是否属于能力包内的翻译资源目录。
+
+    命中条件：路径中同时含 `capabilities` 与 `i18n` 段，且 `i18n` 位于 `capabilities`
+    之后（即能力包内部）。`extensions/i18n/` 这种顶层目录不豁免——顶层白名单会单独报错。
+
+    参数：
+        path：待判定目录
+
+    返回：
+        布尔值
+    """
+    parts = path.parts
+    if "i18n" not in parts or "capabilities" not in parts:
+        return False
+    return parts.index("i18n") > parts.index("capabilities")
 
 
 def check_code_changed_hint():
@@ -691,7 +711,115 @@ def _capability_import_target(line, prefix):
 # 配置键命名
 # ---------------------------------------------------------------------------
 
+I18N_DIR_NAME = "i18n"
+
+# 界面可见文案的判定属性，与 i18n 技能的扫描口径保持一致。
+UI_STRING_ATTRS = ("name", "description")
+UI_DICT_ATTRS = ("default_config", "config_description", "config_type")
+
+
 CONFIG_KEY_ATTRS = ("default_config", "config_description", "config_type")
+def _parse_catalog(po_path):
+    """解析 po 文件，返回 msgid 到 msgstr 的映射。
+
+    遇到本检查不支持的构造（msgctxt / msgid_plural / fuzzy）时返回 None，
+    交由调用方按「无法检查」处理，不猜。
+
+    参数：
+        po_path：po 路径
+
+    返回：
+        字典；解析失败或含不支持构造时为 None
+    """
+    import re
+
+    text = read_text(po_path)
+    if text is None:
+        return None
+    catalog = {}
+    msgid = None
+    msgstr = ""
+    state = None
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            if msgid:
+                catalog[msgid] = msgstr
+            msgid = None
+            msgstr = ""
+            state = None
+            continue
+        if stripped.startswith("#"):
+            if "fuzzy" in stripped:
+                return None
+            continue
+        if stripped.startswith(("msgctxt", "msgid_plural", "msgstr[")):
+            return None
+        match = re.match(r'^(msgid|msgstr)\s+"(.*)"\s*$', stripped)
+        if match:
+            value = match.group(2).replace("\\n", "\n").replace('\\"', '"')
+            if match.group(1) == "msgid":
+                if msgid:
+                    catalog[msgid] = msgstr
+                msgid = value
+                msgstr = ""
+                state = "id"
+            else:
+                msgstr = value
+                state = "str"
+            continue
+        continuation = re.match(r'^"(.*)"\s*$', stripped)
+        if continuation:
+            value = continuation.group(1).replace("\\n", "\n").replace('\\"', '"')
+            if state == "id":
+                msgid = (msgid or "") + value
+            elif state == "str":
+                msgstr += value
+            continue
+        return None
+    if msgid:
+        catalog[msgid] = msgstr
+    return catalog
+
+
+def _read_mo_ids(mo_path):
+    """读取 mo 文件的 msgid 到 msgstr 映射。
+
+    参数：
+        mo_path：mo 路径
+
+    返回：
+        字典；文件损坏时为 None
+    """
+    import struct
+
+    try:
+        data = mo_path.read_bytes()
+    except OSError:
+        return None
+    if len(data) < 28:
+        return None
+    if struct.unpack("<I", data[:4])[0] != 0x950412DE:
+        return None
+    unpacked = struct.unpack("<6I", data[4:28])
+    count, key_table, value_table = unpacked[1], unpacked[2], unpacked[3]
+    catalog = {}
+    try:
+        for index in range(count):
+            key_len, key_off = struct.unpack(
+                "<2I", data[key_table + index * 8 : key_table + index * 8 + 8]
+            )
+            value_len, value_off = struct.unpack(
+                "<2I", data[value_table + index * 8 : value_table + index * 8 + 8]
+            )
+            key = data[key_off : key_off + key_len].decode("utf-8")
+            value = data[value_off : value_off + value_len].decode("utf-8")
+            if key:
+                catalog[key] = value
+    except (struct.error, UnicodeDecodeError):
+        return None
+    return catalog
+
 
 
 class _ConfigKeyVisitor:
@@ -879,6 +1007,201 @@ def check_config_key_naming():
     return findings
 
 
+
+def _ui_strings_in_capability(package_dir):
+    """列出能力包里界面可见的字符串字面量。
+
+    口径与 i18n 技能一致：只认 `self.<属性>` 上的字面量键与值。动态拼接看不见，
+    因此返回的是下限，只用于「有文案却没建 catalog」的提示，不作阻断依据。
+
+    参数：
+        package_dir：能力包目录
+
+    返回：
+        字符串集合
+    """
+    import ast
+
+    collected = set()
+    for path in sorted(package_dir.rglob("*.py")):
+        if I18N_DIR_NAME in path.relative_to(package_dir).parts:
+            continue
+        text = read_text(path)
+        if text is None:
+            continue
+        try:
+            tree = ast.parse(text)
+        except SyntaxError:
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.Assign, ast.AnnAssign)):
+                targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                for target in targets:
+                    if not isinstance(target, ast.Attribute):
+                        continue
+                    if target.attr in UI_STRING_ATTRS:
+                        if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                            value = node.value.value.strip()
+                            if value:
+                                collected.add(value)
+                    elif target.attr in UI_DICT_ATTRS:
+                        collected.update(_dict_keys_and_values(node.value))
+            elif isinstance(node, ast.Call):
+                func = node.func
+                if not (isinstance(func, ast.Attribute) and func.attr == "update"):
+                    continue
+                holder = func.value
+                if isinstance(holder, ast.Attribute) and holder.attr in UI_DICT_ATTRS:
+                    for arg in node.args:
+                        collected.update(_dict_keys_and_values(arg))
+    return collected
+
+
+def _dict_keys_and_values(node):
+    """从字典字面量里取出键与值中的字符串。
+
+    参数：
+        node：表达式节点
+
+    返回：
+        字符串集合
+    """
+    import ast
+
+    found = set()
+    if not isinstance(node, ast.Dict):
+        return found
+    for key, value in zip(node.keys, node.values):
+        if isinstance(key, ast.Constant) and isinstance(key.value, str) and key.value.strip():
+            found.add(key.value.strip())
+        if isinstance(value, ast.Constant) and isinstance(value.value, str) and value.value.strip():
+            found.add(value.value.strip())
+        elif isinstance(value, (ast.List, ast.Tuple, ast.Set)):
+            for item in value.elts:
+                if (
+                    isinstance(item, ast.Constant)
+                    and isinstance(item.value, str)
+                    and item.value.strip()
+                ):
+                    found.add(item.value.strip())
+    return found
+
+
+def check_i18n_catalogs():
+    """检查 9：能力包内的翻译目录是否完整且同步。
+
+    四项判据：
+
+    1. i18n/<locale>/LC_MESSAGES/ok_ext.po 必须有同名 .mo（错误）——
+       运行时只读 .mo，缺了等于没翻译；
+    2. .po 与 .mo 的 msgid 集合与译文必须一致（错误）——「改了 po 忘编译」；
+    3. catalog 里不得有译文为空的条目（错误）——空串会遮蔽上游同名条目的译文；
+    4. 能力包有界面可见文案却没有任何 catalog（警告）——大概率漏做本地化。
+
+    第 4 条只报警告：文案可能由基类提供或来自配置，脚本看不到全貌。
+
+    返回：
+        缺口列表
+    """
+    findings = []
+    root = EXTENSIONS_DIR / CAPABILITIES_DIR_NAME
+    if not root.is_dir():
+        return findings
+
+    for package_dir in sorted(p for p in root.iterdir() if p.is_dir()):
+        if package_dir.name == "__pycache__":
+            continue
+        package_rel = package_dir.relative_to(PROJECT_ROOT).as_posix()
+        catalog_root = package_dir / I18N_DIR_NAME
+
+        if not catalog_root.is_dir():
+            ui_strings = _ui_strings_in_capability(package_dir)
+            if ui_strings:
+                sample = "、".join(sorted(ui_strings)[:3])
+                findings.append(
+                    Finding(
+                        LEVEL_WARN,
+                        "本地化",
+                        package_rel + " 含界面可见文案（如 " + sample + "），但没有 "
+                        + I18N_DIR_NAME + "/ 目录——扩展文案应落在此处走 ok_ext 域，不改上游 i18n/",
+                    )
+                )
+            continue
+
+        for po_path in sorted(catalog_root.rglob("*.po")):
+            rel = po_path.relative_to(PROJECT_ROOT).as_posix()
+            po_catalog = _parse_catalog(po_path)
+            if po_catalog is None:
+                findings.append(
+                    Finding(
+                        LEVEL_WARN,
+                        "本地化",
+                        rel + " 含本检查不支持的 po 构造（msgctxt / msgid_plural / fuzzy），"
+                        "已跳过校验，需人工核对",
+                    )
+                )
+                continue
+
+            for key in sorted(key for key, value in po_catalog.items() if not value):
+                findings.append(
+                    Finding(
+                        LEVEL_ERROR,
+                        "本地化",
+                        rel + " 的条目「" + key + "」译文为空——"
+                        "空 msgstr 会在链上命中并遮蔽上游同名条目的译文",
+                    )
+                )
+
+            mo_path = po_path.with_suffix(".mo")
+            mo_rel = mo_path.relative_to(PROJECT_ROOT).as_posix()
+            if not mo_path.is_file():
+                findings.append(
+                    Finding(
+                        LEVEL_ERROR,
+                        "本地化",
+                        rel + " 缺少编译产物 " + mo_rel + "——运行时只读 .mo，缺了等于没翻译",
+                    )
+                )
+                continue
+
+            mo_catalog = _read_mo_ids(mo_path)
+            if mo_catalog is None:
+                findings.append(
+                    Finding(LEVEL_ERROR, "本地化", mo_rel + " 无法解析，需重新编译")
+                )
+                continue
+
+            only_po = sorted(set(po_catalog) - set(mo_catalog))
+            only_mo = sorted(set(mo_catalog) - set(po_catalog))
+            differ = sorted(
+                key for key in set(po_catalog) & set(mo_catalog) if po_catalog[key] != mo_catalog[key]
+            )
+            for key in only_po:
+                findings.append(
+                    Finding(
+                        LEVEL_ERROR,
+                        "本地化",
+                        rel + " 的条目「" + key + "」未出现在 .mo 中——改了 po 未重新编译",
+                    )
+                )
+            for key in only_mo:
+                findings.append(
+                    Finding(
+                        LEVEL_ERROR,
+                        "本地化",
+                        mo_rel + " 的条目「" + key + "」在 po 中已不存在——需重新编译",
+                    )
+                )
+            for key in differ:
+                findings.append(
+                    Finding(
+                        LEVEL_ERROR,
+                        "本地化",
+                        rel + " 的条目「" + key + "」译文与 .mo 不一致——需重新编译",
+                    )
+                )
+    return findings
+
 # ---------------------------------------------------------------------------
 # audit 模式
 # ---------------------------------------------------------------------------
@@ -922,6 +1245,7 @@ def run_audit():
     findings.extend(check_capability_naming())
     findings.extend(check_capability_isolation())
     findings.extend(check_config_key_naming())
+    findings.extend(check_i18n_catalogs())
     findings.extend(check_code_changed_hint())
 
     errors = [item for item in findings if item.level == LEVEL_ERROR]

@@ -80,9 +80,18 @@ python $D status <能力名> <状态>
 # 4. 完成后归档
 python $D archive <能力名>
 
-# 5. 提交前体检（文档契约 + 代码落位，合并结论）
+# 5. 交付前体检（文档契约 + 代码落位 + 本地化，合并结论）
 python .codebuddy.project/skills/project/project-extension-capability/project-extension-capability-guard/scripts/extension_capability_guard.py audit
+
+# 6. 若能力有界面文案：校验译文齐备且 .po/.mo 同步
+python .codebuddy.project/skills/project/project-ok-script/project-ok-script-i18n/scripts/task_i18n_helper.py gate \
+  --i18n extensions/capabilities --path extensions/capabilities
 ```
+
+**第 6 步的判据**：能力包里出现 `self.name` / `self.description` / `self.default_config` /
+`self.config_description` / `self.config_type` 的字面量，或 `CustomTab` 的 `name` 返回值，
+即视为有界面文案。译文落 `extensions/capabilities/<能力>/i18n/<locale>/LC_MESSAGES/ok_ext.po`，
+不改上游 `i18n/`。扫描器只看得到字面量，动态拼接的文案需人工补。
 
 能力名必须是**英文 kebab-case**（如 `config-overrides`），因为它同时用作文件名、总览表「能力」列
 与文件头「关联能力」字段。
@@ -102,6 +111,7 @@ python .codebuddy.project/skills/project/project-extension-capability/project-ex
 | `testing/` 不复制用例 | 只写策略与验收结论，用例引用文件名与方法名，代码只存在于 `extensions_tests/` |
 | 文件名英文 kebab-case | 正文用简体中文；ADR 加四位序号前缀，只增不复用 |
 | 总览表是唯一登记源 | 不得另建能力清单文件 |
+| 设计文档须列界面文案清单 | 能力若向用户暴露文案（任务名、Tab、配置项、按钮、弹窗），设计文档的「未解问题」节须列出这些串及其语言范围；不列等于没考虑本地化，交付时 `audit` 的「本地化」项会报缺口 |
 
 ### 什么不算「新增能力」
 

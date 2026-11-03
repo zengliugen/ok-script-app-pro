@@ -22,7 +22,7 @@ provider:
    **禁止**手工新建这些文档或手工往总览表追加行——引擎侧脚本会拒绝不合契约的产物。
 
 2. **交付前必须经本项目技能 `audit`**。它先委托 `devflow-guard` 体检文档契约，再体检代码落位
-   （patch 断言、`sys.path`、每层 `__init__.py`），合并三档输出。
+   （patch 断言、`sys.path`、每层 `__init__.py`、配置键、本地化 catalog），合并三档输出。
    出现「错误」档缺口时必须补齐后再交付；不得以「代码能跑」替代文档与登记。
    返回 3 时先修环境，**此时其余结论都不可采信**。
 
@@ -35,6 +35,14 @@ provider:
 
 5. **侵入性改动必须可失效**。patch 或对框架内部符号的假设，必须在启动时断言目标存在，
    目标消失时立即崩溃并指名缺失项，不得静默降级。此条由 `audit` 的 patch 断言检查兜底。
+
+6. **用户可见文案必须可本地化，且一律走 `ok_ext` 域**。能力包一旦引入任务名、Tab 名、
+   配置键、配置说明、下拉/多选选项、按钮文字或弹窗提示，就必须在
+   `extensions/capabilities/<能力>/i18n/<locale>/LC_MESSAGES/ok_ext.po` 提供对应条目，
+   并编译出同名 `.mo`（**两者都入库**）。**禁止**改上游 `i18n/` 目录——那是上游文件，
+   每次 `git merge upstream/master` 都会冲突。交付前跑
+   `task_i18n_helper.py gate --i18n extensions/capabilities --path extensions/capabilities`；
+   `.po` 与 `.mo` 不同步、或有空 `msgstr`，`audit` 的「本地化」项报错误。
 
 ## 与 `devflow` 规范的分工
 
