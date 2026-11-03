@@ -1,0 +1,97 @@
+{
+  "schema_version": "2.0.0",
+  "name": "project-upstream-compat-sync",
+  "title": "上游同步",
+  "job_to_be_done": "执行上游 ok-script-app 的同步：master 前移到 upstream/master，再把 master 合并进 dev，解决冲突、更新 divergence 基准、验证并提交。用户说\"同步上游\"、\"更新上游\"、\"跟进上游版本\"、\"把上游合进来\"、\"上游有新版本了\"时使用。也用于同步后校验方向是否正确。",
+  "trigger_surface": {
+    "description": "执行上游 ok-script-app 的同步：master 前移到 upstream/master，再把 master 合并进 dev，解决冲突、更新 divergence 基准、验证并提交。",
+    "should_trigger": [
+      "同步一下上游最新的改动。",
+      "上游出新版本了，帮我把 master 更新到 upstream/master。",
+      "跟进一下上游 ok-script-app，把更新合到 dev 上。",
+      "帮我执行一次上游同步。",
+      "检查一下 master 现在是不是和上游一致，不是就同步。",
+      "同步完帮我确认一下方向没搞反，master 别混进项目提交。"
+    ],
+    "should_not_trigger": [
+      "帮我写一个 Python 脚本读取 CSV。",
+      "解释一下 Python 的装饰器怎么用。",
+      "把这个 README 翻译成英文。",
+      "给我总结一下这次的会议纪要。"
+    ],
+    "edge_cases": [
+      "检查有没有未登记的上游改动。",
+      "盘点本项目相对上游改过哪些文件。",
+      "跑一下 run_tests.ps1 看看测试过不过。",
+      "把这次改动提交到 git。",
+      "更新一下 .codebuddy 引擎子模块到最新。",
+      "把 dev 分支合并到 master。"
+    ]
+  },
+  "workflow": {
+    "steps": [
+      "校验同步前不变量（master 纯净、dev 未落后）",
+      "master 快进到 upstream/master",
+      "在 dev 上合并 master",
+      "按 divergence 登记逐个处置冲突",
+      "更新 divergence.yaml 的同步基准",
+      "运行方向校验、登记校验与双测试根测试",
+      "在 dev 上提交"
+    ],
+    "decision_points": [
+      "冲突文件是否有 divergence 登记条目",
+      "tests/ 与 extensions_tests/ 的失败分别归因"
+    ],
+    "failure_modes": [
+      "在 master 上合并 dev 导致方向搞反",
+      "只前移 master 未合进 dev",
+      "忘记更新 synced_upstream_commit",
+      "提交消息描述与真实改动不符"
+    ]
+  },
+  "resources": {
+    "references": [
+      "references/sync-invariants.md",
+      "references/failure-handling.md"
+    ],
+    "scripts": [
+      "scripts/sync_guard.py"
+    ],
+    "assets": [],
+    "reports": [
+      "reports/output-risk-profile.md"
+    ]
+  },
+  "eval_plan": {
+    "trigger": [
+      "evals/trigger_cases.json",
+      "evals/semantic_config.json"
+    ],
+    "output": [],
+    "adversarial": [],
+    "baseline": "without_skill"
+  },
+  "risk": {
+    "output_risk": "medium",
+    "execution_risk": "high",
+    "trust_boundary": "team"
+  },
+  "governance": {
+    "owner": "Yao Team",
+    "maturity": "production",
+    "review_cadence": "monthly",
+    "review_due": ""
+  },
+  "targets": [
+    "openai",
+    "claude",
+    "generic",
+    "agent-skills-compatible",
+    "vscode"
+  ],
+  "source_files": [
+    "SKILL.md",
+    "manifest.json",
+    "agents/interface.yaml"
+  ]
+}

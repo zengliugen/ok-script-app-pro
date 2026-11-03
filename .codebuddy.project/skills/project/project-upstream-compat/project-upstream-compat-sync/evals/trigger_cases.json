@@ -1,0 +1,124 @@
+{
+  "recommended_threshold": 0.3,
+  "negative_patterns": [
+    "git merge upstream",
+    "合并分支",
+    "跑测试",
+    "解释一下",
+    "上游差异",
+    "登记条目",
+    "乘一下上游",
+    "上游同步",
+    "同步上游"
+  ],
+  "should_trigger": [
+    {
+      "text": "同步一下上游最新的改动。",
+      "family": "sync_execute"
+    },
+    {
+      "text": "上游出新版本了，帮我把 master 更新到 upstream/master。",
+      "family": "sync_execute"
+    },
+    {
+      "text": "跟进一下上游 ok-script-app，把更新合到 dev 上。",
+      "family": "sync_execute"
+    },
+    {
+      "text": "帮我执行一次上游同步。",
+      "family": "sync_execute"
+    },
+    {
+      "text": "把 upstream/master 合进来了吗？没合就合一下。",
+      "family": "sync_execute"
+    },
+    {
+      "text": "上游刚发版，走一遍同步流程。",
+      "family": "sync_execute"
+    },
+    {
+      "text": "检查一下 master 现在是不是和上游一致，不是就同步。",
+      "family": "sync_verify"
+    },
+    {
+      "text": "同步完帮我确认一下方向没搞反，master 别混进项目提交。",
+      "family": "sync_verify"
+    },
+    {
+      "text": "上游更新完了，dev 合过了吗？",
+      "family": "sync_verify"
+    },
+    {
+      "text": "把 ok-script-app 的新提交同步到我们仓库。",
+      "family": "sync_execute"
+    },
+    {
+      "text": "准备好做上游升级了，按项目约定的流程走。",
+      "family": "sync_execute"
+    },
+    {
+      "text": "upstream 有 3 个新提交，帮我合进去。",
+      "family": "sync_execute"
+    }
+  ],
+  "should_not_trigger": [
+    {
+      "text": "帮我写一个 Python 脚本读取 CSV。",
+      "family": "unrelated"
+    },
+    {
+      "text": "解释一下 Python 的装饰器怎么用。",
+      "family": "explain_only"
+    },
+    {
+      "text": "把这个 README 翻译成英文。",
+      "family": "translate_only"
+    },
+    {
+      "text": "给我总结一下这次的会议纪要。",
+      "family": "summarize_only"
+    },
+    {
+      "text": "推荐几个好用的 git GUI 工具。",
+      "family": "unrelated"
+    },
+    {
+      "text": "帮我设计一个数据库表结构。",
+      "family": "unrelated"
+    }
+  ],
+  "near_neighbor": [
+    {
+      "text": "检查有没有未登记的上游改动。",
+      "family": "sibling_registry"
+    },
+    {
+      "text": "盘点本项目相对上游改过哪些文件。",
+      "family": "sibling_registry"
+    },
+    {
+      "text": "给 src/config.py 的上游改动补一条 divergence 条目。",
+      "family": "sibling_registry"
+    },
+    {
+      "text": "跑一下 run_tests.ps1 看看测试过不过。",
+      "family": "sibling_test"
+    },
+    {
+      "text": "把这次改动提交到 git。",
+      "family": "sibling_commit"
+    },
+    {
+      "text": "更新一下 .codebuddy 引擎子模块到最新。",
+      "family": "sibling_engine"
+    },
+    {
+      "text": "解释一下 upstream-sync.mdc 里为什么禁止 rebase。",
+      "family": "explain_only"
+    },
+    {
+      "text": "把 dev 分支合并到 master。",
+      "family": "wrong_direction"
+    }
+  ]
+}

@@ -14,14 +14,36 @@ provider:
 |---|---|
 | 上游远端 | `upstream` → `https://github.com/ok-oldking/ok-script-app.git`（push 已设 `no_push`） |
 | 上游跟踪分支 | `upstream/master` |
-| 本项目主分支 | `dev`（`origin/HEAD` 指向它） |
+| 上游镜像分支 | `master`（只允许快进到上游，**禁止**任何本地提交） |
+| 本项目开发分支 | `dev`（`origin/HEAD` 指向它） |
+
+**同步方向固定为** `upstream/master` → `master` → `dev`，单向。
+
+| 分支 | 允许 | 禁止 |
+|---|---|---|
+| `master` | `git merge --ff-only upstream/master` | 任何本地提交、`git merge dev` |
+| `dev` | `git merge master`、日常开发提交 | —— |
+
+**为什么方向不能反**：`git merge dev` 在 master 上完全合法、Git 不报任何错，但会让 master
+失去「纯上游」语义——无法再快进，也看不出哪些提交来自上游。本项目已经出过一次这个事故。
 
 ## 合并方式：merge，不 rebase
 
+执行同步**一律经 `project-upstream-compat-sync` 技能**，它把下述流程与方向不变量都固化成了
+可执行步骤和校验脚本：
+
+```bash
+S=.codebuddy.project/skills/project/project-upstream-compat/project-upstream-compat-sync/scripts/sync_guard.py
+python $S check --stage before     # 动手前：确认 master 纯净、方向未搞反
+```
+
 ```bash
 git fetch upstream
+git checkout master
+git merge --ff-only upstream/master   # 只快进，master 上有多余提交会直接失败
 git checkout dev
-git merge upstream/master
+git merge master                       # 单向同步到 dev
+python $S check --stage after          # 提交前：确认 dev 已含上游、基准已更新
 ```
 
 **选 merge 的理由**：

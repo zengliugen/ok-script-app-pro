@@ -1,0 +1,155 @@
+{
+  "positive_concepts": {
+    "sync_execute": {
+      "weight": 0.42,
+      "phrases": [
+        "同步上游",
+        "上游同步",
+        "同步一下上游",
+        "同步完",
+        "更新上游",
+        "跟进上游",
+        "跟进一下上游",
+        "上游更新",
+        "上游升级",
+        "做上游升级",
+        "上游新版本",
+        "上游出新版本",
+        "上游发版",
+        "上游最新",
+        "upstream 更新",
+        "upstream 有",
+        "merge upstream",
+        "把上游合进来",
+        "把 upstream 合",
+        "合进来",
+        "合进去",
+        "同步到我们仓库",
+        "同步一次",
+        "走一遍同步",
+        "就同步",
+        "不是就同步"
+      ]
+    },
+    "sync_verify": {
+      "weight": 0.24,
+      "phrases": [
+        "方向没搞反",
+        "方向搞反",
+        "混进项目提交",
+        "master 混进",
+        "是不是和上游",
+        "和上游一致",
+        "master 是不是和上游一致",
+        "dev 合过了吗",
+        "同步完成了吗",
+        "同步后检查",
+        "上游有没有合进来",
+        "方向是否正确",
+        "方向对不对"
+      ]
+    },
+    "branch_action": {
+      "weight": 0.16,
+      "phrases": [
+        "upstream/master",
+        "master 前移",
+        "master 更新到",
+        "快进",
+        "合到 dev",
+        "合并进 dev",
+        "新提交合进去",
+        "新版本合进来",
+        "个新提交"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "sync_execute"
+  ],
+  "negative_concepts": {
+    "registry_only": {
+      "weight": 0.28,
+      "exclusive": true,
+      "phrases": [
+        "上游差异",
+        "未登记",
+        "已登记",
+        "divergence",
+        "登记条目",
+        "盘点",
+        "登记清单",
+        "补登记"
+      ]
+    },
+    "run_tests": {
+      "weight": 0.24,
+      "exclusive": true,
+      "phrases": [
+        "run_tests",
+        "跑测试",
+        "运行测试",
+        "跑一下测试",
+        "单元测试"
+      ]
+    },
+    "explain_only": {
+      "weight": 0.26,
+      "exclusive": true,
+      "phrases": [
+        "解释一下",
+        "什么意思",
+        "有哪些取值",
+        "给我讲讲",
+        "说明一下",
+        "为什么禁止"
+      ]
+    },
+    "commit_only": {
+      "weight": 0.24,
+      "exclusive": true,
+      "phrases": [
+        "提交到 git",
+        "帮我提交",
+        "commit 一下",
+        "提交代码"
+      ]
+    },
+    "engine_submodule": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "引擎子模块",
+        ".codebuddy 更新",
+        "引擎仓库",
+        "engine-sync"
+      ]
+    },
+    "wrong_direction": {
+      "weight": 0.2,
+      "exclusive": false,
+      "phrases": [
+        "把 dev 合并到 master",
+        "dev 合进 master"
+      ]
+    },
+    "translate_only": {
+      "weight": 0.35,
+      "exclusive": true,
+      "phrases": [
+        "翻译成",
+        "译成",
+        "translate"
+      ]
+    },
+    "summarize_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "总结一下",
+        "概括一下",
+        "提炼重点"
+      ]
+    }
+  }
+}
