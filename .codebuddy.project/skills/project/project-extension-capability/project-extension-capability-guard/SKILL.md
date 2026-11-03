@@ -41,7 +41,7 @@ python $DIR/scripts/extension_capability_guard.py audit
 
 1. **委托段**：调 `devflow_guard.py audit`，原样转发其输出与退出码。委托目标不存在
    （未安装 devflow 包）时该段报错误，整体退出码 3。
-2. **代码落位段**：本技能独有的八项检查，读 `extensions/` 下的 Python 源码。
+2. **代码落位段**：本技能独有的九项检查，读 `extensions/` 下的 Python 源码与翻译资源。
 
 ### 代码落位检查什么
 
@@ -54,6 +54,7 @@ python $DIR/scripts/extension_capability_guard.py audit
 | **能力命名** | 能力包名按 `-`↔`_` 换算后能对上文档总览表「能力」列 | 从 `project.index.json` 找 devflow 配置，读文档根的 `README.md` 首列 |
 | **能力隔离** | 能力包内不得 `from/import extensions.capabilities.<其他能力>` | 按行正则，截断到能力包一级 |
 | **配置键** | 键须为可打印 ASCII 且首尾无空白；`_` 开头的键不得出现在 `config_description`/`config_type`；两处的键须在 `default_config` 里存在 | ast 读三处字典的字面量键，非字面量键报「提示」而不放过 |
+| **本地化** | 能力包的 `i18n/<locale>/LC_MESSAGES/ok_ext.po` 必须有同名 `.mo`；两者条目与译文须一致；不得有空 `msgstr`；有界面文案却没建 catalog 报警告 | 标准库解析 po/mo（不依赖 polib，构建链也不编译 `.po`），按目录遍历 |
 | 登记同步提示 | `extensions/` 有改动但总览表未变 | `git status` 比对，仅为提示 |
 
 **能力分包的六项判据**（前四项报错误，末两项报错误/提示）：
