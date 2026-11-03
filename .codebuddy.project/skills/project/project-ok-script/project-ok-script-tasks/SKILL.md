@@ -55,6 +55,24 @@ codegen 产出方法体，i18n 产出 `.po`/`.mo`。
 - 配置键保持稳定的英文（它会成为持久化 JSON 字段名），中文说明放在
   `config_description` 或翻译目录里。项目已有本地化键名风格时随项目。
 
+### 配置键的命名口径
+
+**键名同时是界面标签**：框架取 `config_description.get(key)` 作说明、取 `key` 本身作标签
+（`ConfigLabelAndWidget` → `LabelAndWidget(key, desc)`），两处都过 `og.app.tr()`。
+所以键既要当持久化字段，又要当展示文本：
+
+- **沿用上游惯例：`<主题> <控件类型>` 的 Title Case 英文名词短语**（`Auto Retry Count`、
+  `Auto Retry Switch`）。`enable_auto_retry` 这类动词 snake_case 与上游不一致，
+  且界面在补译文前会先暴露原始键名。
+- **不用中文键**。键原样写进持久化 JSON，日后改名会让用户旧配置全部失效。
+- **`_` 前缀只表示「隐藏」**（框架据此过滤界面），不要再往 `config_description`、
+  `config_type` 里登记这类键——那会得到永不显示的配置项。
+- **三处键要互相对齐**：`config_type`、`config_description` 的键都应能在 `default_config`
+  里找到，否则配置项不渲染，且不报错。
+
+以上三条硬约束（ASCII、`_` 语义、三处对齐）由扩展能力体检的「配置键」项机械校验，
+写作时可直接对照。
+
 ## 中英双语
 
 - 回答语言跟用户；不确定时用中文，必要时附英文标签。

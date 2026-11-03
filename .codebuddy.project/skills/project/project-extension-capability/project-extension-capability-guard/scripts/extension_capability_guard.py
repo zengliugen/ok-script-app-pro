@@ -688,6 +688,198 @@ def _capability_import_target(line, prefix):
 
 
 # ---------------------------------------------------------------------------
+# 配置键命名
+# ---------------------------------------------------------------------------
+
+CONFIG_KEY_ATTRS = ("default_config", "config_description", "config_type")
+
+
+class _ConfigKeyVisitor:
+    """收集 `self.<配置属性>` 字典里的字符串键，并按属性名分组。
+
+    只认字面量键：常量拼接、变量、推导式拼出来的键无法静态确定，记进
+    `dynamic`，由报告注明「有键没能静态检查」，而不是当作合规放过。
+    """
+
+    def __init__(self):
+        """初始化分组结果。"""
+        self.keys = {attr: [] for attr in CONFIG_KEY_ATTRS}
+        self.dynamic = []
+
+    def visit(self, tree):
+        """遍历整棵 ast 树。
+
+        参数：
+            tree：ast 模块节点
+        """
+        import ast
+
+        ast.NodeVisitor.__init__(self)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Assign):
+                self._collect_targets(node.targets, node.value)
+            elif isinstance(node, ast.AnnAssign) and node.value is not None:
+                self._collect_targets([node.target], node.value)
+            elif isinstance(node, ast.Call):
+                self._collect_update(node)
+
+    def _collect_targets(self, targets, value):
+        """处理 `self.<attr> = {...}` 与 `self.<attr>["键"] = ...` 两种赋值。"""
+        import ast
+
+        for target in targets:
+            if isinstance(target, ast.Attribute) and target.attr in self.keys:
+                self._add_dict_keys(target.attr, value)
+            elif isinstance(target, ast.Subscript):
+                holder = target.value
+                if isinstance(holder, ast.Attribute) and holder.attr in self.keys:
+                    key = target.slice
+                    if isinstance(key, ast.Constant) and isinstance(key.value, str):
+                        self.keys[holder.attr].append(key.value)
+                    else:
+                        self.dynamic.append(holder.attr)
+
+    def _collect_update(self, node):
+        """处理 `self.<attr>.update({...})`。"""
+        import ast
+
+        func = node.func
+        if not isinstance(func, ast.Attribute) or func.attr != "update":
+            return
+        holder = func.value
+        if not isinstance(holder, ast.Attribute) or holder.attr not in self.keys:
+            return
+        for arg in node.args:
+            self._add_dict_keys(holder.attr, arg)
+
+    def _add_dict_keys(self, attr, node):
+        """从字典字面量里取出字符串键。
+
+        参数：
+            attr：配置属性名
+            node：被赋值或传入的表达式
+        """
+        import ast
+
+        if not isinstance(node, ast.Dict):
+            self.dynamic.append(attr)
+            return
+        for key in node.keys:
+            if isinstance(key, ast.Constant) and isinstance(key.value, str):
+                self.keys[attr].append(key.value)
+            else:
+                self.dynamic.append(attr)
+
+
+def check_config_key_naming():
+    """检查 8：扩展内的配置键是否符合键名约定。
+
+    三条判据：
+
+    1. 键必须是可打印 ASCII 且首尾无空白——中文键会原样写进持久化 JSON，
+       日后改键让用户旧配置全部失效；首尾空白会让翻译目录的 msgid 永远匹配不上；
+    2. 下划线开头的键只承载「隐藏」语义（框架据此过滤界面），因此不得出现在
+       `config_description` 与 `config_type` 里——这两处的内容要渲染到界面；
+    3. `config_description` 与 `config_type` 的键必须在 `default_config` 里存在，
+       否则该配置项不会渲染，属静默不生效。
+
+    第 3 条报警告而非错误：键可能由基类提供，静态分析只看得到本文件。
+    命名风格（Title Case 名词短语）不在此校验——风格无法机械判定，
+    约定见 `project-ok-script-tasks` 技能。
+
+    返回：
+        缺口列表
+    """
+    import ast
+
+    findings = []
+    root = EXTENSIONS_DIR / CAPABILITIES_DIR_NAME
+    if not root.is_dir():
+        return findings
+
+    for path in sorted(root.rglob("*.py")):
+        text = read_text(path)
+        if text is None:
+            continue
+        rel = path.relative_to(PROJECT_ROOT).as_posix()
+        try:
+            tree = ast.parse(text)
+        except SyntaxError as exc:
+            findings.append(
+                Finding(LEVEL_ERROR, "配置键", rel + " 语法错误，无法检查配置键：" + str(exc))
+            )
+            continue
+
+        visitor = _ConfigKeyVisitor()
+        visitor.visit(tree)
+
+        defaults = set(visitor.keys["default_config"])
+
+        # 判据 1：可打印 ASCII，首尾无空白。
+        for attr in CONFIG_KEY_ATTRS:
+            for key in visitor.keys[attr]:
+                if key != key.strip():
+                    findings.append(
+                        Finding(
+                            LEVEL_ERROR,
+                            "配置键",
+                            rel + " 的配置键「" + key + "」首尾带空白——"
+                            "翻译目录的 msgid 要求逐字符一致，带空白永远匹配不上",
+                        )
+                    )
+                elif not key.isascii() or not key.isprintable():
+                    findings.append(
+                        Finding(
+                            LEVEL_ERROR,
+                            "配置键",
+                            rel + " 的配置键「" + key + "」含非 ASCII 或不可打印字符——"
+                            "键会原样写入持久化 JSON，非英文键日后无法安全改名",
+                        )
+                    )
+
+        # 判据 2：下划线开头的键只用于隐藏，不得出现在要渲染的两处。
+        for attr in ("config_description", "config_type"):
+            for key in visitor.keys[attr]:
+                if key.startswith("_"):
+                    findings.append(
+                        Finding(
+                            LEVEL_ERROR,
+                            "配置键",
+                            rel + " 在 " + attr + " 里登记了下划线开头的键「" + key + "」——"
+                            "下划线在框架里表示「隐藏」，两处登记会得到永不显示的配置项",
+                        )
+                    )
+
+        # 判据 3：三处对齐。
+        for attr in ("config_description", "config_type"):
+            for key in visitor.keys[attr]:
+                if key.startswith("_") or key in defaults:
+                    continue
+                findings.append(
+                    Finding(
+                        LEVEL_WARN,
+                        "配置键",
+                        rel + " 的 " + attr + " 登记了「" + key + "」，"
+                        "但本文件的 default_config 里没有该键——若键由基类提供可忽略，"
+                        "否则该配置项不会渲染",
+                    )
+                )
+
+        if visitor.dynamic:
+            findings.append(
+                Finding(
+                    LEVEL_INFO,
+                    "配置键",
+                    rel + " 的 "
+                    + "/".join(sorted(set(visitor.dynamic)))
+                    + " 含非字面量键，未能静态检查，需人工核对",
+                )
+            )
+
+    return findings
+
+
+# ---------------------------------------------------------------------------
 # audit 模式
 # ---------------------------------------------------------------------------
 
@@ -729,6 +921,7 @@ def run_audit():
     findings.extend(check_capability_layout())
     findings.extend(check_capability_naming())
     findings.extend(check_capability_isolation())
+    findings.extend(check_config_key_naming())
     findings.extend(check_code_changed_hint())
 
     errors = [item for item in findings if item.level == LEVEL_ERROR]

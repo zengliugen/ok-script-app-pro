@@ -171,6 +171,10 @@ self.config_description.update({
 })
 ```
 
+键名同时是界面标签（`LabelAndWidget(key, desc)` 把 `key` 当标题显示，过 `og.app.tr()`），
+因此命名沿用 `<主题> <控件类型>` 的 Title Case 英文名词短语，例如 `Auto Retry Count`。
+不用中文键、不用动词 snake_case、不含首尾空白。详细判据见技能正文「配置键的命名口径」。
+
 只希望在特定语言区显示该任务时：
 
 ```python
