@@ -8,6 +8,7 @@
 | 验证通过 | `.\run_tests.ps1` | 停止发布，除非用户明确接受带失败发布 |
 | 版本号未与他人撞车 | `next_tag.py <渠道> --remote origin` | 远端查询失败即停止，不得凭本地 tag 猜 |
 | 没有未登记的上游改动 | 走 `project-upstream-compat-guard` | 补登记后再发 |
+| 扩展翻译齐备且 `.po`/`.mo` 同步 | `task_i18n_helper.py gate --i18n extensions/capabilities --path extensions/capabilities` | 补译文或重新 `compile`；不得带失败发布 |
 | `src/config.py` 的 `version` 仍是 `dev` | 人工核对 | 它由打包流程改写，不要手改 |
 
 ## 二、tag 与 CI 的触发关系

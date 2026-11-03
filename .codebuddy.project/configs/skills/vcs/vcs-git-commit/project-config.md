@@ -91,11 +91,12 @@ VCS 互斥锁、暂存区校验、计划外文件核对。
 
 ## 4. H1 钩子步骤
 
-当前启用 1 个 H1 步骤：Python 静态检查（格式 + 规则），提交前阻断违规。
+当前启用 2 个 H1 步骤：Python 静态检查、扩展翻译一致性检查。
 
 | enabled | name | description | commands | blocking |
 |---------|------|-------------|----------|----------|
 | true | Python 静态检查 | 按 `python_lint.config` 的规则集与检查范围，对**本次变更**的 Python 文件依次执行：① 自动修 import 排序（仅记录）② ruff format 格式检查（阻塞）③ ruff check 规则检查（阻塞）。范围由收集脚本按白名单过滤；工具环境缺失时退出 3，提示先跑 `python-env` 的 `ensure`，不自动安装 | `[".codebuddy.project/envs/python/Scripts/python.exe", ".codebuddy/lib/python/skills/python-lint/scripts/run_ruff.py", "check", "--changed", "--blocking"]` | true |
+| true | 扩展翻译一致性 | 校验扩展能力自带的翻译目录：① 每个 `extensions/capabilities/*/i18n/*/LC_MESSAGES/ok_ext.po` 都有同名 `.mo`（运行时只读 `.mo`）；② `.po` 与 `.mo` 的条目与译文一致（防「改了 po 忘编译」）；③ 扩展代码里的界面文案都能在各语言 catalog 中找到。扩展目前无 `i18n/` 目录时本步骤直接通过 | `[".codebuddy.project/envs/python/Scripts/python.exe", ".codebuddy.project/skills/project/project-ok-script/project-ok-script-i18n/scripts/task_i18n_helper.py", "gate", "--i18n", "extensions/capabilities", "--path", "extensions/capabilities"]` | true |
 
 **为何只写一条命令**：三档分级（`I` 自动修、`F`/`D` 阻塞、`E501` 忽略）收在
 `run_ruff.py` 的 `--blocking` 内。单条命令的退出码表达不了三档；若拆成三条门禁命令，
