@@ -22,6 +22,7 @@ from importlib import import_module
 CAPABILITIES = (
     "extensions.capabilities.log_noise_filter",
     "extensions.capabilities.update_check_guard",
+    "extensions.capabilities.extension_i18n",
 )
 
 
