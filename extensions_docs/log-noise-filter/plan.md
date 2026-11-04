@@ -11,7 +11,7 @@
 ## 目标
 
 启动后同类「get_exe_by_hwnd process.cmdline() error」日志不再每 0.2 秒刷完整 traceback，
-而是降级为可读的单行摘要并按冷却窗口折叠。对应设计：`design/log-noise-filter.md`。
+而是降级为可读的单行摘要并按冷却窗口折叠。对应设计：`log-noise-filter/design.md`。
 
 ## 分批任务
 

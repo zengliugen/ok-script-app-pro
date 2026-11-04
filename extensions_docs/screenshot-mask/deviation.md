@@ -8,7 +8,7 @@
 | 更新日期 | 2026-11-04 |
 | 生成器 | devflow-guard/new |
 
-对应计划：`plans/screenshot-mask-plan.md`。本文件按**时间倒序**追加，最新一条在最上面。
+对应计划：`screenshot-mask/plan.md`。本文件按**时间倒序**追加，最新一条在最上面。
 
 ## 准入判据
 

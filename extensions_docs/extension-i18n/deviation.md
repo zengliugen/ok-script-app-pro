@@ -8,7 +8,7 @@
 | 更新日期 | 2026-11-03 |
 | 生成器 | devflow-guard/new |
 
-对应计划：`plans/extension-i18n-plan.md`。本文件按**时间倒序**追加，最新一条在最上面。
+对应计划：`extension-i18n/plan.md`。本文件按**时间倒序**追加，最新一条在最上面。
 
 ## 准入判据
 

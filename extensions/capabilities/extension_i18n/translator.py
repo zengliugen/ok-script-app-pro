@@ -7,7 +7,7 @@
 
 为什么不是新增语言基础码目录（`i18n/en/`、`i18n/zh/`）：那只能追加不能覆盖，
 且 `zh_TW` 的回退链是 `['zh_TW', 'zh']`，会把简体译文给到繁体用户。
-详见 `extensions_docs/design/extension-i18n.md`。
+详见 `extensions_docs/extension-i18n/design.md`。
 
 依赖的框架内部符号只有一个：`App.po_translation`。它消失时立即抛错并指名，
 不静默降级——降级的后果是「扩展文案永远显示原文」，比启动失败更难发现。

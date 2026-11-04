@@ -19,7 +19,7 @@ provider:
 ## 四条路径，按顺序尝试
 
 新增能力从路径 1 开始，逐级下降。**上升一级必须写明上一级为何不可行**，该说明写进
-`extensions_docs/design/<能力名>.md` 的「候选方案」节；若最终落到 patch，还要在
+`extensions_docs/<能力名>/design.md` 的「候选方案」节；若最终落到 patch，还要在
 `divergence.yaml` 条目的 `reason` 里同步说明。
 
 ### 路径 1：继承 + config 注册（首选）

@@ -10,7 +10,7 @@
 
 ## 目标
 
-完成后系统具备什么能力。对应设计文档：`design/window-restore-guard.md`。
+完成后系统具备什么能力。对应设计文档：`window-restore-guard/design.md`。
 
 启动时若窗口按 `window_maximized` 配置进入最大化，窗口不再被一次多余的 `SW_RESTORE` 降级，
 从而不出现双标题栏与布局偏移；普通窗口启动、最小化后还原的行为与上游保持一致。

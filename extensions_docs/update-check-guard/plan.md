@@ -11,7 +11,7 @@
 ## 目标
 
 启动器不存在时 About 页不展示「App update」卡片，且不再排定时器、不再产生
-`FileNotFoundError`。对应设计：`design/update-check-guard.md`。
+`FileNotFoundError`。对应设计：`update-check-guard/design.md`。
 
 ## 分批任务
 

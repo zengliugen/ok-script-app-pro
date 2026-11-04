@@ -27,7 +27,7 @@ python $D status <能力名> <状态>                  # 同步总览表与四�
 python $D archive <能力名>                        # 归档并回写总览表路径
 
 # 提交前体检：文档契约 + 代码落位，合并结论
-python .codebuddy.project/skills/project/project-extension-capability-guard/scripts/extension_capability_guard.py audit
+python .codebuddy.project/skills/project/project-extension-capability/project-extension-capability-guard/scripts/extension_capability_guard.py audit
 ```
 
 判定逻辑只写一处——文档契约由引擎侧脚本判、代码落位由本项目脚本判。两处各写一份会分叉，
@@ -38,24 +38,36 @@ python .codebuddy.project/skills/project/project-extension-capability-guard/scri
 
 ## 目录职责
 
-每个子目录放什么、不放什么，见各目录下的 `README.md`。总览：
+```
+extensions_docs/
+├── README.md              # 本文件：目录说明 + 能力总览表
+├── <能力名>/              # 一个能力一个目录，内部平铺四份文档
+│   ├── design.md          # 做之前：方案推演、候选比较、取舍理由
+│   ├── plan.md            # 做之中：实施计划
+│   ├── deviation.md       # 做之中：实施偏差记录
+│   └── testing.md         # 做之后：测试策略、验收结论、已知盲区
+├── explore/               # 动手前：需求确认，可反复改写
+├── decisions/             # 贯穿：不可变的决策快照（ADR）
+└── archive/<能力名>/      # 收尾：已完成能力的整包归档
+```
 
-| 目录 | 阶段 | 承载内容 |
-|---|---|---|
-| `explore/` | 动手前 | 需求确认记录；确认后 `new --from-explore` 才接受引用 |
-| `design/` | 做之前 | 方案推演、候选比较、取舍理由 |
-| `plans/` | 做之中 | 实施计划，以及实施偏差记录 |
-| `testing/` | 做之后 | 测试策略、验收结论、已知盲区 |
-| `decisions/` | 贯穿 | 不可变的决策快照（ADR） |
-| `archive/` | 收尾 | 已完成能力的整包归档 |
+**为什么按能力分目录**：一个能力的四份文档放在同一目录，看全貌只需 `ls <能力名>/`。
+`archive/` 一直是这个形态，活跃区与归档区同构后，归档退化为一次目录搬迁，不需要改名。
+
+**`explore/` 与 `decisions/` 留在文档根**：探索记录按**主题**命名，一份可产出多个能力
+（如 `explore/maximize-restore-frameless-fix.md` 产出的是 `window-restore-guard`）；
+ADR 编号必须全局连续，且有「关联能力=全局」的跨能力决策。
+
+每个保留目录放什么、不放什么，见其自身 `README.md`。能力目录没有 README——
+四份文档的文件头已说明各自用途。
 
 ## 命名规范
 
 - **文件名一律英文 kebab-case**，正文一律简体中文：`test-dir-naming.md` 而非 `测试目录命名.md`。
   理由是路径会出现在命令行、Git 日志、CI 输出与 Markdown 链接中，英文名无须转义。
-- **能力相关文档用「能力名 + 后缀」配对**：
-  - `plans/<能力>-plan.md` —— 实施计划
-  - `plans/<能力>-deviation.md` —— 实施偏差记录
+- **能力名同时是目录名**：`<能力名>/{design,plan,deviation,testing}.md`。文件名固定，
+  能力名只出现在目录上；这要求能力名不得与保留目录（`explore`/`decisions`/`archive`）同名，
+  `new` 会拦住。
 - **ADR 加四位序号前缀**：`decisions/0001-<slug>.md`，序号只增不复用、不回收。用 `adr` 创建，
   不要手工定号。
 
@@ -93,19 +105,20 @@ python $D explore <主题名>
 # 2. 生成四份骨架并登记（--from-explore 必填）
 python $D new <能力名> --from-explore <主题名>
 
-# 3. 填 design（方案与取舍）→ 定稿后补 plans → 开发完成后补 testing
+# 3. 填 <能力名>/design.md（方案与取舍）→ 定稿后补 plan.md → 开发完成后补 testing.md
 
 # 4. 提交前体检
-python .codebuddy.project/skills/project/project-extension-capability-guard/scripts/extension_capability_guard.py audit
+python .codebuddy.project/skills/project/project-extension-capability/project-extension-capability-guard/scripts/extension_capability_guard.py audit
 ```
 
-能力名必须是**英文 kebab-case**（如 `config-overrides`）——它同时是文件名、总览表「能力」列
+能力名必须是**英文 kebab-case**（如 `config-overrides`）——它同时是能力目录名、总览表「能力」列
 与文件头「关联能力」字段的值，也是代码侧的落位依据：
 
 | 位置 | 形态 | 示例 |
 |---|---|---|
 | 代码目录 | `extensions/capabilities/<snake_case>/` | `config_overrides/` |
 | 能力清单 | `extensions/capabilities/registry.py` 的 `CAPABILITIES` | `extensions.capabilities.config_overrides` |
+| 文档目录 | `extensions_docs/<kebab-case>/` | `config-overrides/` |
 | 文档总览表 | 本文件「能力」列 | `config-overrides` |
 
 三者由 `audit` 双向核对：目录与清单必须互相登记，包名换算成 kebab-case 后必须能在总览表找到
@@ -124,10 +137,10 @@ python .codebuddy.project/skills/project/project-extension-capability-guard/scri
 
 | 能力 | 状态 | 设计 | 实施计划 | 实施偏差 | 测试 | 决策记录 |
 |---|---|---|---|---|---|---|
-| log-noise-filter | 已实施 | design/log-noise-filter.md | plans/log-noise-filter-plan.md | plans/log-noise-filter-deviation.md | testing/log-noise-filter-testing.md | — |
-| update-check-guard | 已实施 | design/update-check-guard.md | plans/update-check-guard-plan.md | plans/update-check-guard-deviation.md | testing/update-check-guard-testing.md | — |
-| extension-i18n | 已实施 | design/extension-i18n.md | plans/extension-i18n-plan.md | plans/extension-i18n-deviation.md | testing/extension-i18n-testing.md | — |
-| window-restore-guard | 已实施 | design/window-restore-guard.md | plans/window-restore-guard-plan.md | plans/window-restore-guard-deviation.md | testing/window-restore-guard-testing.md | — |
-| screenshot-mask | 已实施 | design/screenshot-mask.md | plans/screenshot-mask-plan.md | plans/screenshot-mask-deviation.md | testing/screenshot-mask-testing.md | — |
+| log-noise-filter | 已实施 | log-noise-filter/design.md | log-noise-filter/plan.md | log-noise-filter/deviation.md | log-noise-filter/testing.md | — |
+| update-check-guard | 已实施 | update-check-guard/design.md | update-check-guard/plan.md | update-check-guard/deviation.md | update-check-guard/testing.md | — |
+| extension-i18n | 已实施 | extension-i18n/design.md | extension-i18n/plan.md | extension-i18n/deviation.md | extension-i18n/testing.md | — |
+| window-restore-guard | 已实施 | window-restore-guard/design.md | window-restore-guard/plan.md | window-restore-guard/deviation.md | window-restore-guard/testing.md | — |
+| screenshot-mask | 已实施 | screenshot-mask/design.md | screenshot-mask/plan.md | screenshot-mask/deviation.md | screenshot-mask/testing.md | — |
 
 > 「待补」是显式的缺口标记，不是占位符。补齐后改成实际文件名。

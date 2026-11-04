@@ -27,13 +27,11 @@ ok-script-app-pro/
 ├── extensions_tests/        # 项目扩展测试（被测对象为 extensions/）
 │   └── TestExtensions.py    # 覆写生效性与缺键语义
 ├── extensions_docs/         # 扩展能力开发文档（设计→开发→测试全过程，不参与运行时）
-│   ├── README.md            # 目录说明 + 扩展能力总览表
-│   ├── design/              # 方案推演与取舍理由
-│   ├── plans/               # <能力>-plan.md 与 <能力>-deviation.md
-│   ├── testing/             # 测试策略、验收结论、已知盲区
+│   ├── README.md            # 目录说明 + 扩展能力总览表（唯一登记源）
+│   ├── <能力名>/            # 一能力一目录：design / plan / deviation / testing.md
+│   ├── explore/             # 按主题的需求探索记录
 │   ├── decisions/           # NNNN-<slug>.md，定稿不可改写
-│   ├── templates/           # 文档骨架
-│   └── archive/             # 已完成能力归档
+│   └── archive/<能力名>/    # 已完成能力，与活跃区同构
 ├── tests/                   # 上游基线测试（不得修改）
 │   ├── TestMain.py          # 单元测试（TaskTestCase）
 │   └── images/              # 测试用图片

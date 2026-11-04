@@ -92,4 +92,4 @@
 
 ## 采纳
 
-- 采纳于：design/window-restore-guard.md（2026-11-04）
+- 采纳于：window-restore-guard/design.md（2026-11-04）
