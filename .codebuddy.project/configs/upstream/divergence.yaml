@@ -18,7 +18,7 @@ entries:
   # ---------- 接线点 ----------
   - path: src/config.py
     kind: M
-    reason: 末尾追加扩展 bootstrap 的唯一接线行（from extensions import bootstrap），这是项目扩展生效的唯一入口
+    reason: 两处差异。① 末尾追加扩展 bootstrap 的唯一接线行（from extensions import bootstrap），这是项目扩展生效的唯一入口；② 窗口尺寸由上游 1200×800（最小 600×450）改为 1560×820 且最小值等于默认值，与 ok-script 3 的 ok/core/ui_config.py DEFAULT_WINDOW_SIZE 对齐——3.0 的左侧导航栏加任务页左右分栏在 1200 宽下过于拥挤，且最小尺寸小于默认值会让窗口被拖小后布局错乱
     method: patch-point
     authorization: 用户明确授权
 

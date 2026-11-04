@@ -9,10 +9,10 @@ version = "dev"
 gui_config = {
     'type': 'qt',
     'window_size': {
-        'width': 1200,
-        'height': 800,
-        'min_width': 600,
-        'min_height': 450,
+        'width': 1560,
+        'height': 820,
+        'min_width': 1560,
+        'min_height': 820,
     },
 }
 key_config_option = ConfigOption('Game Hotkey Config', { #全局配置示例
