@@ -53,7 +53,7 @@ def apply(main_window: object, launcher_probe: Callable[[], str | None] | None =
         return False
 
     container = _find_card_container(update_card)
-    about_tab.removeWidget(container)
+    _detach_section(about_tab, container)
     container.setParent(None)
     container.deleteLater()
     # 置空后 MainWindow._schedule_update_check 直接返回，不再排定时器。
@@ -64,6 +64,32 @@ def apply(main_window: object, launcher_probe: Callable[[], str | None] | None =
         "需要更新请使用 PyAppify 安装的发行版"
     )
     return True
+
+
+def _detach_section(about_tab: object, section: object) -> None:
+    """把卡片所在的 AboutSection 从 About 页布局中摘掉。
+
+    `removeWidget` 是 `QLayout` 的方法，`AboutTab` 本身并不提供（它是 QWidget 的子类，
+    不是布局）。ok-script 3 的 `AboutTab` 把各区块包成 `AboutSection` 挂在 `vBoxLayout`
+    上，并维护一份 `sections` 列表，因此摘除需要走布局。
+
+    Args：
+        about_tab：上游 `AboutTab` 实例。
+        section：`_find_card_container` 定位到的 `AboutSection`。
+
+    Raises：
+        RuntimeError：About 页缺少 `vBoxLayout`，说明上游改了区块装配方式。
+    """
+    layout = getattr(about_tab, "vBoxLayout", None)
+    if layout is None:
+        raise RuntimeError(
+            "更新检查守卫的目标缺失：AboutTab 上不存在 vBoxLayout，"
+            "请检查 ok-script 升级后更新 extensions/capabilities/update_check_guard/guard.py"
+        )
+    layout.removeWidget(section)
+    sections = getattr(about_tab, "sections", None)
+    if isinstance(sections, list) and section in sections:
+        sections.remove(section)
 
 
 def _probe_launcher() -> str | None:
@@ -86,25 +112,27 @@ def _probe_launcher() -> str | None:
 
 
 def _find_card_container(update_card: object) -> object:
-    """定位包裹更新卡片的 Card 容器。
+    """定位包裹更新卡片的 AboutSection 区块。
 
-    `Card` 会把传入的 widget 挂到内部的 `QFrame` 上，因此 `UpdateCard` 的祖父
-    就是 Card 本体。
+    ok-script 3 的区块装配是 `AboutSection(title, widget)`：它把内容 widget 放进内部
+    `Card`（`Card` 再套一层 `QFrame`），自身挂在 AboutTab 的 `vBoxLayout` 上。因此
+    `UpdateCard` 的祖父就是 `AboutSection`——摘除必须按整块摘，只摘 `Card` 会留下标题。
 
     Args：
         update_card：`UpdateCard` 实例。
 
     Returns：
-        包裹它的 `Card` 实例。
+        包裹它的 `AboutSection` 实例。
 
     Raises：
-        RuntimeError：容器层级与预期不符，说明上游改了 Card 的装配方式。
+        RuntimeError：容器层级与预期不符，说明上游改了区块装配方式。
     """
     inner = update_card.parent()
     container = inner.parent() if inner is not None else None
     if container is None or not hasattr(container, "titleLabel"):
         raise RuntimeError(
-            "更新检查守卫的目标缺失：期望 UpdateCard.parent().parent() 是带标题的 Card 容器，"
-            "请检查 ok-script 升级后更新 extensions/capabilities/update_check_guard/guard.py"
+            "更新检查守卫的目标缺失：期望 UpdateCard.parent().parent() 是带标题的区块容器"
+            "（AboutSection），请检查 ok-script 升级后更新 "
+            "extensions/capabilities/update_check_guard/guard.py"
         )
     return container
