@@ -128,5 +128,6 @@ python .codebuddy.project/skills/project/project-extension-capability-guard/scri
 | update-check-guard | 已实施 | design/update-check-guard.md | plans/update-check-guard-plan.md | plans/update-check-guard-deviation.md | testing/update-check-guard-testing.md | — |
 | extension-i18n | 已实施 | design/extension-i18n.md | plans/extension-i18n-plan.md | plans/extension-i18n-deviation.md | testing/extension-i18n-testing.md | — |
 | window-restore-guard | 已实施 | design/window-restore-guard.md | plans/window-restore-guard-plan.md | plans/window-restore-guard-deviation.md | testing/window-restore-guard-testing.md | — |
+| screenshot-mask | 已实施 | design/screenshot-mask.md | plans/screenshot-mask-plan.md | plans/screenshot-mask-deviation.md | testing/screenshot-mask-testing.md | — |
 
 > 「待补」是显式的缺口标记，不是占位符。补齐后改成实际文件名。

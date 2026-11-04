@@ -24,6 +24,7 @@ CAPABILITIES = (
     "extensions.capabilities.update_check_guard",
     "extensions.capabilities.window_restore_guard",
     "extensions.capabilities.extension_i18n",
+    "extensions.capabilities.screenshot_mask",
 )
 
 

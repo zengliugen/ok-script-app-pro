@@ -1,0 +1,49 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: you@example.com\n"
+"Last-Translator: you@example.com\n"
+"Language-Team: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Screenshot Mask"
+msgstr "Screenshot Mask"
+
+msgid "Draw a black rectangle over part of every screenshot."
+msgstr "Draw a black rectangle over part of every screenshot."
+
+msgid "Draw the mask on screenshots."
+msgstr "Draw the mask on screenshots."
+
+msgid "Enable Mask"
+msgstr "Enable Mask"
+
+msgid "Preview"
+msgstr "Preview"
+
+msgid "Zoom In"
+msgstr "Zoom In"
+
+msgid "Zoom Out"
+msgstr "Zoom Out"
+
+msgid "Fit Window"
+msgstr "Fit Window"
+
+msgid "Capture Frame"
+msgstr "Capture Frame"
+
+msgid "Save Config"
+msgstr "Save Config"
+
+msgid "Reset To Saved"
+msgstr "Reset To Saved"
+
+msgid "Reset To Default"
+msgstr "Reset To Default"
+
+msgid "Unsaved changes"
+msgstr "Unsaved changes"

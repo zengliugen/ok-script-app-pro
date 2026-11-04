@@ -1,0 +1,49 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: you@example.com\n"
+"Last-Translator: you@example.com\n"
+"Language-Team: Chinese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Screenshot Mask"
+msgstr "截图遮罩"
+
+msgid "Draw a black rectangle over part of every screenshot."
+msgstr "在每张截图的部分区域绘制黑色矩形遮罩。"
+
+msgid "Draw the mask on screenshots."
+msgstr "在截图上绘制遮罩。"
+
+msgid "Enable Mask"
+msgstr "启用遮罩"
+
+msgid "Preview"
+msgstr "预览"
+
+msgid "Zoom In"
+msgstr "放大"
+
+msgid "Zoom Out"
+msgstr "缩小"
+
+msgid "Fit Window"
+msgstr "适应窗口"
+
+msgid "Capture Frame"
+msgstr "抓取画面"
+
+msgid "Save Config"
+msgstr "保存配置"
+
+msgid "Reset To Saved"
+msgstr "重置为配置值"
+
+msgid "Reset To Default"
+msgstr "重置为默认值"
+
+msgid "Unsaved changes"
+msgstr "有未保存的改动"
