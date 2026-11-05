@@ -10,9 +10,13 @@
 预发布的边界规则：基线版本已经发过正式版时视为已关闭，不再加后缀，改为从下一个 patch 起算。
 例如稳定版已有 ``v3.3.55``，``v3.3.55-beta.3`` 属已关闭，新 beta 应为 ``v3.3.56-beta.1``。
 
+无稳定版 tag 时的兜底：仓库尚未发过正式版、但同渠道已有预发布时，以该预发布为基线继续递增
+（``v0.0.1-beta.1`` → ``v0.0.1-beta.2``）。``release`` 渠道不适用该兜底——稳定版号段必须有
+稳定版基线，凭空指定一个首版号属于人工决策，脚本不做推断。
+
 退出码：
     0 成功，向标准输出打印算出的 tag
-    1 无法计算（没有任何稳定版 tag、远端查询失败等）
+    1 无法计算（无可用基线、远端查询失败等）
     2 参数错误（由 argparse 抛出）
 """
 
@@ -125,11 +129,29 @@ def next_tag(channel: str, tags: list[str]) -> str:
         下一个 tag 字符串，形如 v3.3.55 或 v3.3.56-beta.1。
 
     Raises：
-        ValueError：没有任何稳定版 tag，无法确定基线。
+        ValueError：既没有稳定版 tag，也没有该渠道的预发布可作基线。
     """
     stable, prereleases = parse_tags(tags)
+
     if not stable:
-        raise ValueError("仓库中没有任何 vMAJOR.MINOR.PATCH 稳定版 tag，无法计算版本号。")
+        # 尚无正式版：允许用同渠道最高预发布当基线继续递增（v0.0.1-beta.1 → -beta.2）。
+        # 只放宽预发布；release 渠道仍要求稳定版基线——首版号是人工决策，
+        # 脚本凭空推一个 v0.0.1 会与真实意图不符。
+        # prereleases 只含 alpha/beta 两个键，release 渠道必须先判渠道再取键，
+        # 否则 prereleases["release"] 抛 KeyError 而不是给出可读的拒绝理由。
+        if channel != "release":
+            channel_tags = prereleases[channel]
+            if channel_tags:
+                latest_prerelease = max(channel_tags)
+                return "%s-%s.%d" % (
+                    latest_prerelease.version.tag(),
+                    channel,
+                    latest_prerelease.number + 1,
+                )
+        raise ValueError(
+            "仓库中没有任何 vMAJOR.MINOR.PATCH 稳定版 tag，无法计算「%s」渠道的版本号。\n"
+            "首个正式版号需人工指定（如 v0.1.0），脚本不做无稳定版基线的推断。" % channel
+        )
 
     latest_stable = max(stable)
     if channel == "release":
