@@ -14,6 +14,11 @@
 （``v0.0.1-beta.1`` → ``v0.0.1-beta.2``）。``release`` 渠道不适用该兜底——稳定版号段必须有
 稳定版基线，凭空指定一个首版号属于人工决策，脚本不做推断。
 
+概览：
+    ``python next_tag.py <channel>`` 默认读取**本仓库自有** tag 作为基线——
+    本地与 origin 的并集，剔除指向 ``master``（上游镜像）的上游 tag。
+    ``--tag`` 显式给定基线，供排障与离线使用。
+
 退出码：
     0 成功，向标准输出打印算出的 tag
     1 无法计算（无可用基线、远端查询失败等）
@@ -68,7 +73,29 @@ class Prerelease:
 
 
 def repository_tags() -> list[str]:
-    """读取本地仓库的 v* tag。
+    """读取本仓库**自有**的 v* tag（本地与 origin 的并集，剔除上游镜像带来的 tag）。
+
+    为什么不能用 ``git tag --list v*``：本仓库 fork 自上游，本地 tag 里混着大量
+    ``ok-oldking`` 的上游版本号（实测 46 个，且会被 IDE 的自动 fetch 反复拉回）。
+    直接读本地会把发布号带到上游序列上——实测算出 ``v1.1.4-alpha.1`` 而非 ``v0.0.1-alpha.2``。
+
+    为什么不能只读 origin：tag 打好但尚未推送时 origin 上没有它，
+    此时算下一个号会丢掉这条基线，把 alpha.2 又算成 alpha.1。
+
+    区分办法是**提交归属**，不是 tag 名，也不是 tagger：
+
+    - 上游 tag 指向的提交必然在 ``master`` 上（master 是纯上游镜像，只随上游前移）；
+    - 本仓库自有的 tag 打在 ``dev`` 的提交上，``master`` 不含它。
+
+    判据因此是「tag 指向的提交是否为 master 的祖先」。它不依赖 tag 命名、不依赖
+    tagger 身份，也不受外部工具把上游 tag 拉回本地的影响——上游 tag 再怎么被拉回，
+    它们的提交仍在 master 上，照样被剔除。
+
+    ``refs/remotes/origin/*`` 上的 tag 单独补一遍，用来覆盖「远端有、本地还没拉」的
+    自有 tag（tag 小幅领先于本地 clone 的情形）。
+
+    Returns：
+        自有 tag 名列表；master 不可用（如浅克隆）时退化为只读 origin 远端 tag。
 
     Raises：
         subprocess.CalledProcessError：git 命令失败。
@@ -79,22 +106,64 @@ def repository_tags() -> list[str]:
         capture_output=True,
         text=True,
     )
-    return result.stdout.splitlines()
+    local_tags = result.stdout.splitlines()
+
+    owned = [tag for tag in local_tags if _is_owned_tag(tag)]
+    owned.extend(_origin_only_tags(owned))
+    return owned
 
 
-def remote_tags(remote: str) -> list[str]:
-    """读取指定远端的 v* tag。
+def _is_owned_tag(tag: str) -> bool:
+    """判断某个本地 tag 是否为本仓库自有（指向的提交不在 master 上游镜像上）。
 
-    Raises：
-        subprocess.CalledProcessError：git 命令失败（远端不可达、无权限等）。
+    Args：
+        tag: tag 名。
+
+    Returns：
+        True 表示自有；master 查询失败时返回 True（宁可多算一条，也不静默丢基线）。
     """
-    result = subprocess.run(
-        ["git", "ls-remote", "--refs", "--tags", remote, "refs/tags/v*"],
-        check=True,
+    commit = subprocess.run(
+        ["git", "rev-list", "-n", "1", tag],
         capture_output=True,
         text=True,
     )
-    return [ref.removeprefix("refs/tags/") for _, ref in (line.split("\t", 1) for line in result.stdout.splitlines())]
+    if commit.returncode != 0 or not commit.stdout.strip():
+        return True
+    sha = commit.stdout.strip()
+    # master 是纯上游镜像：上游 tag 指向的提交必然在它上面。
+    on_master = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", sha, "master"],
+        capture_output=True,
+        text=True,
+    )
+    if on_master.returncode not in (0, 1):
+        return True
+    return on_master.returncode == 1
+
+
+def _origin_only_tags(local_owned: list[str]) -> list[str]:
+    """取出「远端有、本地没有」的自有 tag，用于覆盖本地 clone 略旧的情形。
+
+    Args：
+        local_owned: 已判定的本地自有 tag。
+
+    Returns：
+        仅存在于 origin 的自有 tag 名列表；origin 不可达时返回空列表。
+    """
+    result = subprocess.run(
+        ["git", "ls-remote", "--refs", "--tags", "origin", "refs/tags/v*"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return []
+    known = set(local_owned)
+    remote_names = [
+        ref.removeprefix("refs/tags/")
+        for _, ref in (line.split("\t", 1) for line in result.stdout.splitlines() if "\t" in line)
+    ]
+    # origin 上的 tag 全部由本仓库推送，不存在上游 tag，直接取差集。
+    return [name for name in remote_names if name not in known]
 
 
 def parse_tags(tags: list[str]) -> tuple[list[Version], dict[str, list[Prerelease]]]:
@@ -181,20 +250,22 @@ def main() -> int:
         "--tag",
         action="append",
         dest="tags",
-        help="用显式给定的已有 tag 代替读取当前仓库，可重复传入",
-    )
-    parser.add_argument(
-        "--remote",
-        help="同时纳入该远端上已发布的 tag，例如 origin",
+        help="用显式给定的已有 tag 代替读取仓库，可重复传入（排障或离线时使用）",
     )
     args = parser.parse_args()
 
     try:
-        tags = args.tags if args.tags is not None else repository_tags()
-        if args.remote:
-            tags.extend(remote_tags(args.remote))
+        tags = list(args.tags) if args.tags is not None else repository_tags()
         print(next_tag(args.channel, tags))
-    except (subprocess.CalledProcessError, ValueError) as error:
+    except subprocess.CalledProcessError as error:
+        print(
+            "读取 tag 失败（%s）。版本基线取本仓库自有 tag（已剔除上游镜像带来的 tag），\n"
+            "查询失败时**不**回退到全量本地 tag——那会把上游版本号算进发布号。\n"
+            "排查后再试，或用 --tag 显式给定基线。" % (error.stderr or error),
+            file=sys.stderr,
+        )
+        return 1
+    except ValueError as error:
         print(str(error), file=sys.stderr)
         return 1
     return 0

@@ -6,7 +6,7 @@
 |---|---|---|
 | 工作区改动都在预期内 | `git status --short --branch` + `git diff` | 先确认范围，无关改动不得混入 |
 | 验证通过 | `.\run_tests.ps1` | 停止发布，除非用户明确接受带失败发布 |
-| 版本号未与他人撞车 | `next_tag.py <渠道> --remote origin` | 远端查询失败即停止，不得凭本地 tag 猜 |
+| 版本号未与他人撞车 | `next_tag.py <渠道>`（默认已含本地自有 tag 与 origin tag） | 远端查询失败即停止，不得凭本地 tag 猜；本地混有上游 tag 属正常，脚本会按提交归属剔除 |
 | 没有未登记的上游改动 | 走 `project-upstream-compat-guard` | 补登记后再发 |
 | 扩展翻译齐备且 `.po`/`.mo` 同步 | `task_i18n_helper.py gate --i18n extensions/capabilities --path extensions/capabilities` | 补译文或重新 `compile`；不得带失败发布 |
 | `src/config.py` 的 `version` 仍是 `dev` | 人工核对 | 它由打包流程改写，不要手改 |
@@ -38,7 +38,8 @@ CI 是否已开始构建。
 | 现象 | 处置 |
 |---|---|
 | `next_tag.py` 报「没有任何稳定版 tag」 | 首发版本要人工指定（如 `v0.1.0`），脚本不做无基线的推断 |
-| `ls-remote` 失败（网络 / 权限） | 停止，不要退回只用本地 tag |
+| `ls-remote` 失败（网络 / 权限） | 停止，不要退回只用本地 tag——本地混有上游版本号，据此算会算错发布号 |
+| 本地冒出大量 `v1.x` tag | 上游 tag 被 Git GUI 自动 fetch 拉回，属预期；脚本按提交归属自动剔除，**不必清理**。要根治则关掉该 GUI 的「Fetch all tags」 |
 | 提交链路判定摘要不合规 | 按项目配置的 pattern 改写摘要后重走链路，不要绕过 |
 | tag 已创建但推送失败 | 保留本地 tag，修好网络或权限后重推；**不要删 tag 重来** |
 | 推送成功但 CI 未启动 | 先核对 tag 是否匹配 `v*`，再查 Actions 是否有权限问题 |

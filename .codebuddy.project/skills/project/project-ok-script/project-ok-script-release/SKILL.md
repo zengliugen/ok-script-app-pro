@@ -42,6 +42,27 @@ description: 编排 ok-script 项目的版本发布：确认待发布改动、�
 
 以上规则由 `scripts/next_tag.py` 实现，不靠人工推算。
 
+### 版本基线只认本仓库自有 tag
+
+本仓库 fork 自 `ok-oldking/ok-script-app`，**本地 tag 里混着 46 个上游版本号**
+（`v1.0.0` ~ `v1.1.3`），且会被 Git GUI 的自动 fetch 反复拉回。若直接读
+`git tag --list v*`，最新稳定版会被认成上游的 `v1.1.3`，发布号随之跳到 `v1.1.4-*`。
+
+脚本按**提交归属**区分，不看 tag 名也不看 tagger：
+
+| tag 类型 | 指向的提交 | 处理 |
+|---|---|---|
+| 上游 tag | 在 `master`（纯上游镜像）上 | **剔除** |
+| 本仓库自有 tag | 只在 `dev` 上，`master` 不含 | 保留 |
+
+因此**本地残留多少上游 tag 都不影响版本号计算**，清理上游 tag 变成可选动作。
+tag 尚未推送时也能正确计入（读本地），已推送但本地未拉时也能取到（补读 origin）。
+
+> **为什么 Git 配置拦不住上游 tag 回流**：`remote.upstream.tagOpt=--no-tags` 与
+> `fetch.pruneTags=false` 都只是**默认值**，命令行显式给 `--tags` 时会被覆盖。
+> Fork 等 GUI 的「Fetch all tags」开关正是直接翻译成命令行 `--tags`，实测每 11 分钟
+> 拉回一次。因此隔离必须落在**脚本判据**上，而不是 Git 配置上。
+
 ## 工作流
 
 1. **看清工作区**。用 `git status --short --branch` 与相关 diff 确认要发布的内容。
@@ -51,12 +72,13 @@ description: 编排 ok-script 项目的版本发布：确认待发布改动、�
 3. **算版本号**（在提交前算，避免与既有 tag 撞名）：
 
    ```powershell
-   .\.venv\Scripts\python.exe .codebuddy.project\skills\project\project-ok-script\project-ok-script-release\scripts\next_tag.py release --remote origin
-   .\.venv\Scripts\python.exe .codebuddy.project\skills\project\project-ok-script\project-ok-script-release\scripts\next_tag.py beta --remote origin
-   .\.venv\Scripts\python.exe .codebuddy.project\skills\project\project-ok-script\project-ok-script-release\scripts\next_tag.py alpha --remote origin
+   .\.venv\Scripts\python.exe .codebuddy.project\skills\project\project-ok-script\project-ok-script-release\scripts\next_tag.py release
+   .\.venv\Scripts\python.exe .codebuddy.project\skills\project\project-ok-script\project-ok-script-release\scripts\next_tag.py beta
+   .\.venv\Scripts\python.exe .codebuddy.project\skills\project\project-ok-script\project-ok-script-release\scripts\next_tag.py alpha
    ```
 
-   带 `--remote origin` 是为了同时考虑远端已有 tag，避免覆盖或重复。
+   脚本默认同时读本地自有 tag 与 origin 已有 tag，两者取并集，因此不必再手动加
+   `--remote`。远端查询失败时脚本报错退出，**不**回退到全量本地 tag。
    远端查询失败时**停下来**，不要拿本地旧 tag 猜一个版本号。
 4. **交给提交链路**。按 `vcs-router` 的流程完成本次提交（它会做变更分析、摘要格式校验、
    安全检查与用户授权）。**不要**在这里手写 `git commit`。
