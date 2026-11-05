@@ -131,6 +131,11 @@ python .codebuddy.project/skills/project/project-ok-script/project-ok-script-i18
 修 bug、调整既有能力参数、内部重构、补测试、改注释——**都不需要走文档体系**。
 判据是「是否向用户或框架暴露了新的行为面」，见本族 `RULE.mdc` 的判定表。
 
+**该能力已归档时多一道判据**：这里的「修 bug」只指**实现缺陷**——代码与归档文档写的设计不符，
+改完归档里的推理仍成立。若这次改动推翻了归档文档记载的判据（原设计前提不成立，或要让能力做
+当初明确不做的事），属**设计失效**，须 `new <新名> --rework-from <旧名>` 立新能力。
+完整判据见 `extensions_docs/archive/README.md` 与 `devflow-guard` 的 `guide.md`「已归档的能力怎么改」。
+
 边界确实模糊时按「是否需要记录取舍理由」判断：有取舍就写，没有就不写。
 
 ## 文档字段契约
