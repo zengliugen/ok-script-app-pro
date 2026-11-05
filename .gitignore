@@ -17,7 +17,10 @@ __pycache__/
 data/
 ok_tasks/
 *$py.class
-configs/
+# 锚定到仓库根：未锚定时会匹配 .codebuddy.project/configs/（项目侧入库配置）。
+# 该目录一旦被目录级规则命中，PyAppify 复制时会整目录跳过，
+# 深层 .gitignore 的 !configs/ 反选来不及生效（不会遍历进被排除的目录）。
+/configs/
 paddle_model/
 ok/
 *.dat
@@ -43,9 +46,15 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
-parts/
+# 锚定到仓库根（前导 /）：这些是 Python 打包在根目录产生的产物目录，
+# 未锚定时会按「任意层级同名目录」匹配，误伤
+#   - .codebuddy/lib/         引擎可选包载体（随子模块分发，必须保留）
+#   - .codebuddy.project/configs/  项目侧入库配置
+# PyAppify 复制项目到 working 时按目录判忽略，被命中的整目录会被直接跳过，
+# 且深层 .gitignore 的反选无处生效（目录本身已被排除，不再往下遍历）。
+/lib/
+/lib64/
+/parts/
 sdist/
 var/
 wheels/
@@ -56,7 +65,9 @@ share/python-wheels/
 MANIFEST
 venv/
 .venv/
-python/
+# 锚定到仓库根：未锚定时会匹配 .codebuddy/lib/python/（引擎内 python 可选包），
+# 使该包在 PyAppify 复制时被整目录跳过。
+/python/
 
 # PyInstaller
 # Usually these files are written by a python script from a template

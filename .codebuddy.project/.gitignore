@@ -23,6 +23,26 @@ caches/
 envs/*
 !envs/README.md
 
+# 可选包桥接链接（不入库，由 setup.cmd / pack_install.py 在克隆后重建）
+#
+# 为什么必须忽略：这些是指向 .codebuddy/lib/<包>/ 的目录符号链接，git 以 120000 记录。
+# 一旦入库，任何 clone 都会落成真实符号链接，PyAppify 复制项目到 working 目录时用
+# entry.file_type() 判断条目类型（不跟随链接），目录链接既不满足 is_dir() 也读不了内容，
+# 直接走 fs::copy 分支，Windows 上以文件方式打开目录链接即报 os error 5，安装中断。
+# 而它们本就是 .codebuddy/setup.cmd 的产物（README 已要求克隆后先跑一次 setup），
+# 属于可重建的运行时状态，不该随版本控制分发。
+#
+# 逐条显式列出而非用通配：同级的 rules/project、skills/project、agents/project
+# 是项目专有包的真实目录，必须入库，通配会把它们一并忽略。
+rules/devflow
+rules/python
+rules/yao-meta-skill
+agents/python
+skills/devflow
+skills/grilling
+skills/python
+skills/yao-meta-skill
+
 # 系统/编辑器临时文件
 .DS_Store
 Thumbs.db
