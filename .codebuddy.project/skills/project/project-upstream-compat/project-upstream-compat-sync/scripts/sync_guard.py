@@ -133,6 +133,56 @@ def read_synced_commit():
     raise RuntimeError("配置错误：%s 缺少 synced_upstream_commit 字段" % path)
 
 
+def check_upstream_tag_isolation(problems):
+    """校验 upstream 远端已隔离 tag，防止上游 tag 污染本地版本号。
+
+    背景：本仓库 fork 自上游，上游用 ``v0.0.1`` ~ ``v1.1.3`` 这套号段，
+    与本项目自有 tag 重名。上游 tag 一旦进入本地，``next_tag.py`` 会把上游的
+    ``v1.1.3`` 认成「最新稳定版」，发布号随之跳到 ``v1.1.4-*`` 而非 ``v0.0.2-*``。
+    更糟的是同名 tag 会让 ``git fetch`` 报 ``would clobber existing tag``。
+
+    三重隔离缺一不可，逐项检查：
+
+    1. ``remote.upstream.tagOpt=--no-tags``——关掉默认的 tag 自动跟随；
+    2. ``remote.upstream.fetch`` 含 ``^refs/tags/*`` 负向 refspec——**唯一能挡住显式
+       ``--tags`` 的手段**，因为命令行 ``--tags`` 的优先级高于 tagOpt 配置；
+    3. ``push.followTags=false``——禁止普通 push 顺带推 annotated tag。
+
+    只报问题不自动修复：这套配置只在本地生效，修不修、怎么修由人决定。
+
+    params:
+        problems: 收集问题描述的列表，就地追加。
+
+    Returns:
+        无。问题写入 problems。
+
+    """
+    _, tagopt, _ = run_git(["config", "--get", "remote.upstream.tagOpt"])
+    if tagopt != "--no-tags":
+        problems.append(
+            "upstream 未设 remote.upstream.tagOpt=--no-tags（当前：%s）。"
+            "上游 tag 会污染本地版本号，执行：git config remote.upstream.tagOpt --no-tags" % (tagopt or "未设置")
+        )
+
+    _, fetch_specs, _ = run_git(["config", "--get-all", "remote.upstream.fetch"])
+    specs = [line.strip() for line in fetch_specs.splitlines() if line.strip()]
+    if "^refs/tags/*" not in specs:
+        problems.append(
+            "upstream 的 fetch refspec 缺少负向规则 ^refs/tags/*（当前：%s）。"
+            "缺它时显式 git fetch upstream --tags 仍会拉入上游 tag——tagOpt 挡不住命令行参数。\n"
+            "  git config --unset-all remote.upstream.fetch\n"
+            "  git config --add remote.upstream.fetch '+refs/heads/*:refs/remotes/upstream/*'\n"
+            "  git config --add remote.upstream.fetch '^refs/tags/*'" % (" | ".join(specs) or "未设置")
+        )
+
+    _, follow, _ = run_git(["config", "--get", "push.followTags"])
+    if follow not in ("false", ""):
+        problems.append(
+            "push.followTags 不为 false（当前：%s），push 时会顺带推 annotated tag，"
+            "可能把上游 tag 或半成品 tag 一次推上 origin。执行：git config push.followTags false" % follow
+        )
+
+
 def check_master_is_mirror(problems):
     """校验 master 不含任何项目提交。
 
@@ -222,13 +272,15 @@ def check_divergence_baseline(problems):
 
 
 def check_stage_before(problems):
-    """同步前的检查项：master 必须纯净、dev 必须未落后于 master。"""
+    """同步前的检查项：tag 隔离配置、master 必须纯净、dev 必须未落后于 master。"""
+    check_upstream_tag_isolation(problems)
     check_master_is_mirror(problems)
     check_work_branch_contains_master(problems)
 
 
 def check_stage_after(problems):
-    """同步后的检查项：dev 必须含上游、基准必须已更新、master 仍须纯净。"""
+    """同步后的检查项：tag 隔离配置、dev 必须含上游、基准必须已更新、master 仍须纯净。"""
+    check_upstream_tag_isolation(problems)
     check_master_is_mirror(problems)
     check_work_branch_contains_master(problems)
     check_divergence_baseline(problems)

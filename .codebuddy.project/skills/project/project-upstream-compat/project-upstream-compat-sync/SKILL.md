@@ -8,6 +8,57 @@ description: 执行上游 ok-script-app 的同步：master 前移到 upstream/ma
 本项目 fork 自 `ok-oldking/ok-script-app`。本技能执行一次完整的上游同步，并把「谁往谁合」
 这条方向约定变成可机械检查的断言——它是最容易搞反、且 Git 不会报错的一步。
 
+## 前置：upstream 必须隔离 tag（新环境一次性配置）
+
+本仓库 fork 自上游，上游用 `v0.0.1` ~ `v1.1.3` 这套号段，**与本项目自有 tag 重名**。
+若上游 tag 进入本地，两个后果同时发生：
+
+| 后果 | 表现 |
+|---|---|
+| 发布号被带偏 | `next_tag.py` 把上游 `v1.1.3` 认成最新稳定版，算出 `v1.1.4-*` 而非 `v0.0.2-*` |
+| fetch 直接失败 | 同名 tag 指向不同提交，报 `would clobber existing tag` |
+
+**新机器、重新 clone 时必须先跑这段配置**（它只写本地 `.git/config`，不进版本控制）：
+
+```bash
+git config remote.upstream.tagOpt --no-tags      # 关掉默认的 tag 自动跟随
+git config push.followTags false                 # 禁止普通 push 顺带推 annotated tag
+
+# 收紧 refspec：只拉分支，显式拒绝 tag
+git config --unset-all remote.upstream.fetch
+git config --add remote.upstream.fetch '+refs/heads/*:refs/remotes/upstream/*'
+git config --add remote.upstream.fetch '^refs/tags/*'
+```
+
+### 三条缺一不可，尤其第二条
+
+| 配置 | 作用 | 缺了会怎样 |
+|---|---|---|
+| `tagOpt=--no-tags` | 默认不跟随 tag | 普通 `git fetch upstream` 就会拉 tag |
+| `^refs/tags/*` 负向 refspec | **唯一能挡住显式 `--tags`** | `git fetch upstream --tags` 照拉不误 |
+| `push.followTags=false` | push 不顺带推 tag | 可能把上游 tag 或半成品 tag 一次推上 origin |
+
+**为什么 `tagOpt` 不够**：Git 的优先级是**命令行 > 配置**。`tagOpt` 只是默认值，
+一旦命令里出现 `--tags` 就被覆盖。负向 refspec 属于 refspec 层，优先级更高，`--tags` 也绕不过。
+
+这不是推测——实测（2026-11-05）结果：
+
+| 命令 | 仅 `tagOpt` | 加负向 refspec 后 |
+|---|---|---|
+| `git fetch upstream` | 拉回 46 个 | **0 个** |
+| `git fetch upstream --tags` | 拉回 46 个 | **0 个** |
+| `git fetch --tags upstream` | 拉回 46 个 | **0 个** |
+| `git fetch --all` | 拉回 46 个 | **0 个** |
+| `git remote update` | 拉回 46 个 | **0 个** |
+
+**最常见的污染源是 Git GUI**（Fork / SourceTree 等）的「Fetch all tags」开关——它直接
+翻译成命令行 `--tags`，每 11 分钟执行一次，Git 配置层面的 `tagOpt` 完全拦不住。
+除本节的 Git 配置外，**还要在该 GUI 里关掉 fetch tags**（Fork：`FetchAllTags=false`、
+`Push_PushAllTags=false`）。
+
+第 1 步的 `sync_guard.py` 会**逐项检查这三条配置**，缺失即报问题并给出修复命令，
+因此配漏不会静默失效。
+
 ## 方向约定（不可违反）
 
 ```
@@ -35,8 +86,9 @@ GUARD=.codebuddy.project/skills/project/project-upstream-compat/project-upstream
 python $GUARD check --stage before
 ```
 
-退出码非 0 必须停下，**不要继续**。它会拦下两类前提缺失：master 已被污染（方向搞反过）、
-dev 尚未包含 master 的最新状态。同时跑一次差异登记校验，确认没有未登记的上游改动：
+退出码非 0 必须停下，**不要继续**。它会拦下三类前提缺失：upstream 未隔离 tag
+（见上节）、master 已被污染（方向搞反过）、dev 尚未包含 master 的最新状态。
+同时跑一次差异登记校验，确认没有未登记的上游改动：
 
 ```bash
 python .codebuddy.project/skills/project/project-upstream-compat/project-upstream-compat-guard/scripts/upstream_compat_guard.py
@@ -52,6 +104,9 @@ git merge --ff-only upstream/master
 
 `--ff-only` 是关键：master 上若有任何本地提交，快进会失败并直接暴露污染，而不是生成一个
 把两边混在一起的 merge 提交。
+
+**不要**在这里加 `--tags`：上节已配置负向 refspec 把它挡住，即使加了也拉不到 upstream tag；
+但显式写上会让人误以为同步需要 tag，且在没有配置隔离的环境里直接造成污染。
 
 ### 第 3 步：把 master 合并进 dev
 

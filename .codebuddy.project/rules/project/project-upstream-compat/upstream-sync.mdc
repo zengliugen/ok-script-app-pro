@@ -27,6 +27,31 @@ provider:
 **为什么方向不能反**：`git merge dev` 在 master 上完全合法、Git 不报任何错，但会让 master
 失去「纯上游」语义——无法再快进，也看不出哪些提交来自上游。本项目已经出过一次这个事故。
 
+## upstream 必须隔离 tag（新环境一次性配置）
+
+上游用 `v0.0.1` ~ `v1.1.3` 这套号段，**与本项目自有 tag 重名**。上游 tag 进入本地后：
+发布号会被带偏（`next_tag.py` 把上游 `v1.1.3` 认成最新稳定版），同名 tag 还会让 fetch
+报 `would clobber existing tag`。
+
+```bash
+git config remote.upstream.tagOpt --no-tags
+git config push.followTags false
+git config --unset-all remote.upstream.fetch
+git config --add remote.upstream.fetch '+refs/heads/*:refs/remotes/upstream/*'
+git config --add remote.upstream.fetch '^refs/tags/*'
+```
+
+**三条缺一不可**，尤其第三条负向 refspec：Git 的优先级是**命令行 > 配置**，
+`tagOpt` 只是默认值，命令里出现 `--tags` 就被覆盖；负向 refspec 在 refspec 层，
+显式 `--tags` 也绕不过。实测五种 fetch 形态（含 `--tags`、`--all`、`remote update`）
+均可被它挡住。
+
+**Git GUI 需单独关**（Fork：`FetchAllTags=false`、`Push_PushAllTags=false`）——
+它的「Fetch all tags」开关直接翻译成命令行 `--tags` 并定期自动执行，Git 配置拦不住。
+
+这套配置只写本地 `.git/config`，**新机器或重新 clone 后必须重配**。
+`sync_guard.py check` 已逐项校验这三条，缺失即报问题并给出修复命令。
+
 ## 合并方式：merge，不 rebase
 
 执行同步**一律经 `project-upstream-compat-sync` 技能**，它把下述流程与方向不变量都固化成了
@@ -34,7 +59,7 @@ provider:
 
 ```bash
 S=.codebuddy.project/skills/project/project-upstream-compat/project-upstream-compat-sync/scripts/sync_guard.py
-python $S check --stage before     # 动手前：确认 master 纯净、方向未搞反
+python $S check --stage before     # 动手前：确认 tag 隔离、master 纯净、方向未搞反
 ```
 
 ```bash

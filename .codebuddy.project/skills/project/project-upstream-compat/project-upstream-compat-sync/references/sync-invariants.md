@@ -1,6 +1,46 @@
 # 同步方向不变量
 
-本文件展开 `scripts/sync_guard.py` 判定的三项不变量：判据、为什么它成立、违反后会怎样。
+本文件展开 `scripts/sync_guard.py` 判定的四项不变量：判据、为什么它成立、违反后会怎样。
+
+## 零、upstream 必须隔离 tag
+
+**判据**（三条同时满足）：
+
+| 配置 | 期望值 |
+|---|---|
+| `remote.upstream.tagOpt` | `--no-tags` |
+| `remote.upstream.fetch` | 含负向规则 `^refs/tags/*` |
+| `push.followTags` | `false` |
+
+**为什么**：本仓库 fork 自上游，上游用 `v0.0.1` ~ `v1.1.3` 这套号段，与本项目自有 tag
+重名。上游 tag 进入本地后有两个后果，且都不是「报个错就算了」：
+
+1. **发布号被带偏**。`next_tag.py` 读本地 tag 判断「最新稳定版」，上游 `v1.1.3` 会被
+   当成最新稳定版，预发布号随之跳到 `v1.1.4-alpha.1` 而非 `v0.0.2-alpha.1`。
+2. **fetch 直接失败**。同名 tag 指向不同提交时，Git 报
+   `! [rejected] v0.0.1 -> v0.0.1 (would clobber existing tag)`。
+
+**为什么 `tagOpt` 一条不够**：Git 的优先级是**命令行 > 配置**。`tagOpt=--no-tags`
+只是默认值，命令里出现 `--tags` 就被覆盖。只有负向 refspec `^refs/tags/*` 位于 refspec 层，
+优先级更高，显式 `--tags` 也绕不过。
+
+实测（2026-11-05，上游 46 个 tag）：
+
+| 命令 | 仅 `tagOpt` | 加负向 refspec |
+|---|---|---|
+| `git fetch upstream` | 46 | **0** |
+| `git fetch upstream --tags` | 46 | **0** |
+| `git fetch --tags upstream` | 46 | **0** |
+| `git fetch --all` | 46 | **0** |
+| `git remote update` | 46 | **0** |
+
+**最常见的污染源是 Git GUI**：Fork / SourceTree 等的「Fetch all tags」开关直接翻译成
+命令行 `--tags`，定期自动执行（Fork 实测每 11 分钟一次）。Git 配置拦不住它，
+必须在 GUI 里另行关闭。
+
+**违反后**：不阻断同步本身（分支照样能拉），但会污染版本号与 git 操作。修复命令见
+`SKILL.md` 的「前置：upstream 必须隔离 tag」节。本项只在本地 `.git/config` 生效，
+**新机器或重新 clone 后必须重配**。
 
 ## 一、master 必须是上游镜像
 
@@ -46,8 +86,8 @@
 
 | 时机 | 命令 | 该通过的不变量 |
 |---|---|---|
-| 同步开始前 | `check --stage before` | 一、二（master 纯净且 dev 未落后） |
-| 同步完成后、提交前 | `check --stage after` | 一、二、三 |
+| 同步开始前 | `check --stage before` | 零、一、二（tag 隔离、master 纯净、dev 未落后） |
+| 同步完成后、提交前 | `check --stage after` | 零、一、二、三 |
 
 同步前查「二」看似多余（dev 本来就该包含 master），实际是为了拦住「上次同步只做了一半"
 的状态——那种状态下继续同步会把问题叠加。
