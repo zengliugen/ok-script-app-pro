@@ -74,6 +74,27 @@ jobs:
           $appVersion = $env:RELEASE_TAG -replace '^v', ''
           "APP_VERSION=$appVersion" >> $env:GITHUB_ENV
 
+      # PyAppify 复制项目目录时用 Rust 的 file_type() 判断条目，该调用不跟随符号链接，
+      # 会把目录符号链接判成普通文件而走 fs::copy 分支，在 Windows 上打开目录链接即报
+      # Access is denied (os error 5)。.codebuddy.project 下有 8 个指向引擎的桥接链接，
+      # 必然触发该错误。
+      #
+      # core.symlinks=false 让 Git 把这些 120000 条目检出成普通文本文件（内容为目标路径），
+      # PyAppify 按普通文件复制即可，不再失败。仓库内容无需改动。
+      #
+      # 必须用 GIT_CONFIG_GLOBAL 环境变量注入：PyAppify 用 libgit2 克隆到全新的临时仓库，
+      # 读不到项目内的仓库级配置；实测只有该环境变量能让 libgit2 在 clone/checkout 时遵守。
+      - name: 禁用符号链接检出
+        shell: pwsh
+        run: |
+          $cfg = Join-Path $env:RUNNER_TEMP "ci-gitconfig"
+          # 用 .NET API 写文件：Out-File 的 utf8NoBOM 参数需 PowerShell 6+，
+          # 而 Windows 自带的 5.1 不支持，这里的写法两者都能跑。
+          $content = "[core]`n`tsymlinks = false`n"
+          [System.IO.File]::WriteAllText($cfg, $content, (New-Object System.Text.UTF8Encoding $false))
+          "GIT_CONFIG_GLOBAL=$cfg" >> $env:GITHUB_ENV
+          Write-Output "已写入 GIT_CONFIG_GLOBAL=$cfg"
+
       - name: Build with PyAppify Action
         id: build-app
         uses: ok-oldking/pyappify-action@master #使用pyappify打包exe
