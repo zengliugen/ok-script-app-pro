@@ -4,7 +4,7 @@
 #  caches/ 为运行时产物根目录（不持久化的临时结果：各技能 check_logs、
 #  .cache、.vcs-lock 等），由脚本执行生成，不入库；
 #  产物目录清单见 .codebuddy/project.index.json 的 artifacts.dirs。
-#  configs/ 与 store/ 为入库内容，不在此忽略。
+#  configs/、store/、docs/ 为入库内容，不在此忽略。
 # ============================================================
 
 # 仓库根 .gitignore 的 configs/ 会匹配本项目侧 configs/ 目录（Python 运行时用户配置），
@@ -14,46 +14,103 @@
 !configs/
 !configs/**
 
+# docs/ 存放技能产出的项目文档（如 devflow 的能力设计/计划/测试文档），必须随项目入库。
+# 与 configs/ 同理反选：不少仓库根有泛化的 docs/ 忽略规则（站点构建产物、临时笔记等），
+# 会连带忽略此处，导致文档静默不入库。同样两行缺一不可。
+!docs/
+!docs/**
+
+# store/ 存放运行时生成但需长期保留的项目结果，必须随项目入库。
+# 与 configs/、docs/ 同理反选：仓库根常有泛化的 store/ 规则（前端状态目录、缓存目录等），
+# 会连带忽略此处；且本侧 store/ 与 caches/ 名字相近，最容易被后来的规则顺带扫掉。
+# 丢失是静默的——结果文件不再入库，直到有人重新克隆才发现数据不在。
+# 同样两行缺一不可。
+!store/
+!store/**
+
 # 运行时产物根目录（整体忽略）
 caches/
 
 # 工具环境实例根目录（整体忽略，仅放行说明文件）
 #   envs/<包名>/.venv 由对应技能的 ensure 子命令生成，属可重建产物，不入库。
 #   依赖的定义与锁定在 .codebuddy/lib/<包名>/envs/（随引擎入库），本目录只持有实例。
+#
+#   为什么写在树根而不在 envs/ 下单独建 .gitignore：
+#     - 树根是项目仓库内唯一对 .codebuddy.project/ 生效的规则文件，放这里一处即覆盖全树；
+#     - 环境内部由 uv / venv 自动生成的 .gitignore（内容 `*`）属工具产物，
+#       删了会在 ensure --force 重建时重现，不能作为契约依赖；
+#     - 目录名由使用者决定（本项目是 envs/python，不是常见的 .venv），
+#       通配 `envs/*` 不依赖具体名字，新增语言包无需改规则。
+#   反选只放行 README 说明文件，其余（含任何游离产物）一律不入库。
 envs/*
 !envs/README.md
 
-# 可选包桥接链接（不入库，由 setup.cmd / pack_install.py 在克隆后重建）
+# --- 通用忽略项兜底 --------------------------------------------------------
+#   project/ 天然在通配规则之外，其下组件**必须自带 .gitignore** 处理自己的专属产物
+#   （dist/、tools/<二进制>、reports/*<专项>.md 等）；本文件不覆盖 project/ 内部，
+#   否则会把整个类型目录重新纳入规则，与下面的逐条列举设计冲突。
 #
-# 为什么必须忽略：这些是指向 .codebuddy/lib/<包>/ 的目录符号链接，git 以 120000 记录。
-# 一旦入库，任何 clone 都会落成真实符号链接，PyAppify 复制项目到 working 目录时用
-# entry.file_type() 判断条目类型（不跟随链接），目录链接既不满足 is_dir() 也读不了内容，
-# 直接走 fs::copy 分支，Windows 上以文件方式打开目录链接即报 os error 5，安装中断。
-# 而它们本就是 .codebuddy/setup.cmd 的产物（README 已要求克隆后先跑一次 setup），
-# 属于可重建的运行时状态，不该随版本控制分发。
+#   但通用产物（Python 字节码、系统临时文件）不该要求每个组件重复声明——它们与
+#   具体组件无关，任何组件都可能产出。故在此兜底，project/ 下的组件不必自带。
 #
-# 逐条显式列出而非用通配：同级的 rules/project、skills/project、agents/project
-# 是项目专有包的真实目录，必须入库，通配会把它们一并忽略。
-rules/devflow
-rules/python
-rules/yao-meta-skill
-agents/python
-skills/devflow
-skills/grilling
-skills/python
-skills/yao-meta-skill
+#   为何必须写在这里：本目录的 .gitignore 是项目仓库内唯一对 .codebuddy.project/
+#   生效的规则文件。项目根 .gitignore 也有各自的通用项，但那是项目根自己的事
+#   （check_manifest.py 校验项 16 分别核对两个仓库根，互不替代）。
+__pycache__/
+*.pyc
+*.pyo
 
-# 系统/编辑器临时文件
 .DS_Store
 Thumbs.db
+*.swp
+*~
 
-# 技能工程产物：reports/ 下绝大多数文件由 yao-meta-skill 的各 render 命令生成，
-# 属一次性过程稿（含本机绝对路径、每次重跑都产生 diff），不入库。
+# 可选包桥接链接（逐条列举全集，不入库）
 #
-# 例外：reports/skill-ir.json 是 manifest.skill_ir_source 指向的规范化产物，
-# 缺失会让 yao.py validate 报 declared-source-missing。必须入库。
-# 用 ** 而非 * 匹配族目录：技能可收进 .codebuddy.project/skills/project/<族>/<技能>/reports/，
-# 单层的 skills/project/*/reports/* 在嵌套后不再命中，会让过程稿静默入库。
-skills/project/**/reports/*
-!skills/project/**/reports/output-risk-profile.md
-!skills/project/**/reports/skill-ir.json
+# 下列路径都是指向 .codebuddy/lib/<包>/<类型> 的整目录软链接，由 pack_install.py
+# 依引擎 lib/packs.json 与项目侧 configs/packs.json 的 installed 确定性创建与修复，
+# 不是仓库要维护的事实：
+#   1. 入库等于把派生结果当第三处事实来源——装/卸包时链接增删会持续污染 git 差异，
+#      且一旦与 packs.json 脱节无人察觉；
+#   2. 跨机器无效——Windows 默认 core.symlinks=false，克隆后落成内容为路径字符串的
+#      普通文件（git 以 120000 记录），PyAppify 复制项目时 entry.file_type() 不跟随链接，
+#      目录链接既不满足 is_dir() 也读不了内容，Windows 上以文件方式打开即报 os error 5；
+#      仍须跑 core-init 重建。入库换不来「克隆即可用」，只有噪音。
+#
+# 清单按引擎声明的**全部可选包**一次列全，与安装状态无关：忽略规则幂等，多列未装
+# 的包无副作用（目录本不存在），少列已装的包却会让链接在下次 git add -A 时悄然入库。
+# 故装包、卸包都无需改本文件，只有引擎新增可选包时才需重新运行 core-init 补上。
+#
+# 为何逐条列举而非 skills/* + !skills/project/ 这类通配 + 反选：
+#   通配会把整个 <类型>/ 目录纳入规则，放行 project/ 时无论带不带 `**`，都无法让
+#   project/ 内部的临时产物（__pycache__/、.cache/ 等）继续受根规则约束。
+#   逐条列举只命中确定的包目录，project/ 根本不在规则里。
+
+# 包：csharp
+rules/csharp
+skills/csharp
+agents/csharp
+
+# 包：devflow
+rules/devflow
+skills/devflow
+
+# 包：devflow-strict
+rules/devflow-strict
+skills/devflow-strict
+
+# 包：grilling
+skills/grilling
+
+# 包：python
+rules/python
+skills/python
+agents/python
+
+# 包：unity-pipeline
+rules/unity-pipeline
+skills/unity-pipeline
+
+# 包：yao-meta-skill
+rules/yao-meta-skill
+skills/yao-meta-skill
