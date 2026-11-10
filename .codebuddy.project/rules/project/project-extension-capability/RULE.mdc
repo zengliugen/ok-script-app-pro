@@ -1,5 +1,5 @@
 ---
-description: 扩展能力规范入口 —— 本项目自有能力的实现方式、代码落位、文档体系与流程强制。新增扩展能力、选择实现手段、编写 extensions/ 代码、或需要判断某个需求该用什么方式实现时注入。上游文件的修改与登记不属本族，见 project-upstream-compat 规则。
+description: 扩展能力规范入口 —— 本项目自有能力的实现方式、代码落位、文档体系与流程强制。本文件是规范规则（alwaysApply: false），不随路径注入，由 project-extension-capability-guard 技能按需加载。上游文件的修改与登记不属本族，见 project-upstream-compat 规则。
 alwaysApply: false
 enabled: true
 updatedAt: 2026-10-29T00:00:00.000Z

@@ -1,2 +1,3 @@
 # 占位文件：保证空的 rules/project/ 目录能入库。
-# 项目专有规则（<规则名>/RULE.mdc）直接放在本目录下，经 .codebuddy/rules/project 链接被加载。
+# 项目专有规则按「族」分组放置：<族>/RULE.mdc 与 <族>/<主题>.mdc，
+# 入口规则放 <族>/<技能名>.entry/<技能名>.entry.mdc；整棵树经 .codebuddy/rules/project 链接被加载。

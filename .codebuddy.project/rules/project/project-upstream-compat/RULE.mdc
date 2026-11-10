@@ -1,5 +1,5 @@
 ---
-description: 上游兼容规范入口 —— 本项目 fork 自上游 ok-script-app，默认禁止修改上游文件；确需修改须先获得用户授权并登记到差异清单。修改任何上游来源文件（src/、main*.py、pyproject.toml、.github/workflows/、docs/ 等）、执行上游同步、或处置合并冲突时注入。扩展能力如何实现不属本族，见 project-extension-capability 规则。
+description: 上游兼容规范入口 —— 本项目 fork 自上游 ok-script-app，默认禁止修改上游文件；确需修改须先获得用户授权并登记到差异清单。本文件是规范规则（alwaysApply: false），不随路径注入，由 project-upstream-compat-guard 与 project-upstream-compat-sync 两个技能按需加载。扩展能力如何实现不属本族，见 project-extension-capability 规则。
 alwaysApply: false
 enabled: true
 updatedAt: 2026-10-27T00:00:00.000Z

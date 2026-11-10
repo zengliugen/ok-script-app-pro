@@ -9,6 +9,8 @@
 .codebuddy.project/skills/
 ├── <pack>             # 引擎可选包的组件链接（由 pack_install.py 创建，勿手工增删）
 └── project/           # ★项目专有技能（真实目录，随项目入库）
+    └── <族>/          # 族分组层（取同族技能名共同前缀，本身不是技能）
+        └── <技能名>/SKILL.md
 ```
 
 **`project` 与其他包同级并列**，区别仅在于它是真实目录（其他包是指向 `lib/` 的链接）。
@@ -28,10 +30,15 @@
 
 ## 创建项目专有技能
 
-1. 建技能目录：`.codebuddy.project/skills/project/project-<主题>/`——**组件名一律以 `project-` 开头**，
-   与 `.codebuddy.project/rules/project/` 下同名规则前缀对齐（见 `core-rule-governance` 规则 §2.4）。
-2. 写 `SKILL.md`（frontmatter 的 `name` 必须与目录名完全一致）与 `manifest.json`（`name` 同步）。
-3. **无需其他操作**——`.codebuddy/skills/project` 链接已存在，CodeBuddy 自动扫描；新开会话即可见。
+1. 建技能目录：`.codebuddy.project/skills/project/project-<主题>/project-<技能名>/`——**组件名一律以
+   `project-` 开头**，族目录名取同族技能名的共同前缀，与 `.codebuddy.project/rules/project/` 下的
+   同名规范族对齐（见 `core-rule-governance` 规则 §2.4）。
+2. 写 `SKILL.md`（frontmatter 的 `name` 必须与技能目录名完全一致，与族目录名无关）与
+   `manifest.json`（`name` 同步）。
+3. **无需其他操作**——`.codebuddy/skills/project` 链接已存在，CodeBuddy 递归扫描；新开会话即可见。
+
+**族目录是分组层而非技能**：技能扫描逐层递归，判据是「目录内是否有 `SKILL.md`」，所以
+`project-<主题>/` 这一层不会被误认成技能；同一族可以容纳多个技能，也可以只有一个。
 
 ## 跨机器注意事项
 

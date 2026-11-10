@@ -1,2 +1,3 @@
 # 占位文件：保证空的 agents/project/ 目录能入库。
-# 项目专有代理（<代理名>.md）直接放在本目录下，经 .codebuddy/agents/project 链接被加载。
+# 项目专有代理按「族」分组放置：<族>/<代理名>.md（族名取代理名共同前缀），
+# 整棵树经 .codebuddy/agents/project 链接被加载。
