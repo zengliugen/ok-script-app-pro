@@ -1,44 +1,53 @@
 # 项目侧技能目录（.codebuddy.project/skills）
 
-本目录存放**本项目独有的技能与 pack 链接**，随本项目仓库版本控制；`.codebuddy` 引擎（可 submodule 化、
+本目录**只剩中转链接**，随本项目仓库版本控制；`.codebuddy` 引擎（可 submodule 化、
 多项目共享）不含本项目内容。
 
-## 两类内容共存
+## 结构
 
 ```
 .codebuddy.project/skills/
-├── <pack>             # 引擎可选包的组件链接（由 pack_install.py 创建，勿手工增删）
-└── project/           # ★项目专有技能（真实目录，随项目入库）
-    └── <族>/          # 族分组层（取同族技能名共同前缀，本身不是技能）
-        └── <技能名>/SKILL.md
+└── <pack>             # 每一项都是链接（由 pack_install.py 创建，勿手工增删，不入库）
 ```
 
-**`project` 与其他包同级并列**，区别仅在于它是真实目录（其他包是指向 `lib/` 的链接）。
+每个链接指向对应来源的技能目录：
+
+```
+.codebuddy.project/skills/<pack>   ──链接──▶  ../../../project-lib/<pack>/skills   （项目侧包）
+.codebuddy.project/skills/<pack>   ──链接──▶  ../../../.codebuddy/lib/<pack>/skills （引擎可选包）
+```
+
+真实技能内容随来源入库：项目侧包在 `.codebuddy.project/project-lib/<包>/skills/`，
+引擎包在 `.codebuddy/lib/<pack>/skills/`。本层链接被 `.gitignore` 整目录忽略。
+
 规则与代理目录（`.codebuddy.project/rules/`、`.codebuddy.project/agents/`）结构完全一致。
 
 ## 如何被 CodeBuddy 加载
 
-`.codebuddy/skills/` 是 CodeBuddy 的**内置技能扫描目录**。每个包经一个**目录软链接**挂载到该扫描目录下：
+`.codebuddy/skills/` 是 CodeBuddy 的**内置技能扫描目录**。每个包经**两层链接**挂载：
 
 ```
-.codebuddy/skills/<pack>     ──软链接──▶  ../../.codebuddy.project/skills/<pack>
-.codebuddy/skills/project    ──软链接──▶  ../../.codebuddy.project/skills/project
+.codebuddy/skills/<pack>          ──软链接──▶  ../../.codebuddy.project/skills/<pack>
+.codebuddy.project/skills/<pack>  ──软链接──▶  ../../../project-lib/<pack>/skills
 ```
 
-即本目录下的技能自动出现在 `.codebuddy/skills/<pack>/`，被 CodeBuddy 扫描并加载
+即技能自动出现在 `.codebuddy/skills/<pack>/`，被 CodeBuddy 扫描并加载
 （**实测：技能目录支持符号链接**）。新增/修改技能后新开会话生效。
 
-## 创建项目专有技能
+## 创建项目侧技能
 
-1. 建技能目录：`.codebuddy.project/skills/project/project-<主题>/project-<技能名>/`——**组件名一律以
-   `project-` 开头**，族目录名取同族技能名的共同前缀，与 `.codebuddy.project/rules/project/` 下的
-   同名规范族对齐（见 `core-rule-governance` 规则 §2.4）。
-2. 写 `SKILL.md`（frontmatter 的 `name` 必须与技能目录名完全一致，与族目录名无关）与
+1. 建技能目录：`.codebuddy.project/project-lib/<包名>/skills/<技能名>/`。
+   技能名须以 `<包名>-` 开头（或与包名相同），见 `core-rule-governance` §2.4。
+2. 写 `SKILL.md`（frontmatter 的 `name` 必须与技能目录名完全一致）与
    `manifest.json`（`name` 同步）。
-3. **无需其他操作**——`.codebuddy/skills/project` 链接已存在，CodeBuddy 递归扫描；新开会话即可见。
+3. 在 `.codebuddy.project/project-lib/packs.json` 该包的 `comps.skills` 中登记技能名。
+4. 安装并生效：
 
-**族目录是分组层而非技能**：技能扫描逐层递归，判据是「目录内是否有 `SKILL.md`」，所以
-`project-<主题>/` 这一层不会被误认成技能；同一族可以容纳多个技能，也可以只有一个。
+   ```
+   python .codebuddy/scripts/pack_install.py --source project install <包名>
+   ```
+
+5. 新开会话即可见。
 
 ## 跨机器注意事项
 
@@ -48,9 +57,9 @@
 - **创建链接的权限**：Windows 需开启"开发者模式"或以管理员身份运行；`mklink /D` 失败时，
   初始化脚本会告警并给出手工命令。
 - **平台**：macOS / Linux 原生支持符号链接，无额外要求。
-- **链接目标用相对路径**（`../../.codebuddy.project/skills/<pack>`），保证跨机器有效。
+- **链接目标用相对路径**，保证跨机器有效。
 
 ## 与引擎的关系
 
-本目录**不进入** `.codebuddy` 引擎库。可选包组件真实内容在引擎 `lib/<pack>/` 下，本目录只存
-**指向它的链接**；`project/` 下是项目真实文件，与引擎完全解耦。
+本目录**不进入** `.codebuddy` 引擎库。引擎可选包内容在 `lib/<pack>/`、项目侧包内容在
+`.codebuddy.project/project-lib/<包>/`，本目录只存指向它们的链接。

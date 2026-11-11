@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "_comment": "项目侧包注册表。comps 只写组件名，实际路径由 location 推导：project-lib → .codebuddy.project/project-lib/<包名>/<类型>/<组件名>（agents 加 .md 后缀；规则入口形态为 <名>.entry/ 目录）。requires 允许指向引擎 lib/packs.json 的包（单向：项目包 → 引擎包），反向禁止——引擎注册表不得出现项目包名。两表包名必须全局唯一。已装清单在 .codebuddy.project/configs/project-packs.json，由 pack_install.py --source project 维护。",
+  "packs": {
+    "extension-capability": {
+      "category": "项目能力域",
+      "description": "扩展能力的取舍与落位：四条实现路径按序尝试、patch 必须可失效、交付前经 audit",
+      "default": false,
+      "location": "project-lib",
+      "requires": [
+        "devflow"
+      ],
+      "comps": {
+        "rules": [
+          "extension-capability",
+          "extension-capability-guard"
+        ],
+        "skills": [
+          "extension-capability-guard"
+        ],
+        "agents": []
+      }
+    },
+    "upstream-compat": {
+      "category": "项目能力域",
+      "description": "上游差异登记与同步方向守护：改上游文件前登记、同步只能 upstream/master → master → dev",
+      "default": false,
+      "location": "project-lib",
+      "requires": [
+        "vcs"
+      ],
+      "comps": {
+        "rules": [
+          "upstream-compat",
+          "upstream-compat-guard",
+          "upstream-compat-sync"
+        ],
+        "skills": [
+          "upstream-compat-guard",
+          "upstream-compat-sync"
+        ],
+        "agents": []
+      }
+    },
+    "ok-script": {
+      "category": "项目能力域",
+      "description": "ok-script 领域技能：任务骨架、run 方法体、gettext 翻译、版本发布编排",
+      "default": false,
+      "location": "project-lib",
+      "requires": [],
+      "comps": {
+        "rules": [],
+        "skills": [
+          "ok-script-tasks",
+          "ok-script-codegen",
+          "ok-script-i18n",
+          "ok-script-release"
+        ],
+        "agents": []
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "installed": [
+    "extension-capability",
+    "ok-script",
+    "upstream-compat"
+  ]
+}

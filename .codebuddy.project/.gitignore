@@ -4,7 +4,7 @@
 #  caches/ 为运行时产物根目录（不持久化的临时结果：各技能 check_logs、
 #  .cache、.vcs-lock 等），由脚本执行生成，不入库；
 #  产物目录清单见 .codebuddy/project.index.json 的 artifacts.dirs。
-#  configs/、store/、docs/ 为入库内容，不在此忽略。
+#  configs/、store/、docs/、project-lib/ 为入库内容，不在此忽略。
 # ============================================================
 
 # 仓库根 .gitignore 的 configs/ 会匹配本项目侧 configs/ 目录（Python 运行时用户配置），
@@ -46,12 +46,11 @@ envs/*
 !envs/README.md
 
 # --- 通用忽略项兜底 --------------------------------------------------------
-#   project/ 天然在通配规则之外，其下组件**必须自带 .gitignore** 处理自己的专属产物
-#   （dist/、tools/<二进制>、reports/*<专项>.md 等）；本文件不覆盖 project/ 内部，
-#   否则会把整个类型目录重新纳入规则，与下面的逐条列举设计冲突。
+#   project-lib/ 下的组件**必须自带 .gitignore** 处理自己的专属产物
+#   （dist/、tools/<二进制>、reports/*<专项>.md 等）；本文件不覆盖其内部。
 #
 #   但通用产物（Python 字节码、系统临时文件）不该要求每个组件重复声明——它们与
-#   具体组件无关，任何组件都可能产出。故在此兜底，project/ 下的组件不必自带。
+#   具体组件无关，任何组件都可能产出。故在此兜底，project-lib/ 下的组件不必自带。
 #
 #   为何必须写在这里：本目录的 .gitignore 是项目仓库内唯一对 .codebuddy.project/
 #   生效的规则文件。项目根 .gitignore 也有各自的通用项，但那是项目根自己的事
@@ -65,52 +64,27 @@ Thumbs.db
 *.swp
 *~
 
-# 可选包桥接链接（逐条列举全集，不入库）
+# 组件根的中转链接（整目录忽略，不入库）
 #
-# 下列路径都是指向 .codebuddy/lib/<包>/<类型> 的整目录软链接，由 pack_install.py
-# 依引擎 lib/packs.json 与项目侧 configs/packs.json 的 installed 确定性创建与修复，
-# 不是仓库要维护的事实：
-#   1. 入库等于把派生结果当第三处事实来源——装/卸包时链接增删会持续污染 git 差异，
-#      且一旦与 packs.json 脱节无人察觉；
-#   2. 跨机器无效——Windows 默认 core.symlinks=false，克隆后落成内容为路径字符串的
-#      普通文件（git 以 120000 记录），PyAppify 复制项目时 entry.file_type() 不跟随链接，
-#      目录链接既不满足 is_dir() 也读不了内容，Windows 上以文件方式打开即报 os error 5；
-#      仍须跑 core-init 重建。入库换不来「克隆即可用」，只有噪音。
+# rules/、skills/、agents/ 三层现在**只剩链接**：真实内容全在
+# .codebuddy.project/project-lib/<pack>/<类型>/（随项目入库），这三层里每一项都是
+# pack_install.py 依 project-lib/packs.json 与 configs/project-packs.json 的
+# installed 确定性创建的目录链接：
+#   .codebuddy.project/rules/<pack>    → ../../../project-lib/<pack>/rules
+#   .codebuddy.project/skills/<pack>   → ../../../project-lib/<pack>/skills
+#   .codebuddy.project/agents/<pack>   → ../../../project-lib/<pack>/agents
 #
-# 清单按引擎声明的**全部可选包**一次列全，与安装状态无关：忽略规则幂等，多列未装
-# 的包无副作用（目录本不存在），少列已装的包却会让链接在下次 git add -A 时悄然入库。
-# 故装包、卸包都无需改本文件，只有引擎新增可选包时才需重新运行 core-init 补上。
+# 入库等于把派生结果当第三处事实来源（装/卸包持续产生差异噪音，与 packs.json
+# 脱节时无人察觉）；跨机器也无效——Windows 默认 core.symlinks=false，克隆后落成
+# 内容为路径字符串的普通文件，仍须重建。故整目录忽略。
 #
-# 为何逐条列举而非 skills/* + !skills/project/ 这类通配 + 反选：
-#   通配会把整个 <类型>/ 目录纳入规则，放行 project/ 时无论带不带 `**`，都无法让
-#   project/ 内部的临时产物（__pycache__/、.cache/ 等）继续受根规则约束。
-#   逐条列举只命中确定的包目录，project/ 根本不在规则里。
+# 为何可以整目录忽略而不必逐条列举：project 包退役后这三层不再有项目真实内容，
+# 通配不会误伤任何要入库的东西。反过来逐条列举会迫使每新增一个项目包就补三行，
+# 漏补一次链接即静默入库。
+/rules/*
+/skills/*
+/agents/*
 
-# 包：csharp
-rules/csharp
-skills/csharp
-agents/csharp
-
-# 包：devflow
-rules/devflow
-skills/devflow
-
-# 包：devflow-strict
-rules/devflow-strict
-skills/devflow-strict
-
-# 包：grilling
-skills/grilling
-
-# 包：python
-rules/python
-skills/python
-agents/python
-
-# 包：unity-pipeline
-rules/unity-pipeline
-skills/unity-pipeline
-
-# 包：yao-meta-skill
-rules/yao-meta-skill
-skills/yao-meta-skill
+# 例外：skills/README.md 是落点与加载机制的说明文档，属入库内容而非派生链接。
+# 它是固定单文件，不随包增减变化，因此补一条例外不会带来逐条列举的维护成本。
+!/skills/README.md

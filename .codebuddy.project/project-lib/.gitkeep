@@ -1,0 +1,4 @@
+# 占位文件：保证空的 project-lib/ 目录能入库。
+# 项目侧包按 .codebuddy.project/project-lib/<包名>/{rules,skills,agents}/ 放置，
+# 并在同目录 packs.json 登记；安装/卸载走
+#   python .codebuddy/scripts/pack_install.py --source project install <包名>

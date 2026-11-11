@@ -54,30 +54,41 @@
 `caches/` 下（产物清单见索引 `artifacts.dirs`），由本目录 `.gitignore` 整体忽略、不入库。
 清理用本目录的 `cleanup-caches.cmd`（薄入口，调用引擎侧 `.codebuddy/scripts/cleanup_artifacts.py`）。
 
-## 项目专有组件（rules / skills / agents）
+## 项目侧包（project-lib）
 
-三个组件根均为「可选包链接 + `project/` 真实目录」两层结构，`project/` 下按**族**分组一层：
+项目自有内容按**包**组织，与引擎可选包完全同构。包仓库在 `project-lib/`：
 
 ```
-rules/project/<族>/                 # 族名取技能名共同前缀，同时就是规范目录名
-├── RULE.mdc                        # 规范索引（alwaysApply: false）
-├── <主题>.mdc                      # 规范分项（alwaysApply: false）
-└── <技能名>.entry/<技能名>.entry.mdc  # 入口规则（alwaysApply: true）
-
-skills/project/<族>/<技能名>/SKILL.md
-agents/project/<族>/<代理名>.md
+project-lib/
+├── packs.json                       # 包注册表：包名、requires、default、comps
+└── <包名>/
+    ├── rules/<规则名>/RULE.mdc      # 规范规则（alwaysApply: false）
+    ├── rules/<规则名>.entry/<规则名>.entry.mdc  # 入口规则（alwaysApply: true）
+    ├── skills/<技能名>/SKILL.md
+    └── agents/<代理名>.md
 ```
 
-- 组件名一律以 `project-` 开头，族内每个技能与入口规则名都必须以 `<族名>-` 开头
-  （由 `check_manifest.py` 校验项 14 机械核对）。
-- 规范分项**平铺在族目录内**，不再各占一层子目录——规范没有附件要挂，为单个 `.mdc` 建目录只会
-  得到空壳。规则目录的层级因此比技能目录浅一层，这属预期形态（见 `core-rule-governance` §2.4）。
-- 只有入口、无规范的族仍在族目录下建 `.entry/`，不退化为 `rules/project/<名>.entry/`。
-- 三类组件均经 `.codebuddy/<类型>/project` 软链接被加载（详见 `skills/README.md`）。
-- 与 `.codebuddy` 引擎解耦：引擎可 submodule 化、多项目共享，项目专有内容只随本仓库版本控制。
+`skills/`、`rules/`、`agents/` 三个组件根只是指向 `project-lib/<包名>/<类型>` 的**中转链接**，
+由 `pack_install.py --source project` 物化，整层不入库。
+
+- 组件名遵循与引擎侧同一条约定：以 `<包名>-` 开头，或与包名相同（`check_manifest.py` 项 8）。
+  **不再有 `project-` 前缀要求**——项目侧身份由 `location: project-lib` 与所在注册表表达。
+- 规范分项**平铺在 `rules/<规则名>/` 内**，不为单个 `.mdc` 建目录。
+- 三类组件均经两层链接被加载：`.codebuddy/<类型>/<包名>` → `.codebuddy.project/<类型>/<包名>`
+  → `project-lib/<包名>/<类型>`。
+- **依赖单向**：项目包 `requires` 可指向引擎包（安装时自动带上），引擎注册表不得出现项目包名。
+- 与 `.codebuddy` 引擎解耦：引擎可 submodule 化、多项目共享，项目侧包内容只随本仓库版本控制。
+
+安装与查看：
+
+```bash
+python .codebuddy/scripts/pack_install.py --source project list
+python .codebuddy/scripts/pack_install.py --source project install <包名>
+python .codebuddy/scripts/pack_install.py --source project status
+```
 
 ## 维护约定
 
-- `configs/` 与 `store/` **入库**（随项目版本控制），`caches/` 与 `envs/*` **不入库**；不含敏感信息
+- `configs/`、`store/` 与 `project-lib/` **入库**（随项目版本控制），`caches/` 与 `envs/*` **不入库**；不含敏感信息
   （凭据等机器级配置保留在 `.codebuddy` 根的 `models.json` / `settings.local.json`，已被忽略）。
 - 修改引擎侧索引（新增配置项或产物目录）后，可重新运行 `core-init` 补齐缺失内容。
