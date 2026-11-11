@@ -62,10 +62,28 @@ python -m mkdocs build --strict
 
 ### 首次检出
 
-克隆后**必须先运行一次** `.codebuddy/setup.cmd`（macOS / Linux 为 `./.codebuddy/setup.sh`）。
-它生成 `.codebuddy.project/` 配置骨架、建立 `settings.json` 与可选包的软链接，并配置引擎的
-提交前校验钩子。这三类产物都不随仓库分发（在 `.git/` 或磁盘上），跳过会表现为配置读不到、
-可选包技能不加载、引擎提交时没有一致性校验。
+```bash
+git submodule update --init                                    # 1. 检出引擎子模块
+.codebuddy/setup.cmd                                          # 2. 生成骨架 + 装引擎可选包（Linux/macOS 用 setup.sh）
+python .codebuddy/scripts/pack_install.py --source project install extension-capability upstream-compat ok-script   # 3. 装项目侧包
+python .codebuddy/lib/python/skills/python-env/scripts/env.py ensure   # 4. 重建 Python 工具环境（按需，需已装 python 包）
+```
+
+跳过前三步的表现分别是：`.codebuddy/` 为空、可选包技能不加载、**项目侧技能与规则全部不生效**。
+中间三步的产物都不随仓库分发（在 `.git/` 或磁盘上，或被 gitignore）。
+
+> **第 3 步不能省**：`setup` 只装引擎可选包（默认 `--source engine`），项目侧包属另一张
+> 注册表，须显式 `--source project install`。不装不报错，只是那些 `*-guard` 技能加载不到。
+
+验证（三条都应退出码 0，最后新开一次会话使新装组件被扫描到）：
+
+```bash
+python .codebuddy/scripts/check_manifest.py
+python .codebuddy/scripts/pack_install.py status
+python .codebuddy/scripts/pack_install.py --source project status
+```
+
+详见 `.codebuddy.project/README.md` 的「新机器安装步骤」（含前置条件与常见故障排查）。
 
 ### 扩展约定
 
