@@ -44,7 +44,7 @@
     },
     "ok-script": {
       "category": "项目能力域",
-      "description": "ok-script 领域技能与强制入口：任务骨架、run 方法体、gettext 翻译（msgid 用英文源串）、版本发布编排",
+      "description": "ok-script 领域技能与强制入口：应用初始化、本地解释器约定、任务骨架、run 方法体、gettext 翻译（msgid 用英文源串）、版本发布编排",
       "default": false,
       "location": "project-lib",
       "requires": [],
@@ -53,13 +53,15 @@
           "ok-script-tasks",
           "ok-script-codegen",
           "ok-script-i18n",
-          "ok-script-release"
+          "ok-script-deploy"
         ],
         "skills": [
+          "ok-script-init-app",
+          "ok-script-venv",
           "ok-script-tasks",
           "ok-script-codegen",
           "ok-script-i18n",
-          "ok-script-release"
+          "ok-script-deploy"
         ],
         "agents": []
       }

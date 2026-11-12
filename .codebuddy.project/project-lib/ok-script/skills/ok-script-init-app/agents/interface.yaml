@@ -1,0 +1,45 @@
+interface:
+  display_name: "ok-script 应用初始化"
+  short_description: "把 ok-script-app 模板仓库初始化为具体游戏的自动化应用"
+  default_prompt: "使用 $ok-script-init-app 初始化这个模板仓库：先一次性收集游戏名、运行目标、图标、更新仓库与首个任务等信息，再按顺序改写 src/config.py、icons/、pyappify.yml、.github/workflows/、src/tasks/ 与文档站，并处理 ok_templates 的入库与发布过滤。"
+compatibility:
+  canonical_format: "agent-skills"
+  adapter_targets:
+    - "openai"
+    - "claude"
+    - "generic"
+    - "vscode"
+    - "codebuddy-code"
+  activation:
+    mode: "manual"
+    triggers:
+      - keyword: "初始化.*项目|项目初始化|模板初始化"
+      - keyword: "克隆.*模板|模板.*改成|从模板.*新建"
+      - keyword: "应用名|gui_title|窗口标题"
+      - keyword: "运行目标|windows\\.exe|hwnd_class|adb\\.packages|browser\\.url"
+      - keyword: "更新仓库|更新库|update repo"
+      - keyword: "换图标|icon\\.png|icon\\.ico"
+  execution:
+    context: "inline"
+    shell: "powershell"
+    environment:
+      python: ">=3.12"
+      packages:
+        - "ok-script"
+    artifacts:
+      - "SKILL.md"
+      - "references/checklist.md"
+      - "agents/interface.yaml"
+  trust:
+    source_tier: "local"
+    remote_inline_execution: "forbid"
+    remote_metadata_policy: "allow-metadata-only"
+  degradation:
+    openai: "metadata-adapter"
+    claude: "neutral-source-plus-adapter"
+    generic: "neutral-source"
+    vscode: "agent-skills-source-with-vscode-notes"
+    codebuddy-code: "native"
+name: ok-script-init-app
+version: "0.1.0"
+mode: Production

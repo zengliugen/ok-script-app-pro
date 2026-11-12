@@ -1,0 +1,101 @@
+{
+  "schema_version": "2.0.0",
+  "name": "ok-script-init-app",
+  "title": "ok-script 应用初始化",
+  "job_to_be_done": "把一个基于 ok-script-app 模板克隆出来的仓库初始化为具体游戏的自动化应用：收集需求、改写应用标识与运行目标、换图标、配更新仓库与打包、建首个任务、对齐文档站。不生成引擎侧配置骨架（那是 core-init），不写 run 方法体（那是 ok-script-codegen）。",
+  "trigger_surface": {
+    "description": "模板仓库初始化：把模板标识改成目标游戏的标识，并把发布链路配成可用状态。",
+    "should_trigger": [
+      "初始化这个模板项目，游戏叫某某",
+      "我克隆了模板，怎么改成我的游戏",
+      "应用名和窗口标题怎么改",
+      "运行目标要配 Windows 原生游戏",
+      "要接独立更新仓库怎么配",
+      "从模板新建应用需要哪些步骤"
+    ],
+    "should_not_trigger": [
+      "生成 .codebuddy.project 配置骨架",
+      "新建一个后台任务类",
+      "把这段 run 方法的点击改成相对坐标",
+      "发布一个 beta 版本",
+      "帮我提交代码"
+    ],
+    "edge_cases": [
+      "初始化要跑哪个技能：core-init 还是这个",
+      "更新仓库和源码仓库有什么区别",
+      "deploy.txt 里该写哪些目录",
+      "图标换了之后打包还要改什么",
+      "可执行名不知道怎么办"
+    ]
+  },
+  "workflow": {
+    "steps": [
+      "一次性收集十项需求（应用名、运行目标、可执行名、包名、URL、更新策略、图标、首个任务、MirrorChyan、分辨率与链接）。",
+      "读 README、src/config.py、pyappify.yml、mkdocs.yml、workflows、src/tasks 与中英文文档，并确认 git status。",
+      "按顺序改写 src/config.py 的应用标识与运行目标（至少保留一个目标）。",
+      "替换 icons/icon.png 与 icon.ico，文件名不变，改名时同步全部引用。",
+      "改 pyappify.yml 的应用名、profile 名与 git_url。",
+      "审 build.yml：替换仓库地址与产物名，按更新策略配或删同步步骤，处理 MirrorChyan 与 CNB。",
+      "建首个任务并注册进 config，结构交 ok-script-tasks、动作交 ok-script-codegen、译文交 ok-script-i18n。",
+      "处理 ok_templates：从 .gitignore 删掉整行使其入库，并在文档里说明发布必须配白名单过滤。",
+      "对齐 mkdocs.yml 与中英双语文档站，保持结构一致并更新导航。",
+      "验证：compileall、YAML 语法、mkdocs build --strict，再搜一遍残留模板标识。"
+    ],
+    "decision_points": [
+      "运行目标保留哪几个",
+      "更新仓库用独立库还是源码仓库",
+      "是否接 MirrorChyan 与 CNB",
+      "未知的可执行名/包名是留空还是向用户索取"
+    ],
+    "failure_modes": [
+      "编造可执行名、包名或仓库地址，导致运行期找不到目标或指向不存在的仓库",
+      "只改中文文档、漏改英文文档，两语言事实不一致",
+      "留了同步步骤但 git_url 指向源码仓库，过滤白搭",
+      "git_url 指向更新库但删了同步步骤，更新库永远不更新",
+      "任务类建好但忘记注册，永远不出现在任务列表且不报错",
+      "ok_templates 仍被忽略，协作者无法重新导出特征"
+    ]
+  },
+  "resources": {
+    "references": [
+      "references/checklist.md"
+    ],
+    "scripts": [],
+    "assets": [],
+    "reports": [
+      "reports/output-risk-profile.md"
+    ]
+  },
+  "eval_plan": {
+    "trigger": [
+      "evals/semantic_config.json",
+      "evals/trigger_cases.json"
+    ],
+    "output": [],
+    "adversarial": [],
+    "baseline": "without_skill"
+  },
+  "risk": {
+    "output_risk": "medium",
+    "execution_risk": "medium",
+    "trust_boundary": "project"
+  },
+  "governance": {
+    "owner": "zengliugen",
+    "maturity": "production",
+    "review_cadence": "quarterly",
+    "review_due": "2027-02-12"
+  },
+  "targets": [
+    "openai",
+    "claude",
+    "generic",
+    "agent-skills-compatible",
+    "vscode"
+  ],
+  "source_files": [
+    "SKILL.md",
+    "manifest.json",
+    "agents/interface.yaml"
+  ]
+}

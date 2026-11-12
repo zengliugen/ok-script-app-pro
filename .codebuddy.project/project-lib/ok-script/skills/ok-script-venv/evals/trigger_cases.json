@@ -1,0 +1,37 @@
+{
+  "skill": "ok-script-venv",
+  "recommended_threshold": 0.3,
+  "should_trigger": [
+    "跑测试该用哪个 python",
+    "这个命令用哪个解释器",
+    "PowerShell 里怎么调 .venv",
+    "要不要先 activate 一下",
+    "venv 里的解释器路径怎么拼",
+    "为什么本地能跑 CI 上不行",
+    "命令报找不到 python 模块",
+    "怎么确认用的是项目自己的环境",
+    "bash 里怎么解析 .venv 解释器",
+    "用 .venv 跑 unittest 的命令给我",
+    "IDE 里跑脚本用错环境了",
+    "pip install 该用哪个 python"
+  ],
+  "should_not_trigger": [
+    "创建 Python 工具环境",
+    "重建 ruff 环境",
+    "统计测试覆盖率",
+    "跑一下 ruff 检查",
+    "新建一个任务类",
+    "发布一个 beta 版本",
+    "帮我提交代码",
+    "这个报错是什么原因",
+    "ok_templates 要不要入库"
+  ],
+  "near_neighbor": [
+    "python-env ensure 报错了",
+    "应用解释器在哪",
+    "环境是否就绪怎么查",
+    "requirements.txt 怎么装",
+    "跑覆盖率要用哪个解释器",
+    "CI 里 setup-python 装的解释器算哪个"
+  ]
+}

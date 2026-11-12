@@ -1,4 +1,4 @@
-# 输出风险画像（ok-script-release）
+# 输出风险画像（ok-script-deploy）
 
 ## 风险矩阵
 

@@ -1,0 +1,43 @@
+{
+  "name": "ok-script-venv",
+  "version": "0.1.0",
+  "owner": "zengliugen",
+  "updated_at": "2026-11-12",
+  "review_due": "2027-02-12",
+  "status": "active",
+  "maturity_tier": "production",
+  "lifecycle_stage": "production",
+  "context_budget_tier": "production",
+  "review_cadence": "quarterly",
+  "skill_ir_source": "reports/skill-ir.json",
+  "target_platforms": [
+    "openai",
+    "claude",
+    "generic",
+    "vscode",
+    "codebuddy-code",
+    "agent-skills-compatible"
+  ],
+  "factory_components": [
+    "agents",
+    "references",
+    "evals",
+    "reports"
+  ],
+  "output_contract": "可直接粘贴的 Python 解释器解析命令片段与回退说明",
+  "rollback_boundary": "只读技能，不写文件；回滚即丢弃给出的命令",
+  "input_files": [
+    "仓库根是否存在 .venv",
+    "用户当前的 shell 类型"
+  ],
+  "upstream_source": {
+    "path": ".agents/skills/use-local-venv",
+    "skill_md_sha256_prefix": "88254162744c",
+    "migrated_at": "2026-11-12",
+    "local_changes": [
+      "正文中文化，并按引擎技能规范补齐核心契约、参考文献、不适用范围、已知局限四节",
+      "新增「与 python-env 的分工」一节：本技能是约定层（两级判断，只看路径存在），python-env 是机制层（四级探测，每级校验 import ok），并给出选用判据",
+      "补入路径基准陷阱、CI 与本地差异、为什么建议 -m 而非直接调可执行文件"
+    ]
+  }
+}

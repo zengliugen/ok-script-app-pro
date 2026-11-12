@@ -43,7 +43,7 @@ The repository includes these Agent Skills:
 - `$project-ok-script-i18n`: synchronize translations for tasks and configuration.
 
 They live under `.codebuddy.project/skills/project/project-ok-script/` and are tracked with the project.
-Use `$project-ok-script-release` to publish a version.
+Use `$ok-script-deploy` to publish a version.
 
 ## Verify
 

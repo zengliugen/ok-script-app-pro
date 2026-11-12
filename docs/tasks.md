@@ -43,7 +43,7 @@
 - `$project-ok-script-i18n`：同步任务名称、描述和配置项翻译。
 
 这三个技能位于 `.codebuddy.project/skills/project/project-ok-script/`，随项目入库。
-发布版本用 `$project-ok-script-release`。
+发布版本用 `$ok-script-deploy`。
 
 ## 验证
 

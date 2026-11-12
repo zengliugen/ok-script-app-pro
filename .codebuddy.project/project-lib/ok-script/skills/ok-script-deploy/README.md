@@ -1,4 +1,4 @@
-# ok-script 版本发布（ok-script-release）
+# ok-script 版本发布（ok-script-deploy）
 
 ## 解决什么问题
 
@@ -12,15 +12,15 @@
 ## 怎么用
 
 ```text
-$ok-script-release 发布一个新版本
-$ok-script-release deploy beta
-$ok-script-release 下一个版本号是多少
+$ok-script-deploy 发布一个新版本
+$ok-script-deploy deploy beta
+$ok-script-deploy 下一个版本号是多少
 ```
 
 算版本号也可以单独跑：
 
 ```powershell
-.\.venv\Scripts\python.exe .codebuddy.project\skills\project\ok-script\ok-script-release\scripts\next_tag.py beta --remote origin
+.\.venv\Scripts\python.exe .codebuddy.project\project-lib\ok-script\skills\ok-script-deploy\scripts\next_tag.py beta --remote origin
 ```
 
 ## 边界

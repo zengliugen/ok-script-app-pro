@@ -1,0 +1,92 @@
+{
+  "schema_version": "2.0.0",
+  "name": "ok-script-venv",
+  "title": "ok-script 本地虚拟环境",
+  "job_to_be_done": "在 ok-script 项目里跑 Python 命令时优先使用仓库本地 .venv：给出解释器解析写法（PowerShell / POSIX）、回退顺序与常见误用。只管约定层；环境创建与带 import ok 校验的四级探测由 python-env 负责。",
+  "trigger_surface": {
+    "description": "决定 Python 命令该用哪个解释器，并给出可直接粘贴的片段。",
+    "should_trigger": [
+      "跑测试该用哪个 python",
+      "PowerShell 里怎么调 .venv",
+      "要不要先 activate",
+      "为什么本地能跑 CI 上不行",
+      "pip install 该用哪个 python"
+    ],
+    "should_not_trigger": [
+      "创建 Python 工具环境",
+      "统计测试覆盖率",
+      "跑一下 ruff 检查",
+      "新建一个任务类",
+      "发布一个 beta 版本"
+    ],
+    "edge_cases": [
+      "python-env ensure 报错了",
+      "应用解释器在哪",
+      "环境是否就绪怎么查",
+      "跑覆盖率要用哪个解释器",
+      "CI 里 setup-python 装的解释器算哪个"
+    ]
+  },
+  "workflow": {
+    "steps": [
+      "判断当前 shell 类型（PowerShell / POSIX）。",
+      "检查仓库根是否存在 .venv（Windows 看 Scripts/python.exe，POSIX 看 bin/python）。",
+      "存在则给出直接调用解释器路径的命令，不依赖 activate。",
+      "不存在则回退到全局 python，并显式说明这次回退及其风险。",
+      "涉及测试、覆盖率、CI 或需要机器可读路径时，改指向 python-env 的 python 子命令。"
+    ],
+    "decision_points": [
+      "仓库有没有 .venv",
+      "用户当前 shell 类型",
+      "这次是手敲命令还是写进脚本/CI"
+    ],
+    "failure_modes": [
+      "静默回退到系统 python，导致 ImportError 被误判为代码问题",
+      "让用户 activate 后依赖当前 shell 状态，子进程拿不到",
+      "相对路径按脚本位置而非工作目录解析，指向不存在的解释器",
+      "在需要可靠场景（覆盖率/CI）误用两级判断，不校验 import ok"
+    ]
+  },
+  "resources": {
+    "references": [
+      "references/shell-snippets.md"
+    ],
+    "scripts": [],
+    "assets": [],
+    "reports": [
+      "reports/output-risk-profile.md"
+    ]
+  },
+  "eval_plan": {
+    "trigger": [
+      "evals/semantic_config.json",
+      "evals/trigger_cases.json"
+    ],
+    "output": [],
+    "adversarial": [],
+    "baseline": "without_skill"
+  },
+  "risk": {
+    "output_risk": "low",
+    "execution_risk": "low",
+    "trust_boundary": "project"
+  },
+  "governance": {
+    "owner": "zengliugen",
+    "maturity": "production",
+    "review_cadence": "quarterly",
+    "review_due": "2027-02-12"
+  },
+  "targets": [
+    "openai",
+    "claude",
+    "generic",
+    "agent-skills-compatible",
+    "vscode"
+  ],
+  "source_files": [
+    "SKILL.md",
+    "manifest.json",
+    "agents/interface.yaml"
+  ]
+}

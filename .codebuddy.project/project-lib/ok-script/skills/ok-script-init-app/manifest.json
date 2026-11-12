@@ -1,0 +1,43 @@
+{
+  "name": "ok-script-init-app",
+  "version": "0.1.0",
+  "owner": "zengliugen",
+  "updated_at": "2026-11-12",
+  "review_due": "2027-02-12",
+  "status": "active",
+  "maturity_tier": "production",
+  "lifecycle_stage": "production",
+  "context_budget_tier": "production",
+  "review_cadence": "quarterly",
+  "skill_ir_source": "reports/skill-ir.json",
+  "target_platforms": [
+    "openai",
+    "claude",
+    "generic",
+    "vscode",
+    "codebuddy-code",
+    "agent-skills-compatible"
+  ],
+  "factory_components": [
+    "agents",
+    "references",
+    "evals",
+    "reports"
+  ],
+  "output_contract": "初始化后的应用配置、图标、打包配置、首个任务骨架与对齐的文档站",
+  "rollback_boundary": "全部改动都是仓库内文件，回滚即 git checkout；不涉及外部服务写入（更新仓库与 secrets 由用户手工创建）",
+  "input_files": [
+    "模板仓库的 src/config.py、pyappify.yml、mkdocs.yml、.github/workflows",
+    "用户提供的游戏信息与图标素材"
+  ],
+  "upstream_source": {
+    "path": ".agents/skills/initialize-ok-script-app",
+    "skill_md_sha256_prefix": "1a4992d5ee9e",
+    "migrated_at": "2026-11-12",
+    "local_changes": [
+      "正文中文化，并按引擎技能规范补齐核心契约、参考文献、不适用范围、已知局限四节",
+      "新增「模板资源」一节：ok_templates 必须入库、目录级忽略会使深层反选失效、入库后必须配白名单过滤、不得用 Git LFS",
+      "明确与 core-init 的分工：core-init 生成引擎侧 .codebuddy.project 骨架，本技能只改应用业务层"
+    ]
+  }
+}

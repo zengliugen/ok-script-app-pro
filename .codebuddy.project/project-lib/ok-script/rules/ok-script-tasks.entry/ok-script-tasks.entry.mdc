@@ -42,7 +42,7 @@ provider:
 |---|---|
 | 只写 `run(self)` 里的动作序列 | `ok-script-codegen` |
 | 只补翻译目录 | `ok-script-i18n` |
-| 打 tag、发布版本 | `ok-script-release` |
+| 打 tag、发布版本 | `ok-script-deploy` |
 | 只改既有任务的一行逻辑（不碰元数据与配置） | 直接改 |
 
 ## 规范在哪

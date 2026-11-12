@@ -1,0 +1,127 @@
+{
+  "positive_concepts": {
+    "template_initialization": {
+      "weight": 0.4,
+      "phrases": [
+        "初始化",
+        "模板",
+        "克隆",
+        "从模板新建",
+        "改成我的游戏",
+        "模板初始化"
+      ]
+    },
+    "app_identity": {
+      "weight": 0.3,
+      "phrases": [
+        "应用名",
+        "gui_title",
+        "窗口标题",
+        "图标",
+        "icon.png",
+        "icon.ico",
+        "关于页链接",
+        "项目名"
+      ]
+    },
+    "runtime_target": {
+      "weight": 0.25,
+      "phrases": [
+        "运行目标",
+        "windows.exe",
+        "hwnd_class",
+        "adb.packages",
+        "browser.url",
+        "模拟器",
+        "分辨率"
+      ]
+    },
+    "release_wiring": {
+      "weight": 0.25,
+      "phrases": [
+        "更新仓库",
+        "更新库",
+        "git_url",
+        "pyappify.yml",
+        "build.yml",
+        "deploy.txt",
+        "MirrorChyan",
+        "打包配置"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "template_initialization",
+    "app_identity"
+  ],
+  "negative_concepts": {
+    "engine_init_only": {
+      "weight": 0.34,
+      "exclusive": true,
+      "phrases": [
+        "配置骨架",
+        "core-init",
+        "可选包",
+        "pack_install",
+        "project.index.json",
+        "桥接链接"
+      ]
+    },
+    "task_scaffold_only": {
+      "weight": 0.32,
+      "exclusive": true,
+      "phrases": [
+        "新建任务类",
+        "BaseTask",
+        "TriggerTask",
+        "任务注册",
+        "default_config"
+      ]
+    },
+    "codegen_only": {
+      "weight": 0.32,
+      "exclusive": true,
+      "phrases": [
+        "run 方法里",
+        "根据截图",
+        "生成点击步骤",
+        "相对坐标",
+        "模板匹配",
+        "OCR 识别"
+      ]
+    },
+    "i18n_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "翻译",
+        "i18n",
+        "ok.po",
+        "编译 po",
+        "同步翻译",
+        "msgid"
+      ]
+    },
+    "release_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "发布版本",
+        "打个 tag",
+        "deploy",
+        "beta",
+        "alpha"
+      ]
+    },
+    "explain_only": {
+      "weight": 0.22,
+      "exclusive": true,
+      "phrases": [
+        "解释一下",
+        "是什么意思",
+        "是什么原理",
+        "为什么"
+      ]
+    }
+  }
+}

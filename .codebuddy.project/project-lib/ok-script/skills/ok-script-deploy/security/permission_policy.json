@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_comment": "本文件声明 ok-script-release 允许执行的 git 子命令。本技能只做只读查询、打 tag 与推送；任何改写历史的操作（reset、rebase、amend、tag -d/-f、push --force）都不在白名单内，出现即应拒绝。",
+  "_comment": "本文件声明 ok-script-deploy 允许执行的 git 子命令。本技能只做只读查询、打 tag 与推送；任何改写历史的操作（reset、rebase、amend、tag -d/-f、push --force）都不在白名单内，出现即应拒绝。",
   "allowed_git_subcommands": [
     {
       "command": "status",

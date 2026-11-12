@@ -23,7 +23,7 @@ $ok-script-tasks 新建一个后台触发任务，每 2 秒检查一次弹窗并
 - **只做任务骨架**：类结构、元数据、配置、注册。
 - `run(self)` 里的 OCR／模板匹配／点击动作 → `ok-script-codegen`。
 - 翻译目录 → `ok-script-i18n`。
-- 发布 → `ok-script-release`。
+- 发布 → `ok-script-deploy`。
 - 不判断需求价值，只按已有设计落地。
 
 ## 文档索引

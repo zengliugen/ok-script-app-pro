@@ -1,0 +1,44 @@
+interface:
+  display_name: "ok-script 本地虚拟环境"
+  short_description: "在 ok-script 项目里跑 Python 命令时优先使用仓库 .venv"
+  default_prompt: "使用 $ok-script-venv 决定 Python 命令该用哪个解释器：仓库根有 .venv 就用它，没有才回退全局 python 并显式说明。给出可直接粘贴的 PowerShell 或 POSIX 命令片段。需要机器可读的解释器路径或环境诊断时，改用 $python-env。"
+compatibility:
+  canonical_format: "agent-skills"
+  adapter_targets:
+    - "openai"
+    - "claude"
+    - "generic"
+    - "vscode"
+    - "codebuddy-code"
+  activation:
+    mode: "manual"
+    triggers:
+      - keyword: "用哪个 python|哪个解释器|解释器.*哪一个"
+      - keyword: "venv|\\.venv|虚拟环境"
+      - keyword: "activate|激活.*环境"
+      - keyword: "PowerShell.*python|命令.*跑不起来|命令.*找不到"
+      - keyword: "本地能跑.*CI.*不行|CI.*本地.*差异"
+  execution:
+    context: "inline"
+    shell: "powershell"
+    environment:
+      python: ">=3.12"
+      packages:
+        - "ok-script"
+    artifacts:
+      - "SKILL.md"
+      - "references/shell-snippets.md"
+      - "agents/interface.yaml"
+  trust:
+    source_tier: "local"
+    remote_inline_execution: "forbid"
+    remote_metadata_policy: "allow-metadata-only"
+  degradation:
+    openai: "metadata-adapter"
+    claude: "neutral-source-plus-adapter"
+    generic: "neutral-source"
+    vscode: "agent-skills-source-with-vscode-notes"
+    codebuddy-code: "native"
+name: ok-script-venv
+version: "0.1.0"
+mode: Production

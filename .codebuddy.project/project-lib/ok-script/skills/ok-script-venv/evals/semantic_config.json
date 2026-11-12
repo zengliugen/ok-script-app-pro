@@ -1,0 +1,104 @@
+{
+  "positive_concepts": {
+    "interpreter_choice": {
+      "weight": 0.4,
+      "phrases": [
+        "用哪个 python",
+        "哪个解释器",
+        "解释器路径",
+        "venv",
+        ".venv",
+        "虚拟环境"
+      ]
+    },
+    "command_shape": {
+      "weight": 0.3,
+      "phrases": [
+        "PowerShell",
+        "bash",
+        "命令怎么写",
+        "怎么调",
+        "activate",
+        "激活"
+      ]
+    },
+    "env_mismatch": {
+      "weight": 0.25,
+      "phrases": [
+        "本地能跑",
+        "CI 不行",
+        "找不到模块",
+        "用错环境",
+        "IDE",
+        "ImportError"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "interpreter_choice",
+    "command_shape"
+  ],
+  "negative_concepts": {
+    "env_management": {
+      "weight": 0.34,
+      "exclusive": true,
+      "phrases": [
+        "创建环境",
+        "重建环境",
+        "python-env ensure",
+        "装 ruff",
+        "uv",
+        "锁定文件",
+        "环境是否就绪"
+      ]
+    },
+    "lint_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "ruff check",
+        "静态检查",
+        "格式化",
+        "lint"
+      ]
+    },
+    "coverage_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "覆盖率",
+        "coverage",
+        "测试覆盖"
+      ]
+    },
+    "task_scaffold_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "新建任务类",
+        "BaseTask",
+        "TriggerTask",
+        "任务注册"
+      ]
+    },
+    "release_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "发布版本",
+        "打个 tag",
+        "deploy",
+        "beta"
+      ]
+    },
+    "explain_only": {
+      "weight": 0.22,
+      "exclusive": true,
+      "phrases": [
+        "解释一下",
+        "是什么意思",
+        "是什么原理"
+      ]
+    }
+  }
+}

@@ -1,4 +1,4 @@
-# ok-script-release 变更记录
+# ok-script-deploy 变更记录
 
 > **本技能由仓库内 `.agents/skills/deploy` 迁移并改造而来，归本项目维护。**
 > 来源内容为英文，且其中的提交流程与本项目的提交强制链路冲突，本次做了实质性改造；
@@ -24,12 +24,34 @@
 重点比对**版本号规则**是否变化——那是本技能唯一不宜偏离来源的部分；
 提交流程的差异属本地必要改造，不要随来源回退。
 
+## 2026-11-12 名称由 ok-script-release 改为 ok-script-deploy
+
+**为什么改**：核对来源与本技能后确认**职责完全一致**——同样是「确认改动 → 验证 → 算版本号 →
+打注释 tag → 推送 → 核验汇报」，同样是 stable/beta/alpha 三渠道递进。
+唯一的差别是 `git commit` 在本项目里交 `vcs-router`，那是强制链路造成的必要改造，
+不构成不同职责。既然职责相同，命名就该与来源对齐：`deploy` 是上游对这件事的叫法，
+用户说「deploy 一下」时技能名直接对应，比 `release` 更贴合触发表述。
+
+**改了什么**：
+
+| 位置 | 变更 |
+|---|---|
+| 技能目录 | `skills/ok-script-release/` → `skills/ok-script-deploy/` |
+| 入口规则 | `rules/ok-script-release.entry/ok-script-release.entry.mdc` → `rules/ok-script-deploy.entry/ok-script-deploy.entry.mdc` |
+| 三处命名 | `SKILL.md` 的 `name`、`manifest.json` 的 `name`、`agents/interface.yaml` 的 `name` 全部改为 `ok-script-deploy` |
+| 包注册表 | `packs.json` 的 `ok-script` 包 `comps.skills` 与 `comps.rules` |
+| 内部引用 | 其余五个技能与包 README 中指向本技能的名称 |
+| 文档 | `docs/tasks.md` 与 `docs/en/tasks.md` 的技能调用示例 |
+
+**没改什么**：技能正文、版本规则、`next_tag.py` 脚本、`security/permission_policy.json` 全部不变——
+这次只改名，不动行为。
+
 ## 2026-10-30 从 .agents/skills/deploy 迁移并改造为发布编排
 
 | 项 | 内容 |
 |---|---|
-| 改名 | `deploy` → `ok-script-release`，目录迁到 `.codebuddy.project/project-lib/ok-script/skills/` |
-| 为什么改名 | `deploy` 是个无归属的通用词，看不出属于哪个项目、哪个领域；加 `ok-script-` 前缀既满足引擎项 10 的命名校验，也表明它是本项目的发布编排 |
+| 改名 | `deploy` → `ok-script-release`（2026-11-12 又改回 `ok-script-deploy`，见上一节），目录迁到 `.codebuddy.project/project-lib/ok-script/skills/` |
+| 为什么加前缀 | `deploy` 是个无归属的通用词，看不出属于哪个项目、哪个领域；加 `ok-script-` 前缀既满足引擎项 10 的命名校验，也表明它是本项目的发布编排 |
 | **实质改造一** | 来源步骤 5 直接执行 `git add` + `git commit`。本项目 `vcs-router.entry` 规则要求**所有提交必须经 `vcs-router` 链路**（含摘要格式校验、敏感信息检查、暂存区校验、VCS 互斥锁）。若保留来源写法，就会出现第二套提交流程，两套必然分叉，而分叉不报错。本次改为**提交交给 `vcs-router`**，本技能只负责顺序与版本号 |
 | **实质改造二** | 推送保留在本技能。理由：`vcs-router` 的路由范围是 commit 与 merge，`tag` 与 `push` 都不在其内；而不推 tag 就不构成发布。因此推送由本技能执行，但**发起权仍受项目配置约束**（`push_initiation` 默认 `user_only`），没有用户显式指令就不推 |
 | 路径修正 | 来源正文里的脚本路径是 `.agent\skills\deploy\scripts\next_tag.py`（少一个 s，且是另一套目录约定），本次改为项目侧真实路径 |

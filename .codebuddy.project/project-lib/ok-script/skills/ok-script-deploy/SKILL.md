@@ -1,5 +1,5 @@
 ---
-name: ok-script-release
+name: ok-script-deploy
 description: 编排 ok-script 项目的版本发布：确认待发布改动、跑发布前验证、计算下一个版本 tag、交提交与推送给版本控制链路、创建带注释的 tag 并核验推送结果。用户说"发布版本"、"deploy"、"打个 tag"、"发 beta"、"发 alpha"、"出个新版本"、"release 一下"、"下一个版本号是多少"时使用。本技能只做编排，不自己执行 git commit 与 git push（那两条必须走 vcs-router 链路），也不负责改代码或写测试。
 ---
 
@@ -72,9 +72,9 @@ tag 尚未推送时也能正确计入（读本地），已推送但本地未拉�
 3. **算版本号**（在提交前算，避免与既有 tag 撞名）：
 
    ```powershell
-   .\.venv\Scripts\python.exe .codebuddy.project\skills\project\ok-script\ok-script-release\scripts\next_tag.py release
-   .\.venv\Scripts\python.exe .codebuddy.project\skills\project\ok-script\ok-script-release\scripts\next_tag.py beta
-   .\.venv\Scripts\python.exe .codebuddy.project\skills\project\ok-script\ok-script-release\scripts\next_tag.py alpha
+   .\.venv\Scripts\python.exe .codebuddy.project\project-lib\ok-script\skills\ok-script-deploy\scripts\next_tag.py release
+   .\.venv\Scripts\python.exe .codebuddy.project\project-lib\ok-script\skills\ok-script-deploy\scripts\next_tag.py beta
+   .\.venv\Scripts\python.exe .codebuddy.project\project-lib\ok-script\skills\ok-script-deploy\scripts\next_tag.py alpha
    ```
 
    脚本默认同时读本地自有 tag 与 origin 已有 tag，两者取并集，因此不必再手动加

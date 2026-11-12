@@ -96,7 +96,7 @@ codegen 产出方法体，i18n 产出 `.po`/`.mo`。
 |------|--------|
 | 只写 `run(self)` 里的点击、OCR、模板匹配动作 | `ok-script-codegen` |
 | 只补/改 `i18n/<locale>/LC_MESSAGES/ok.po` | `ok-script-i18n` |
-| 打 tag、发布版本 | `ok-script-release` |
+| 打 tag、发布版本 | `ok-script-deploy` |
 | 需要提交代码 | `vcs-router` 技能路由 |
 
 ## 已知局限

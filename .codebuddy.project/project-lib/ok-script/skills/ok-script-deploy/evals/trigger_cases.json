@@ -1,5 +1,5 @@
 {
-  "skill": "ok-script-release",
+  "skill": "ok-script-deploy",
   "recommended_threshold": 0.3,
   "should_trigger": [
     "发布一个新版本",

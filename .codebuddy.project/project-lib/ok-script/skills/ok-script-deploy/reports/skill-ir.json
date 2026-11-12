@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0.0",
-  "name": "ok-script-release",
+  "name": "ok-script-deploy",
   "title": "ok-script 版本发布",
   "job_to_be_done": "编排 ok-script 项目的版本发布：确认待发布改动、跑发布前验证、计算下一个版本 tag、交提交给版本控制链路、创建带注释的 tag 并核验推送结果。用户说\"发布版本\"、\"deploy\"、\"打个 tag\"、\"发 beta\"时使用。提交必须走 vcs-router，本技能不自建提交流程。",
   "trigger_surface": {
