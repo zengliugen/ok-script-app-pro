@@ -820,6 +820,81 @@ _QT_BUTTON_TEXT = {
 }
 
 
+# 可以「间接翻译」的方法：它们的参数在方法内部会再包一层 tr，属于合法写法，
+# 不计入 check-dynamic-tr 的违规。
+_TR_DELEGATING_METHODS = {"_add_page", "add_page", "_add_tab"}
+
+
+def scan_dynamic_tr(targets):
+    """找出 `tr(非字面量)` 的调用点。
+
+    **为什么需要这条检查**：catalog 生成与门禁都靠**静态**抓 `tr("字面量")`。一旦
+    写成 `tr(text)`（参数是变量），那一处文案就永远不会进 catalog，界面上一直显示
+    源串，而门禁报「全部通过」。
+
+    实测踩过一次：`_add_page(key, "Scene Config", ...)` 内部 `self.tr(text)` 翻译的是
+    变量，四个页签名（场景配置 / 界面流转 / 草稿确认 / 调试）全部漏在 catalog 外，
+    界面上一直是英文。
+
+    判据：`tr(...)` 的实参不是字符串常量。两类已知的合法写法不报：
+
+    - 「间接翻译」包装方法（`_add_page` 等）的变量入参——它们在方法内部翻译；
+    - 循环变量（`for key, text in MODE_LABELS: ... tr(text)`）——文案来自本文件的
+      常量表，生成脚本有专门规则收。
+
+    Args：
+        targets：文件或目录路径列表。
+
+    Returns：
+        `(path, lineno, 代码片段)` 列表，按文件与行号排序。
+    """
+    found = []
+    for path in _iter_python_files(targets):
+        try:
+            with open(path, "r", encoding="utf-8") as handle:
+                source_text = handle.read()
+                tree = ast.parse(source_text, filename=path)
+        except (OSError, UnicodeDecodeError, SyntaxError):
+            continue
+        lines = source_text.splitlines()
+        tr_nodes = [node for node in ast.walk(tree) if _is_tr_call(node) and node.args]
+        # 出现在 `_add_page(KEY, text, ...)` 实参位置上的变量名是合法的：那些方法的
+        # 参数本来就要在方法内部被翻译。把它们对应的 `tr(text)` 跳过。
+        #
+        # 注意判据必须是「这个 Name 出现在间接方法的实参里」，而不是「凡是 Name 都
+        # 跳过」——后者会把真正的 `self.tr(text)` 漏掉，而那种写法正是本条检查要
+        # 抓的目标。
+        delegated_names = set()
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            func = node.func
+            name = func.id if isinstance(func, ast.Name) else getattr(func, "attr", "")
+            if name not in _TR_DELEGATING_METHODS:
+                continue
+            for arg in node.args:
+                if isinstance(arg, ast.Name):
+                    delegated_names.add(arg.id)
+        # 循环变量名：`for key, text in MODE_LABELS: ... tr(text)`。这类写法里的文案
+        # 来自本文件的常量表，生成脚本有专门规则收（如 MODE_LABEL_TABLE），不算漏译。
+        loop_names = set()
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.For):
+                continue
+            for target in ast.walk(node.target):
+                if isinstance(target, ast.Name):
+                    loop_names.add(target.id)
+        for node in tr_nodes:
+            first = node.args[0]
+            if isinstance(first, ast.Constant) and isinstance(first.value, str):
+                continue
+            if isinstance(first, ast.Name) and first.id in delegated_names | loop_names:
+                continue
+            snippet = lines[node.lineno - 1].strip() if node.lineno - 1 < len(lines) else ""
+            found.append((path, node.lineno, snippet))
+    found.sort(key=lambda item: (item[0], item[1]))
+    return found
+
 def scan_qt_standard_buttons(targets):
     """找出构造了 Qt 标准按钮但没有显式设置文字的对话框。
 
@@ -1175,6 +1250,12 @@ def build_parser():
         help="连状态栏提示（setText/setToolTip）一起报；默认只查静态界面文案",
     )
 
+    dynamic = subparsers.add_parser(
+        "check-dynamic-tr",
+        help="找出 tr(非字面量) 的调用点（其中的文案永远进不了 catalog）",
+    )
+    dynamic.add_argument("--path", nargs="+", required=True, help="文件或目录，可多个")
+
     qt_buttons = subparsers.add_parser(
         "check-qt-buttons",
         help="找出构造了 Qt 标准按钮但未显式设文字的对话框（minimal 版 PySide6 不带 Qt 翻译）",
@@ -1224,6 +1305,16 @@ def main(argv=None):
         for value in scan_ui_strings(args.path):
             print(value)
         return
+
+    if args.command == "check-dynamic-tr":
+        entries = scan_dynamic_tr(args.path)
+        if not entries:
+            print("没有 tr(非字面量) 的调用")
+            return
+        print("以下 tr() 的实参不是字符串常量，其中的文案进不了 catalog：", file=sys.stderr)
+        for path, lineno, snippet in entries:
+            print("  %s:%d  %s" % (path, lineno, snippet), file=sys.stderr)
+        raise SystemExit(1)
 
     if args.command == "check-qt-buttons":
         entries = scan_qt_standard_buttons(args.path)
