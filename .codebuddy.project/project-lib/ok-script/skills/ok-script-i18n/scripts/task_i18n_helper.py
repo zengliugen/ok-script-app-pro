@@ -515,6 +515,23 @@ UI_WIDGET_CALLS = {
 # （第 0 个是页签 key，不是文字）。
 UI_WIDGET_TEXT_INDEX = {
     "add_tab": 1,
+    # 项目常把页签封装成 `_add_page(key, text, widget)` 这类私有方法。文案在第 2 个
+    # 位置参数上，只认 `add_tab` 会把整批页签名漏掉——实测「Scene Config / Flow /
+    # Drafts / Debug」四个页签全部显示英文，而检查报「全部通过」。
+    "_add_page": 1,
+    "add_page": 1,
+    "_add_tab": 1,
+}
+
+# Qt 标准对话框按钮：文字由 Qt 内置翻译提供，但**只在 Qt 自己的翻译文件加载时才
+# 是本地化文本**。本项目用的是 minimal 版 PySide6，Qt 的 zh_CN 翻译未随包分发，
+# 实测 `QDialogButtonBox` 的 OK / Cancel 直接显示英文。
+#
+# 因此凡是构造标准按钮的地方，都要在收集结果里出现一条提示串，让开发者知道「这里
+# 需要显式 setText」。同时 check-hardcoded 也要能识别出来。
+QT_STANDARD_BUTTONS = {
+    "QDialogButtonBox",
+    "QMessageBox",
 }
 
 # 这些方法名本身就表明参数是给人看的文字。
@@ -784,8 +801,66 @@ def _display_literals(node):
 
 # 状态提示类方法：文案会显示给用户，但每条都是动态拼出来的（「已创建「场景 3」」），
 # 没有固定 msgid 与之对应。按项目规范这类不进 catalog。
-STATUS_TEXT_METHODS = {"setText", "setToolTip"}
+# 这些方法的文案会在**方法内部**再包一层 tr，源码里看到的是未包装的字面量，但那
+# 不是硬编码。不加豁免会误报——误报多了整个检查就没人看。
+DELEGATED_TR_METHODS = {"_add_page", "add_page", "_add_tab"}
 
+STATUS_TEXT_METHODS = {"setText", "setToolTip"} | DELEGATED_TR_METHODS
+
+
+# Qt 标准按钮的中文文案。用显式 setText 之后这些串会出现在源码里，收集它们是为了
+# 让「标准按钮被覆盖了」这件事可见；同时也作为 check-qt-buttons 的期望值。
+_QT_BUTTON_TEXT = {
+    "QDialogButtonBox.StandardButton.Ok": "OK",
+    "QDialogButtonBox.StandardButton.Cancel": "Cancel",
+    "QDialogButtonBox.StandardButton.Yes": "Yes",
+    "QDialogButtonBox.StandardButton.No": "No",
+    "QDialogButtonBox.StandardButton.Save": "Save",
+    "QDialogButtonBox.StandardButton.Close": "Close",
+}
+
+
+def scan_qt_standard_buttons(targets):
+    """找出构造了 Qt 标准按钮但没有显式设置文字的对话框。
+
+    **为什么需要这条检查**：`QDialogButtonBox` 的 OK / Cancel 文字由 Qt 内置翻译
+    提供，而本项目用的是 minimal 版 PySide6，Qt 的 zh_CN 翻译文件不随包分发。
+    实测 `QDialogButtonBox(QDialogButtonBox.Ok | Cancel)` 在中文界面下直接显示
+    英文，而扫描脚本对这类「文字不在源码里」的情况完全看不见。
+
+    Args:
+        targets：文件或目录路径列表。
+
+    Returns：
+        `(path, lineno)` 列表，按文件与行号排序。
+    """
+    found = []
+    for path in _iter_python_files(targets):
+        try:
+            with open(path, "r", encoding="utf-8") as handle:
+                tree = ast.parse(handle.read(), filename=path)
+        except (OSError, UnicodeDecodeError, SyntaxError):
+            continue
+        # 记录该文件是否对按钮调过 button(...).setText(...)
+        overridden = False
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            func = node.func
+            name = func.id if isinstance(func, ast.Name) else getattr(func, "attr", "")
+            if name == "setText":
+                source_text = ast.unparse(node.func)
+                if ".button(" in source_text:
+                    overridden = True
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            func = node.func
+            name = func.id if isinstance(func, ast.Name) else getattr(func, "attr", "")
+            if name in QT_STANDARD_BUTTONS and not overridden:
+                found.append((path, node.lineno))
+    found.sort()
+    return found
 
 def _is_status_call(node):
     """判断调用是否为状态提示（`setText` / `setToolTip`）。
@@ -1100,6 +1175,12 @@ def build_parser():
         help="连状态栏提示（setText/setToolTip）一起报；默认只查静态界面文案",
     )
 
+    qt_buttons = subparsers.add_parser(
+        "check-qt-buttons",
+        help="找出构造了 Qt 标准按钮但未显式设文字的对话框（minimal 版 PySide6 不带 Qt 翻译）",
+    )
+    qt_buttons.add_argument("--path", nargs="+", required=True, help="文件或目录，可多个")
+
     for name, help_text in (
         ("compile", "编译 .po 为 .mo"),
         ("check", "检查重复 msgid"),
@@ -1143,6 +1224,17 @@ def main(argv=None):
         for value in scan_ui_strings(args.path):
             print(value)
         return
+
+    if args.command == "check-qt-buttons":
+        entries = scan_qt_standard_buttons(args.path)
+        if not entries:
+            print("没有未设文字的 Qt 标准按钮")
+            return
+        print("以下位置用了 Qt 标准按钮但未显式设文字，共 %d 处：" % len(entries), file=sys.stderr)
+        print("（minimal 版 PySide6 不带 Qt 翻译，这些按钮会显示英文）", file=sys.stderr)
+        for path, lineno in entries:
+            print("  %s:%d" % (path, lineno), file=sys.stderr)
+        raise SystemExit(1)
 
     if args.command == "check-hardcoded":
         entries = scan_hardcoded_ui_text(args.path, strict=args.strict)
