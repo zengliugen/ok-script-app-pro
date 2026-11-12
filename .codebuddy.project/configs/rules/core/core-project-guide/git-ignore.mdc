@@ -12,7 +12,7 @@
 | `logs/` | 运行日志 | 运行时自动重建 |
 | `screenshots/` | 截图输出（每次启动清空） | 运行时自动重建 |
 | `ok/` | `ok-script` 源码内联产物（`inline_ok_requirements` 生成） | CI 打包时由 `python -m ok.update.inline_ok_requirements` 生成 |
-| `ok_templates/` | 模板匹配切图产物 | 由 `assets/coco_annotations.json` + debug 运行重新生成 |
+| `ok_templates/` | **模板编辑区**：原始截图 + 手工标注 `coco_annotations.json`（**不是**切图产物） | **不可再生**——由界面「模板」页签人工标注产生。本模板仓库按上游约定忽略；**下游真实应用必须入库**，详见 `docs/getting-started.md` |
 | `site/` | MkDocs 构建产物 | `python -m mkdocs build` |
 | `.venv/`、`venv/`、`__pycache__/`、`*.pyc`、`*.egg-info/`、`build/`、`dist/` | Python 环境与打包产物 | 重新创建虚拟环境 / 重新构建 |
 | `models`、`fonts`、`paddle_model/`、`tesseract` | 模型与字体资源（体积大） | 运行时按需下载或手工放置 |

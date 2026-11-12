@@ -40,7 +40,8 @@ ok-script-app-pro/
 ├── assets/                  # coco_annotations.json + images/（模板匹配资源）
 ├── icons/                   # 应用图标（icon.png）
 ├── configs/                 # 运行时用户配置（git 忽略）
-├── cache/ logs/ screenshots/ ok_tasks/ ok_templates/   # 运行时产物（git 忽略）
+├── cache/ logs/ screenshots/ ok_tasks/   # 运行时产物（git 忽略）
+├── ok_templates/            # 模板编辑区：原始截图 + 手工标注（本模板仓库 git 忽略；下游真实应用必须入库）
 ├── .github/workflows/       # CI：build.yml / docs.yml / mirrorchyan_*.yml
 ├── .codebuddy/              # 引擎（独立 Git submodule，不属本项目仓库）
 ├── .codebuddy.project/      # 引擎项目侧配置（入库）

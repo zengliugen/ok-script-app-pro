@@ -98,7 +98,7 @@ entries:
 
   - path: docs/getting-started.md
     kind: M
-    reason: 快速开始中的项目名与仓库链接对齐本项目
+    reason: 两处差异。① 快速开始中的项目名与仓库链接对齐本项目；② 新增第 4 节「模板资源的处理（下游应用必读）」——说明 ok_templates 是编辑区而非产物区、为何下游必须入库、目录级忽略会使深层反选失效、入库后必须配白名单过滤、不得用 Git LFS
     method: doc
     authorization: 用户明确授权
 
@@ -116,7 +116,7 @@ entries:
 
   - path: docs/release.md
     kind: M
-    reason: 发布流程对齐本项目仓库与打包产物名
+    reason: 两处差异。① 发布流程对齐本项目仓库与打包产物名；② 新增「发布包的过滤机制（下游应用必读）」——记录 PyAppify 不读 .gitignore、过滤只能靠 deploy.txt 白名单 + partial-sync-repo + 更新库地址三者配套，并给出下游落地清单与体积参考
     method: doc
     authorization: 用户明确授权
 
@@ -128,7 +128,7 @@ entries:
 
   - path: docs/en/getting-started.md
     kind: M
-    reason: 英文快速开始对齐本项目
+    reason: 两处差异。① 英文快速开始对齐本项目；② 与中文版同步新增第 4 节「Handling Template Assets」，内容为下游 ok_templates 入库与发布过滤要求，两语言结构保持对齐
     method: doc
     authorization: 用户明确授权
 
@@ -146,7 +146,7 @@ entries:
 
   - path: docs/en/release.md
     kind: M
-    reason: 英文发布流程对齐本项目
+    reason: 两处差异。① 英文发布流程对齐本项目；② 与中文版同步新增「Release Package Filtering」，说明 libgit2 不读 .gitignore、白名单四要素及下游落地清单
     method: doc
     authorization: 用户明确授权
 
