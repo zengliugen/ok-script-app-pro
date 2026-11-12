@@ -16,6 +16,30 @@
 四者的边界按**产出物**划分，不按主题划分：骨架 / 方法体 / 翻译文件 / 发布产物。
 遇到跨两处的问题时，按「最终要产出哪个文件」决定走哪个技能。
 
+## 强制入口规则
+
+四个技能各有一条常驻入口规则（`rules/<技能名>.entry/<技能名>.entry.mdc`，
+`alwaysApply: true`），只写「什么时候必须走该技能」与不可妥协的底线，执行细则仍由技能按需加载。
+
+| 入口规则 | 拦的是什么 |
+|---|---|
+| `ok-script-tasks.entry` | 凭记忆照抄任务模板：基类、注册位置、配置键风格每个项目不同，产物不报错但可能永远不生效 |
+| `ok-script-codegen.entry` | 编造框架 API、自建轮询循环替代 `wait_` 系列 |
+| `ok-script-i18n.entry` | **把中文当 `msgid` 源串**——源串语言一旦落地，纠正要连源码、所有译文与 `.mo` 一起改 |
+| `ok-script-release.entry` | 人工推算版本号（本地混着上游 tag）、绕开 `vcs-router` 自己 `git commit` |
+
+**为什么必须有入口**：这四个技能原先只有 `SKILL.md`，只能靠技能描述里的关键词被动触发。
+「写界面文案」这类动作在描述里未必命中，而它的错误后果（`msgid` 用了中文）**事后不能低成本
+纠正**。入口规则常驻，才能在动手之前把人导到技能上。
+
+扩展能力开发流程也据此加了一条导流（`extension-capability-guard` 入口规则的条款 7）：
+新增界面文案走 `ok-script-i18n`、建任务类走 `ok-script-tasks`、写动作序列走
+`ok-script-codegen`，并明确**禁止「先写完再补译文」**。
+
+`msgid` 必须是英文源串这条，除了规则与技能，还有两道机械兜底：
+`task_i18n_helper.py check`（`gate` 也调用它）检查全部 `msgid` 是否含中日韩字符，
+`extensions_tests/TestExtensionCatalogs.py` 对仓库内 catalog 做同样的断言。
+
 ## 未迁移的技能及理由
 
 `.agents/skills/` 下另有两个技能**没有**迁入，理由记录在此以免日后重复讨论：

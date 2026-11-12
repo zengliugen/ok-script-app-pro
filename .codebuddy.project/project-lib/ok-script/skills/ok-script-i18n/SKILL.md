@@ -1,6 +1,6 @@
 ---
 name: ok-script-i18n
-description: 维护 ok-script 项目的 gettext 翻译目录：上游 `i18n/<locale>/LC_MESSAGES/ok.po` 与扩展能力 `<能力包>/i18n/.../ok_ext.po`。做四件事——扫描界面可见文案（任务名、配置项说明、选项、按钮、Tab 名）、补齐各语言 msgid 并翻译、把 .po 编译成 .mo、校验 .po 与 .mo 是否同步以及是否漏译。用户说"加翻译"、"同步 i18n"、"任务名没翻译"、"配置项说明要翻译"、"编译 po 文件"、"ok.po 里缺哪些串"、"翻译目录怎么加语言"、"怎么新增一种语言"、"扩展能力要翻译"、"漏译"、"漏翻"、"ok_ext.po 和 ok_ext.mo 对不上"、"改了翻译界面没变"、"翻译文件要放哪个目录"时使用。不负责写任务类本身（用 ok-script-tasks）、不负责生成自动化动作代码（用 ok-script-codegen）、不判扩展代码落位（用 extension-capability-guard）。
+description: 维护 ok-script 项目的 gettext 翻译目录：上游 `i18n/<locale>/LC_MESSAGES/ok.po` 与扩展能力 `<能力包>/i18n/.../ok_ext.po`。做四件事——扫描界面可见文案（任务名、配置项说明、选项、按钮、Tab 名）、补齐各语言 msgid 并翻译、把 .po 编译成 .mo、校验 .po 与 .mo 是否同步以及是否漏译。用户说"加翻译"、"同步 i18n"、"任务名没翻译"、"配置项说明要翻译"、"编译 po 文件"、"ok.po 里缺哪些串"、"翻译目录怎么加语言"、"怎么新增一种语言"、"扩展能力要翻译"、"漏译"、"漏翻"、"ok_ext.po 和 ok_ext.mo 对不上"、"改了翻译界面没变"、"翻译文件要放哪个目录"、"msgid 为什么是中文"、"源串该用中文还是英文"时使用。不负责写任务类本身（用 ok-script-tasks）、不负责生成自动化动作代码（用 ok-script-codegen）、不判扩展代码落位（用 extension-capability-guard）。
 ---
 
 # ok-script 翻译目录维护

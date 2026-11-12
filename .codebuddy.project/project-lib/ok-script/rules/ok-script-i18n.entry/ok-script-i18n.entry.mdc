@@ -1,0 +1,61 @@
+---
+description: ok-script-i18n 技能强制入口 —— 新增或修改界面文案、编辑 gettext 目录、编译 .po、校验译文时必须经该技能，msgid 一律用英文源串。本文件是入口规则（只定义「必须走该技能」与源串语言底线），执行规范由技能按需加载。
+alwaysApply: true
+enabled: true
+updatedAt: 2026-11-12T00:00:00.000Z
+provider:
+---
+
+# ok-script-i18n 强制入口
+
+本文件只规定「什么时候必须经 `ok-script-i18n` 技能」。
+界面上出现文案的那一刻就已经决定了翻译目录里 `msgid` 长什么样，而这个决定**事后无法低成本纠正**：
+`msgid` 一旦落地，改文案就等于同时改源码、每个语言的译文与已编译的 `.mo`，漏一处就静默失效。
+因此判断必须发生在写代码之前，由技能按固定口径执行，而不是写完再回头补目录。
+
+## 强制条款
+
+1. **界面文案一律先定源串语言，再写代码**。新增或修改任何用户可见文案
+   （任务名、Tab 名、按钮、表头、下拉选项、弹窗标题与字段标签、配置键与说明）时，
+   必须先经本技能确认源串写法，**禁止**先写文案再补 catalog。
+
+2. **`msgid` 一律用英文源串**。代码里写成 `tr("Capture Frame")`，`msgid` 因此是
+   `Capture Frame`；中文只出现在 `zh_CN` 的 `msgstr` 里。
+   **禁止**把中文写成源串——中文当源串等于把中文声明为源语言，缺译时英文用户会看到
+   中文而不是英文原文（gettext 的回退目标是源语言，不是「某个默认语言」）。
+
+3. **不得手工编辑 `.po` 或手写 `.mo`**。补条目、翻译、编译 `compile`、校验
+   `check` / `check-mo` / `check-missing` / `gate` 一律经技能执行。手改的后两个后果
+   都不会报错：`.po` 与 `.mo` 不同步时界面读到的仍是旧译文；条目拼错一个空格就永远
+   匹配不上。
+
+4. **`.po` 与 `.mo` 必须一起提交**。构建链不编译 `.po`（`pyappify.yml` 与 workflows
+   均无此步），只提交 `.po` 时运行时读到的仍是旧 `.mo`。
+
+5. **扩展能力走 `ok_ext` 域，禁止改上游 `i18n/`**。扩展文案落
+   `extensions/capabilities/<能力>/i18n/<locale>/LC_MESSAGES/ok_ext.po`；上游目录是
+   upstream 来源文件，每次合并都会冲突。
+
+6. **动态文案不进 catalog**。状态栏提示、错误消息、日志由 f-string 拼出，没有固定
+   `msgid` 与之对应，保持中文原文即可。把它们硬塞进 catalog 只会得到一串永远匹配不上的条目。
+
+## 何时**不**走本技能
+
+| 场景 | 说明 |
+|---|---|
+| 纯日志串、内部异常消息 | 不面向终端用户，不翻译 |
+| 只读一个 `.po` 看内容 | 直接读文件 |
+| 配置**键**的命名风格 | 键名规范在 `ok-script-tasks` 技能，本技能只管它的译文 |
+
+## 规范在哪
+
+源串语言的完整论证（三个不报错的后果、与 Qt `sourcelanguage` 声明的关系）、
+`msgid` 精确匹配的成因、`.po`/`.mo` 加载机制与失效现象对照表，见
+`.codebuddy.project/project-lib/ok-script/skills/ok-script-i18n/references/catalog-rules.md`，
+由技能按需读取。
+
+## 加载机制说明
+
+无子规则；工作流、辅助脚本参数与退出码语义位于
+`.codebuddy.project/project-lib/ok-script/skills/ok-script-i18n/SKILL.md`，
+一律 `alwaysApply: false`，由技能读取，不自动注入。

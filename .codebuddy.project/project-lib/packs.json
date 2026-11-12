@@ -44,12 +44,17 @@
     },
     "ok-script": {
       "category": "项目能力域",
-      "description": "ok-script 领域技能：任务骨架、run 方法体、gettext 翻译、版本发布编排",
+      "description": "ok-script 领域技能与强制入口：任务骨架、run 方法体、gettext 翻译（msgid 用英文源串）、版本发布编排",
       "default": false,
       "location": "project-lib",
       "requires": [],
       "comps": {
-        "rules": [],
+        "rules": [
+          "ok-script-tasks",
+          "ok-script-codegen",
+          "ok-script-i18n",
+          "ok-script-release"
+        ],
         "skills": [
           "ok-script-tasks",
           "ok-script-codegen",

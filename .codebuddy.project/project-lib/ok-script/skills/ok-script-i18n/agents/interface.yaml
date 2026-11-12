@@ -19,6 +19,7 @@ compatibility:
       - keyword: "任务名.*没翻译|配置项.*翻译"
       - keyword: "加一种语言|新增语言"
       - keyword: "gettext"
+      - keyword: "源串|msgid.*英文|英文源串|中文 msgid"
   execution:
     context: "inline"
     shell: "powershell"
