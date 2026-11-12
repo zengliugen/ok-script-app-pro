@@ -96,7 +96,19 @@ VCS 互斥锁、暂存区校验、计划外文件核对。
 | enabled | name | description | commands | blocking |
 |---------|------|-------------|----------|----------|
 | true | Python 静态检查 | 按 `python_lint.config` 的规则集与检查范围，对**本次变更**的 Python 文件依次执行：① 自动修 import 排序（仅记录）② ruff format 格式检查（阻塞）③ ruff check 规则检查（阻塞）。范围由收集脚本按白名单过滤；工具环境缺失时退出 3，提示先跑 `python-env` 的 `ensure`，不自动安装 | `[".codebuddy.project/envs/python/Scripts/python.exe", ".codebuddy/lib/python/skills/python-lint/scripts/run_ruff.py", "check", "--changed", "--blocking"]` | true |
-| true | 扩展翻译一致性 | 校验扩展能力自带的翻译目录：① 每个 `extensions/capabilities/*/i18n/*/LC_MESSAGES/ok_ext.po` 都有同名 `.mo`（运行时只读 `.mo`）；② `.po` 与 `.mo` 的条目与译文一致（防「改了 po 忘编译」）；③ 扩展代码里的界面文案都能在各语言 catalog 中找到。扩展目前无 `i18n/` 目录时本步骤直接通过 | `[".codebuddy.project/envs/python/Scripts/python.exe", ".codebuddy.project/project-lib/ok-script/skills/ok-script-i18n/scripts/task_i18n_helper.py", "gate", "--i18n", "extensions/capabilities", "--path", "extensions/capabilities"]` | true |
+| true | 扩展翻译一致性 | 校验扩展能力自带的翻译目录：① 每个 `extensions/capabilities/*/i18n/*/LC_MESSAGES/ok_ext.po` 都有同名 `.mo`（运行时只读 `.mo`）；② `.po` 与 `.mo` 的条目与译文一致（防「改了 po 忘编译」）；③ 扩展代码里的界面文案都能在**本能力包自己**的各语言 catalog 中找到。按能力包**逐个**校验，见下方「为何用包装脚本」 | `[".codebuddy.project/envs/python/Scripts/python.exe", ".codebuddy.project/tools/i18n_gate_per_capability.py"]` | true |
+
+**为何用包装脚本而不是直接调上游门禁**：上游 `task_i18n_helper.py gate` 的语义是
+「扫描给定代码路径的全部文案，要求**每个** locale 的 catalog 都覆盖它们」，且它把
+`--i18n` 根下所有 po 按 locale 名合并成一份（`cmd_check_missing` 里的
+`catalogs.setdefault(locale, set()).update(...)`）。
+
+只有一个能力包时这两者等价；有第二个能力包后就会变成「A 包的 catalog 缺少 B 包的
+文案」。而本项目的能力包按**能力隔离**、各自自带 catalog，本来就不该互相覆盖。
+包装脚本按包逐个调用门禁，各自只比对**自己**的文案，任一包失败即整体退出 1。
+
+原命令（`--i18n extensions/capabilities --path extensions/capabilities`）在加入第二个
+带 i18n 的能力包后必然失败，且失败信息指向错误的包（说已存在的包缺新包的文案）。
 
 **为何只写一条命令**：三档分级（`I` 自动修、`F`/`D` 阻塞、`E501` 忽略）收在
 `run_ruff.py` 的 `--blocking` 内。单条命令的退出码表达不了三档；若拆成三条门禁命令，
