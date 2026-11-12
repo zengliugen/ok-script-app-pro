@@ -681,7 +681,7 @@ class ScreenshotMaskTab(CustomTab):
 
         self.zoom_in_button = Button(self.tr("Zoom In"), "plus", "subtle", "small")
         self.zoom_out_button = Button(self.tr("Zoom Out"), "minus", "subtle", "small")
-        self.zoom_reset_button = Button("1:1", None, "subtle", "small")
+        self.zoom_reset_button = Button(self.tr("1:1"), None, "subtle", "small")
         self.zoom_fit_button = Button(self.tr("Fit Window"), None, "subtle", "small")
         self.zoom_label = Label("", "secondary")
 
