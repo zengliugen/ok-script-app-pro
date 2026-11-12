@@ -47,3 +47,6 @@ msgstr "Reset To Default"
 
 msgid "Unsaved changes"
 msgstr "Unsaved changes"
+
+msgid "1:1"
+msgstr "1:1"

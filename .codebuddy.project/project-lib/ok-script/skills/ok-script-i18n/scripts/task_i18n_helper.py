@@ -496,17 +496,138 @@ class TaskStringVisitor(ast.NodeVisitor):
                 self._collect_value_strings(value)
 
 
-def scan_paths(targets):
-    """扫描文件或目录，返回界面可见字符串（去重保序）。
+# 界面控件的构造：第一个字符串字面量默认是显示文案。
+#
+# 只收**明确的界面控件**，不做「所有字符串字面量都算文案」的粗暴匹配——那会把
+# 日志、字典键、路径、正则全部算进来，报出的清单没人看，等于没有检查。
+UI_WIDGET_CALLS = {
+    "Button",
+    "Label",
+    "ComboBox",
+    "CheckBox",
+    "RadioButton",
+    "LineEdit",
+    "MessageBox",
+    "InputDialog",
+}
 
-    Args：
-        targets：文件或目录路径列表；目录会递归收集 .py。
+# 显示文案在第几个位置参数上。多数控件是第 0 个；`add_tab(key, text)` 是第 1 个
+# （第 0 个是页签 key，不是文字）。
+UI_WIDGET_TEXT_INDEX = {
+    "add_tab": 1,
+}
+
+# 这些方法名本身就表明参数是给人看的文字。
+TEXT_METHODS = {
+    "setText",
+    "setPlaceholderText",
+    "setToolTip",
+    "setWindowTitle",
+    "setTitle",
+}
+
+# 这些控件/方法的**第 0 个**参数不是文案，分别是图标名、样式角色、键名等。
+# 用白名单排除，避免把 `Button("trash")` 的图标名报成未翻译文案。
+NON_TEXT_FIRST_ARG = {
+    "addItem": 1,      # addItem(data, text)：第 1 个才是显示文本
+}
+
+
+def _is_tr_call(node):
+    """判断调用是否为翻译函数。
+
+    三种写法都要认：裸 `tr(...)`、`self.tr(...)`（CustomTab 提供的实例方法）、
+    `app.tr(...)` / `og.app.tr(...)`（全局）。只认裸 `tr` 会把 `self.tr("Scene
+    Manager")` 报成硬编码——那是误报，而误报多了整个检查就没人看。
+
+    Args:
+        node：ast 节点。
 
     Returns：
-        字符串列表。
+        布尔值。
+    """
+    if not isinstance(node, ast.Call):
+        return False
+    func = node.func
+    if isinstance(func, ast.Name):
+        return func.id == "tr"
+    if isinstance(func, ast.Attribute):
+        return func.attr == "tr"
+    return False
 
-    Raises：
-        SystemExit：目标不存在或解析失败时，退出码 3。
+
+class UiStringVisitor(ast.NodeVisitor):
+    """收集界面文案：`tr(...)` 实参与界面控件构造里的字面量。
+
+    与 `TaskStringVisitor` 的分工：那个只管任务类元数据（`self.name` /
+    `config_description` 等），这个管页面代码。两者结果并集才是「界面会显示的
+    全部文案」。
+
+    只取字面量常量——f-string 与变量拼出来的文案无法静态确定，交由人工判断。
+    """
+
+    def __init__(self):
+        """初始化结果容器。"""
+        self.strings = []
+
+    def visit_Call(self, node):
+        """处理函数调用：`tr(...)` 与界面控件构造。
+
+        Args:
+            node：ast 调用节点。
+        """
+        func = node.func
+        name = None
+        if isinstance(func, ast.Name):
+            name = func.id
+        elif isinstance(func, ast.Attribute):
+            name = func.attr
+
+        if _is_tr_call(node):
+            for arg in node.args[:1]:
+                self._add(arg)
+        elif name in UI_WIDGET_TEXT_INDEX:
+            index = UI_WIDGET_TEXT_INDEX[name]
+            if len(node.args) > index:
+                self._add(node.args[index])
+        elif name in TEXT_METHODS:
+            for arg in node.args[:1]:
+                self._add(arg)
+        elif name in NON_TEXT_FIRST_ARG:
+            index = NON_TEXT_FIRST_ARG[name]
+            if len(node.args) > index:
+                self._add(node.args[index])
+        elif name in UI_WIDGET_CALLS:
+            for arg in node.args[:1]:
+                self._add(arg)
+            for keyword in node.keywords:
+                if keyword.arg in {"text", "title", "placeholder", "label"}:
+                    self._add(keyword.value)
+        self.generic_visit(node)
+
+    def _add(self, node):
+        """把非空字符串常量收进结果。
+
+        Args:
+            node：表达式节点。
+        """
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            value = node.value.strip()
+            if value:
+                self.strings.append(value)
+
+
+def _iter_python_files(targets):
+    """展开目标为 .py 文件列表。
+
+    Args:
+        targets：文件或目录路径列表。
+
+    Returns：
+        路径字符串列表。
+
+    Raises:
+        SystemExit：路径不存在时退出码 3。
     """
     files = []
     for target in targets:
@@ -521,18 +642,236 @@ def scan_paths(targets):
             files.append(target)
         else:
             fail("路径不存在：%s" % target)
+    return files
 
+
+def _visit_file(path, visitor_class):
+    """用指定访问器解析一个文件并返回收集到的字符串。
+
+    Args:
+        path：文件路径。
+        visitor_class：`ast.NodeVisitor` 子类。
+
+    Returns：
+        字符串列表。
+
+    Raises:
+        SystemExit：解析失败时退出码 3。
+    """
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            tree = ast.parse(handle.read(), filename=path)
+    except (OSError, UnicodeDecodeError) as error:
+        fail("解析失败：%s（%s）" % (path, error))
+    visitor = visitor_class()
+    visitor.visit(tree)
+    return visitor.strings
+
+
+def scan_ui_strings(targets, skip_status=False):
+    """只扫描界面文案（tr 实参 + 控件字面量）。
+
+    Args：
+        targets：文件或目录路径列表。
+        skip_status：为 True 时跳过 `setText` / `setToolTip` 里的状态提示。这些是
+            f-string 拼出来的动态文案，没有固定 msgid，按项目规范不进 catalog。
+
+    Returns：
+        去重保序的字符串列表。
+    """
     collected = []
-    for path in files:
+    for path in _iter_python_files(targets):
+        if skip_status:
+            collected.extend(_ui_strings_excluding_status(path))
+        else:
+            collected.extend(_visit_file(path, UiStringVisitor))
+    return list(dict.fromkeys(collected))
+
+
+def _ui_strings_excluding_status(path):
+    """收集一个文件里的界面文案，跳过状态提示。
+
+    状态提示（`setText` / `setToolTip`）的文案是动态拼的，没有固定 msgid 与之一一
+    对应，按项目规范不进 catalog。不跳过会让门禁报出一堆「缺译」而实际是设计如此。
+
+    Args：
+        path：文件路径。
+
+    Returns：
+        字符串列表。
+    """
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            tree = ast.parse(handle.read(), filename=path)
+    except (OSError, UnicodeDecodeError):
+        fail("解析失败：%s" % path)
+    collected = []
+    for node in ast.walk(tree):
+        if _is_status_call(node):
+            continue
+        for literal in _display_literals(node):
+            text = literal.value.strip()
+            if text:
+                collected.append(text)
+    return collected
+
+
+# 判断「这个字符串是否是界面显示文案」的判定点。返回 True 表示该字面量会被
+# 显示给用户，必须走 tr()。
+def _ui_text_nodes(targets):
+    """产出所有「界面显示文案」的字面量节点及其所属文件。
+
+    与 `UiStringVisitor` 的区别：这里**不排除 tr() 包裹的**，而是连同父节点一起
+    返回，由调用方判断是否已包 tr。
+
+    Args:
+        targets：文件或目录路径列表。
+
+    Yields：
+        `(path, node)` 二元组。
+    """
+    for path in _iter_python_files(targets):
         try:
             with open(path, "r", encoding="utf-8") as handle:
                 tree = ast.parse(handle.read(), filename=path)
-        except (OSError, UnicodeDecodeError, SyntaxError) as error:
-            fail("解析失败：%s（%s）" % (path, error))
-        visitor = TaskStringVisitor()
-        visitor.visit(tree)
-        collected.extend(visitor.strings)
+        except (OSError, UnicodeDecodeError, SyntaxError):
+            continue
+        for node in ast.walk(tree):
+            for candidate in _display_literals(node):
+                yield path, candidate
+
+
+def _display_literals(node):
+    """从一个调用节点里挑出「会显示给用户」的字面量。
+
+    Args:
+        node：ast 节点。
+
+    Returns：
+        `ast.Constant` 列表。
+    """
+    if not isinstance(node, ast.Call):
+        return []
+    func = node.func
+    name = None
+    if isinstance(func, ast.Name):
+        name = func.id
+    elif isinstance(func, ast.Attribute):
+        name = func.attr
+    if name is None:
+        return []
+
+    picked = []
+    if _is_tr_call(node):
+        picked.extend(node.args[:1])
+    elif name in UI_WIDGET_TEXT_INDEX:
+        index = UI_WIDGET_TEXT_INDEX[name]
+        if len(node.args) > index:
+            picked.append(node.args[index])
+    elif name in TEXT_METHODS:
+        picked.extend(node.args[:1])
+    elif name in NON_TEXT_FIRST_ARG:
+        index = NON_TEXT_FIRST_ARG[name]
+        if len(node.args) > index:
+            picked.append(node.args[index])
+    elif name in UI_WIDGET_CALLS:
+        picked.extend(node.args[:1])
+        for keyword in node.keywords:
+            if keyword.arg in {"text", "title", "placeholder", "label"}:
+                picked.append(keyword.value)
+    return [item for item in picked if isinstance(item, ast.Constant) and isinstance(item.value, str)]
+
+
+# 状态提示类方法：文案会显示给用户，但每条都是动态拼出来的（「已创建「场景 3」」），
+# 没有固定 msgid 与之对应。按项目规范这类不进 catalog。
+STATUS_TEXT_METHODS = {"setText", "setToolTip"}
+
+
+def _is_status_call(node):
+    """判断调用是否为状态提示（`setText` / `setToolTip`）。
+
+    Args：
+        node：ast 节点。
+
+    Returns：
+        布尔值。
+    """
+    if not isinstance(node, ast.Call):
+        return False
+    func = node.func
+    return isinstance(func, ast.Attribute) and func.attr in STATUS_TEXT_METHODS
+
+
+def scan_hardcoded_ui_text(targets, strict=False):
+    """找出**没有包 `tr()` 的界面文案**（不限中英文）。
+
+    这是审计而不是翻译收集。判定口径：该字面量会被控件显示给用户，但没有被
+    `tr(...)` 包住。中英文一视同仁——`Button("Screenshot")` 与 `Button("截图")`
+    同样不合规：
+
+    - 中文：切到英文界面时露出中文，而中文环境下一路正常，问题只在交付后暴露；
+    - 英文：看似「反正英文也是英文」，但它绕过了 catalog——以后要改文案、要加
+      第三种语言、要做术语统一时，这一处永远是漏网的。
+
+    Args：
+        targets：文件或目录路径列表。
+        strict：为 True 时连 `setText` / `setToolTip` 这类状态提示也报。默认不报——
+            状态提示是 f-string 拼出来的动态文案，没有固定 msgid，按项目规范本来
+            就不进 catalog；把它们算作违规会让清单里九成是误报。
+
+    Returns：
+        `(path, lineno, text)` 列表，按文件与行号排序。
+    """
+    tr_positions = set()
+    all_calls = []
+    for path in _iter_python_files(targets):
+        try:
+            with open(path, "r", encoding="utf-8") as handle:
+                tree = ast.parse(handle.read(), filename=path)
+        except (OSError, UnicodeDecodeError, SyntaxError):
+            continue
+        for node in ast.walk(tree):
+            if _is_tr_call(node):
+                for arg in node.args:
+                    tr_positions.add((path, arg.lineno, arg.col_offset))
+            all_calls.append((path, node))
+
+    found = []
+    for path, node in all_calls:
+        if not strict and _is_status_call(node):
+            continue
+        for literal in _display_literals(node):
+            if (path, literal.lineno, literal.col_offset) in tr_positions:
+                continue
+            text = literal.value.strip()
+            if not text:
+                continue
+            found.append((path, literal.lineno, text))
+    found.sort(key=lambda item: (item[0], item[1]))
+    return found
+
+def scan_paths(targets):
+    """扫描文件或目录，返回界面可见字符串（去重保序）。
+
+    同时跑两类访问器：`TaskStringVisitor`（任务元数据）与 `UiStringVisitor`
+    （页面文案与控件字面量）。只跑前者时页面代码一条都扫不到——实测 103 条的
+    catalog 只覆盖到 14 条，剩下 89 条永远不会被发现缺译。
+
+    Args：
+        targets：文件或目录路径列表；目录会递归收集 .py。
+
+    Returns：
+        字符串列表。
+
+    Raises：
+        SystemExit：目标不存在或解析失败时，退出码 3。
+    """
+    collected = []
+    for path in _iter_python_files(targets):
+        collected.extend(_visit_file(path, TaskStringVisitor))
+        collected.extend(_ui_strings_excluding_status(path))
     return list(dict.fromkeys(collected))
+
 
 def iter_po_paths(i18n_dir):
     """递归产出 .po 路径。
@@ -747,6 +1086,20 @@ def build_parser():
     scan.add_argument("--path", nargs="+", default=None, help="文件或目录，可多个")
     scan.add_argument("--task", default=None, help="单个任务文件（兼容旧用法）")
 
+    scan_ui = subparsers.add_parser("scan-ui", help="只扫描界面文案（tr 实参与控件字面量）")
+    scan_ui.add_argument("--path", nargs="+", required=True, help="文件或目录，可多个")
+
+    hardcoded = subparsers.add_parser(
+        "check-hardcoded",
+        help="找出没包 tr() 的界面文案（中英文一律检查）",
+    )
+    hardcoded.add_argument("--path", nargs="+", required=True, help="文件或目录，可多个")
+    hardcoded.add_argument(
+        "--strict",
+        action="store_true",
+        help="连状态栏提示（setText/setToolTip）一起报；默认只查静态界面文案",
+    )
+
     for name, help_text in (
         ("compile", "编译 .po 为 .mo"),
         ("check", "检查重复 msgid"),
@@ -785,6 +1138,25 @@ def main(argv=None):
         for value in scan_paths(targets):
             print(value)
         return
+
+    if args.command == "scan-ui":
+        for value in scan_ui_strings(args.path):
+            print(value)
+        return
+
+    if args.command == "check-hardcoded":
+        entries = scan_hardcoded_ui_text(args.path, strict=args.strict)
+        if not entries:
+            print("界面文案全部经过 tr()，没有硬编码")
+            return
+        print("以下界面文案没有包 tr()，共 %d 处：" % len(entries), file=sys.stderr)
+        current = None
+        for path, lineno, text in entries:
+            if path != current:
+                current = path
+                print("  %s" % path, file=sys.stderr)
+            print("    第 %d 行：%s" % (lineno, text), file=sys.stderr)
+        raise SystemExit(1)
 
     require_dir(args.i18n)
     if args.command == "compile":

@@ -47,3 +47,6 @@ msgstr "重置为默认值"
 
 msgid "Unsaved changes"
 msgstr "有未保存的改动"
+
+msgid "1:1"
+msgstr "1:1"
