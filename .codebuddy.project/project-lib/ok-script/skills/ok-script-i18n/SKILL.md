@@ -87,6 +87,12 @@ ok-script 用 gettext 做界面翻译：目录在 `i18n/<locale>/LC_MESSAGES/ok.
 
 ## 目录规则
 
+- **源串一律英文**：代码里传给 `tr()` 的字面量必须是英文，`msgid` 因此也是英文；中文
+  只出现在 `zh_CN` 的 `msgstr` 里。中文当源串会让「缺失译文」回退成中文，而 gettext 的
+  回退语义是回退到源语言。
+- **动态文案不本地化**：状态栏提示、错误消息、日志由 f-string 拼出，没有固定 `msgid`
+  与之对应，一律保持中文原文、不进 catalog。中文源串 + 动态文案混在一处时，catalog 里
+  会出现「一半中文一半英文」的 msgid，评审时无法判断哪些条目是有意为之。
 - `msgid` 必须与代码里的源串**完全一致**，多一个空格都匹配不上。
 - 目录本来没排序时，新条目追加到末尾即可，不要重排整个文件。
 - 纯日志串不加，除非用户明确要求。
@@ -116,10 +122,13 @@ ok-script 用 gettext 做界面翻译：目录在 `i18n/<locale>/LC_MESSAGES/ok.
 
 1. 先判断该能力是否引入了**用户可见文案**——任务名、Tab 名、配置键、配置说明、
    下拉与多选选项、按钮文字、弹窗提示，任一命中即需要本地化。
-2. 在能力包内建 `i18n/<locale>/LC_MESSAGES/ok_ext.po`（`.po` 与 `.mo` **都入库**）。
-3. 跑 `gate --i18n extensions\capabilities --path extensions\capabilities`，
+2. 界面源码的静态文案写成**英文源串 + `self.tr(...)`**（如 `self.tr("Capture Frame")`）；
+   中文只出现在 `zh_CN` 的 `msgstr` 里。状态栏提示与错误消息由 f-string 拼出，
+   没有固定 `msgid`，保持中文原文、不进 catalog。
+3. 在能力包内建 `i18n/<locale>/LC_MESSAGES/ok_ext.po`（`.po` 与 `.mo` **都入库**）。
+4. 跑 `gate --i18n extensions\capabilities --path extensions\capabilities`，
    缺条目就补、补完用 `compile` 重编。
-4. **不要改上游 `i18n/` 目录**。
+5. **不要改上游 `i18n/` 目录**。
 
 ## 扩展 catalog 的三条硬约束
 
