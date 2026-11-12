@@ -16,9 +16,18 @@
     0 通过 / 1 警告 / 2 错误 / 3 配置或环境不可用
 """
 
+import re
 import subprocess
 import sys
 from pathlib import Path
+
+# msgid 里出现即判为「源串不是英文」（中日韩统一表意文字 + 兼容表意文字）。
+#
+# 这条与空 msgstr 同属**错误**级：中文当源串等于把中文声明为源语言，缺译时英文用户
+# 会看到中文（gettext 回退到源语言），而纠正要连源码、所有译文与 .mo 一起改。
+# 三道防线各管一段时间：`ok-script-i18n` 技能在写文案前拦、本检查在交付前拦、
+# `TestExtensionCatalogs.py` 在提交时拦。
+CJK_MSGID_PATTERN = re.compile(r"[㐀-䶿一-鿿豈-﫿]")
 
 def resolve_project_root(start):
     """自 start 向上查找含 `.codebuddy` 的目录，返回项目根。
@@ -1141,6 +1150,16 @@ def check_i18n_catalogs():
                     )
                 )
                 continue
+
+            for key in sorted(key for key in po_catalog if key and CJK_MSGID_PATTERN.search(key)):
+                findings.append(
+                    Finding(
+                        LEVEL_ERROR,
+                        "本地化",
+                        rel + " 的 msgid「" + key + "」不是英文源串——源串一律英文，中文只放 "
+                        "msgstr；中文当源串会让缺译时回退成中文",
+                    )
+                )
 
             for key in sorted(key for key, value in po_catalog.items() if not value):
                 findings.append(

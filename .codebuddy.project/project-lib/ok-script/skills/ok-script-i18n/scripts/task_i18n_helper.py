@@ -64,6 +64,14 @@ CONFIG_TYPE_META = {
 # .po 里出现即表明本脚本无法正确解析的构造。宁可报错，不猜。
 UNSUPPORTED_PO_CONSTRUCTS = ("msgctxt", "msgid_plural", "msgstr[")
 
+# msgid 里出现即判为「源串不是英文」。范围取中日韩统一表意文字（含扩展 A）与
+# 兼容表意文字——界面文案可能遇到的都在这几段。
+#
+# 为什么这条要机械校验：中文当源串时，gettext 缺译会回退成中文（回退目标是源语言），
+# 英文用户看到中文而没有任何报错；而源串语言一旦落地，纠正要连源码、所有译文与 .mo
+# 一起改。检测点只有 `check` 与 `gate`，没有别的地方能发现它。
+CJK_PATTERN = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]")
+
 # .mo 文件魔数（GNU gettext）。
 MO_MAGIC = 0x950412DE
 
@@ -595,7 +603,7 @@ def cmd_compile(i18n_dir):
 
 
 def cmd_check(i18n_dir):
-    """逐语言检查重复 msgid。
+    """逐语言检查重复 msgid 与非英文源串。
 
     Args：
         i18n_dir：翻译根目录。
@@ -605,12 +613,22 @@ def cmd_check(i18n_dir):
         entries = parse_po(po_path)
         ids = [entry.msgid for entry in entries]
         duplicates = sorted(msgid for msgid, count in Counter(ids).items() if count > 1)
+        non_english = [msgid for msgid in dict.fromkeys(ids) if msgid and CJK_PATTERN.search(msgid)]
         if duplicates:
             failed = True
             print("重复 msgid：%s" % po_path)
             for msgid in duplicates:
                 print("  %s" % msgid)
-        else:
+        if non_english:
+            failed = True
+            print("msgid 不是英文源串：%s" % po_path)
+            for msgid in non_english:
+                print("  %s" % msgid)
+            print(
+                "  修正方式：把源码里 tr() 的实参改成英文，再同步该条目的各语言译文。"
+                "只改 .po 不生效——msgid 必须与源码源串逐字符一致。"
+            )
+        if not duplicates and not non_english:
             print("正常 %s" % po_path)
     if failed:
         raise SystemExit(1)
@@ -701,7 +719,7 @@ def cmd_check_missing(i18n_dir, code_paths):
 
 
 def cmd_gate(i18n_dir, code_paths):
-    """门禁入口：先校验 po 与 mo 一致，再校验文案覆盖。
+    """门禁入口：先校验 po 与 mo 一致，再校验 msgid 为英文源串，最后校验文案覆盖。
 
     Args：
         i18n_dir：翻译根目录。
@@ -709,6 +727,9 @@ def cmd_gate(i18n_dir, code_paths):
     """
     print("== 校验 .po 与 .mo 是否同步 ==")
     cmd_check_mo(i18n_dir)
+    print("")
+    print("== 校验 msgid 是否为英文源串 ==")
+    cmd_check(i18n_dir)
     print("")
     print("== 校验界面文案是否都有译文 ==")
     cmd_check_missing(i18n_dir, code_paths)
