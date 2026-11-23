@@ -2,7 +2,10 @@
 name = "ok-script-app-pro"
 version = "0.0.0"
 requires-python = ">=3.12,<3.13"
-dependencies = []
+dependencies = [
+    # 场景管理能力的流转图寻路（最短路、连通性、布局坐标）。纯 Python，无原生依赖。
+    "networkx>=3.0",
+]
 
 [project.optional-dependencies]
 # ok-script 3 provides the Qt UI through ok-pyside-minimal.

@@ -142,5 +142,6 @@ python .codebuddy.project/skills/project/project-extension-capability/project-ex
 | extension-i18n | 已实施 | extension-i18n/design.md | extension-i18n/plan.md | extension-i18n/deviation.md | extension-i18n/testing.md | — |
 | window-restore-guard | 已实施 | window-restore-guard/design.md | window-restore-guard/plan.md | window-restore-guard/deviation.md | window-restore-guard/testing.md | — |
 | screenshot-mask | 已实施 | screenshot-mask/design.md | screenshot-mask/plan.md | screenshot-mask/deviation.md | screenshot-mask/testing.md | — |
+| scene-manager | 已实施 | scene-manager/design.md | scene-manager/plan.md | scene-manager/deviation.md | scene-manager/testing.md | — |
 
 > 「待补」是显式的缺口标记，不是占位符。补齐后改成实际文件名。

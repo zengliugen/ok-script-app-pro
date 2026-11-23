@@ -21,6 +21,7 @@
 | `my_key.txt` | 本地凭据（**不得入库**） | 用户自备 |
 | `*.bat`、`*.dat`、`*.msgpack`、`*.so`、`*.manifest`、`thread_dumps.txt`、`pip-log.txt`、`autohelper` | 各类本地/生成文件 | 按需重建 |
 | `ok_tasks/` | GUI 中创建的自定义任务脚本 | 无自动重建，属本地用户数据 |
+| `assets/scenes/` 下的采集数据 | 「场景管理」能力采集的场景库（`library.json`、`scene-NNNN/`、`_drafts/`），由 `assets/scenes/.gitignore` 忽略 | 由「场景管理」页签重新采集；**模板项目不入库**，正式项目按需删除该忽略文件的 `*` 与三条反选 |
 
 **规则存在但目录未创建**：`.gitignore` 中的 `test/`（第 37 行）与 `test_scripts/`（第 27 行）
 是上游模板遗留条目，两个目录当前**均不存在**。正式测试目录是 `tests/`（复数，**未被忽略**），

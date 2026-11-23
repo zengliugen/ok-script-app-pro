@@ -25,6 +25,10 @@ CAPABILITIES = (
     "extensions.capabilities.window_restore_guard",
     "extensions.capabilities.extension_i18n",
     "extensions.capabilities.screenshot_mask",
+    # 场景管理：识别当前场景、跳到指定场景、自动探索建图。排在最后是因为它的
+    # 页签需要读取 `Screenshot Mask` 全局配置（检测特征与遮罩相交），
+    # 必须等 screenshot_mask 先注册完。
+    "extensions.capabilities.scene_manager",
 )
 
 

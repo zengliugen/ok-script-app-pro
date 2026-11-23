@@ -25,7 +25,13 @@ entries:
   # ---------- 构建与发布必需 ----------
   - path: pyproject.toml
     kind: M
-    reason: 项目名由 ok-script-app 改为 ok-script-app-pro，打包与依赖安装均依赖该名称
+    reason: 两处差异。① 项目名由 ok-script-app 改为 ok-script-app-pro，打包与依赖安装均依赖该名称；② `[project].dependencies` 新增 networkx——场景管理能力的流转图寻路（最短路、连通性、布局坐标）依赖它，且寻路属运行期核心逻辑而非仅 GUI 用途，故放基础依赖而非 qt extra。networkx 为纯 Python 包，无原生编译件，不影响打包
+    method: necessary
+    authorization: 用户明确授权
+
+  - path: requirements.txt
+    kind: M
+    reason: 由 pyproject.toml 编出的锁定文件新增 networkx==3.7（随场景管理能力引入）。注意该文件是 piptools 生成物，**不得手工编辑内容**，依赖变更应改 pyproject.toml 后重新编译。本次因编译时的依赖解析在网络受限环境下超时，按 piptools 的输出格式（版本行 + `# via` 注释、字母序位置）补齐单条，内容与实际安装版本一致
     method: necessary
     authorization: 用户明确授权
 
@@ -98,7 +104,7 @@ entries:
 
   - path: docs/getting-started.md
     kind: M
-    reason: 两处差异。① 快速开始中的项目名与仓库链接对齐本项目；② 新增第 4 节「模板资源的处理（下游应用必读）」——说明 ok_templates 是编辑区而非产物区、为何下游必须入库、目录级忽略会使深层反选失效、入库后必须配白名单过滤、不得用 Git LFS
+    reason: 三处差异。① 快速开始中的项目名与仓库链接对齐本项目；② 新增第 4 节「模板资源的处理（下游应用必读）」——说明 ok_templates 是编辑区而非产物区、为何下游必须入库、目录级忽略会使深层反选失效、入库后必须配白名单过滤、不得用 Git LFS；③ 新增第 5 节「场景库是否入库」——说明 assets/scenes/ 采集数据的归属判断与入库/恢复步骤
     method: doc
     authorization: 用户明确授权
 
@@ -128,7 +134,7 @@ entries:
 
   - path: docs/en/getting-started.md
     kind: M
-    reason: 两处差异。① 英文快速开始对齐本项目；② 与中文版同步新增第 4 节「Handling Template Assets」，内容为下游 ok_templates 入库与发布过滤要求，两语言结构保持对齐
+    reason: 三处差异。① 英文快速开始对齐本项目；② 与中文版同步新增第 4 节「Handling Template Assets」，内容为下游 ok_templates 入库与发布过滤要求；③ 与中文版同步新增第 5 节「Whether the Scene Library Should Be Committed」，两语言结构保持对齐
     method: doc
     authorization: 用户明确授权
 
@@ -160,4 +166,10 @@ entries:
     kind: M
     reason: 中文版 docs/tasks.md 的英文对应页，旧技能名同步改为 ok-script-* 并补上技能落位路径
     method: doc
+    authorization: 用户明确授权
+
+  - path: ok/ui/qt/MainWindow.py
+    kind: M
+    reason: custom_tabs 原先硬编码挂到 SECTION_GAME，页签无法声明自己的分组。新增 _tab_section()，读页签的 section 属性（默认 game，未知值回退 game）。场景管理是配置期工具，放在「游戏」分组会让普通用户误以为它参与日常流程
+    method: necessary
     authorization: 用户明确授权

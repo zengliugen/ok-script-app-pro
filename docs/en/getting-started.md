@@ -128,3 +128,30 @@ The whitelist is a positive enumeration: anything absent from `deploy.txt` never
 **Do not store these screenshots in Git LFS.** PyAppify goes through libgit2, which does not run the LFS smudge filter: CI with `lfs: true` gets the real images, but an end-user clone receives ~130-byte pointer text files that `cv2.imread` cannot decode. The failure appears only on user machines and is silent during the build.
 
 See [Packaging and release](release.md) for details.
+
+## 5. Whether the Scene Library Should Be Committed
+
+The Scene Manager capability stores captured scenes under `assets/scenes/`, one
+directory per scene (`scene.json` + `preview.png` + `templates/`), with
+library-level metadata in `library.json`.
+
+**The template ignores this data by default** (`assets/scenes/.gitignore` only
+allows `.gitkeep`, `README.md`, and the ignore file itself). A scene is a
+snapshot of one machine at one moment: it varies with game version, resolution,
+and personal progress, and even though `preview.png` is masked by the global
+screenshot mask, it is meaningless to anyone else. Committing it to the template
+only makes the repository grow.
+
+To capture scenes for your own game and **ship the library with the project**:
+
+1. Open `assets/scenes/.gitignore`, delete the `*` rule and the three negation
+   rules after it, and keep only the comments.
+2. Make sure `base_width` / `base_height` in `library.json` match the capture
+   resolution of your target device.
+3. Once the library is committed, `preview.png` ships with the repository. It is
+   already masked (bottom-right 13% × 2.5% by default); if your game's UID sits
+   elsewhere, adjust the mask on the Screenshot Mask tab before capturing.
+
+To go the other way — stop committing a library that is already tracked — run
+`git rm -r --cached assets/scenes` first (this keeps your local files), then
+restore the ignore rules above.

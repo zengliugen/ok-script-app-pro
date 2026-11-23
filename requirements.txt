@@ -59,6 +59,8 @@ numpy==2.5.4
     #   opencv-python
     #   openvino
     #   shapely
+networkx==3.7
+    # via ok-script-app (pyproject.toml)
 ok-d3dshot==0.1.5
     # via ok-script
 ok-pyside-minimal==6.12.0.post2

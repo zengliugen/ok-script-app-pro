@@ -1,0 +1,798 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: you@example.com\n"
+"Last-Translator: you@example.com\n"
+"Language-Team: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+
+msgid "(1) Live Recognition"
+msgstr "(1) Live Recognition"
+
+msgid "(2) Try One Step"
+msgstr "(2) Try One Step"
+
+msgid "(3) Full Navigation"
+msgstr "(3) Full Navigation"
+
+msgid "(No edge)"
+msgstr "(No edge)"
+
+msgid "Activate And Observe"
+msgstr "Activate And Observe"
+
+msgid "Allow Exploration Probe"
+msgstr "Allow Exploration Probe"
+
+msgid "Area"
+msgstr "Area"
+
+msgid "Areas"
+msgstr "Areas"
+
+msgid "Apply"
+msgstr "Apply"
+
+msgid "BFS-explore the screen, collect transition edges, and produce drafts"
+msgstr "BFS-explore the screen, collect transition edges, and produce drafts"
+
+msgid "Base resolution set to {size}."
+msgstr "Base resolution set to {size}."
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Cannot change the base resolution: the library is not empty."
+msgstr "Cannot change the base resolution: the library is not empty."
+
+msgid "Cannot rebase: no frame available."
+msgstr "Cannot rebase: no frame available."
+
+msgid "Capturing..."
+msgstr "Capturing..."
+
+msgid "Change Target"
+msgstr "Change Target"
+
+msgid "Click a node for details"
+msgstr "Click a node for details"
+
+msgid "Confirm All"
+msgstr "Confirm All"
+
+msgid "Confirm Edge"
+msgstr "Confirm Edge"
+
+msgid "Confirm Selected"
+msgstr "Confirm Selected"
+
+msgid "Copy"
+msgstr "Copy"
+
+msgid "Created 「{name}」. Double-click the card to configure it."
+msgstr "Created 「{name}」. Double-click the card to configure it."
+
+msgid "Debug"
+msgstr "Debug"
+
+msgid "Delete"
+msgstr "Delete"
+
+msgid "Delete Edge"
+msgstr "Delete Edge"
+
+msgid "Delete Scene"
+msgstr "Delete Scene"
+
+msgid "Delete the edge {area} → {target}? The region itself is kept."
+msgstr "Delete the edge {area} → {target}? The region itself is kept."
+
+msgid "Delete 「{name}」 with its preview and templates? This cannot be undone."
+msgstr "Delete 「{name}」 with its preview and templates? This cannot be undone."
+
+msgid "Delete 「{name}」? This cannot be undone."
+msgstr "Delete 「{name}」? This cannot be undone."
+
+msgid "Deleted 「{name}」 from the edit library."
+msgstr "Deleted 「{name}」 from the edit library."
+
+msgid "Discard"
+msgstr "Discard"
+
+msgid "Discard All"
+msgstr "Discard All"
+
+msgid "Discard Selected"
+msgstr "Discard Selected"
+
+msgid "Double Click"
+msgstr "Double Click"
+
+msgid "Double Click Interval (s)"
+msgstr "Double Click Interval (s)"
+
+msgid "Down"
+msgstr "Down"
+
+msgid "Draft ID"
+msgstr "Draft ID"
+
+msgid "Drafts"
+msgstr "Drafts"
+
+msgid "Drafts come from exploration and only join the library after confirmation. Confirming marks edges as confirmed; edges pointing to other drafts are cleared because edges may only target real scenes."
+msgstr "Drafts come from exploration and only join the library after confirmation. Confirming marks edges as confirmed; edges pointing to other drafts are cleared because edges may only target real scenes."
+
+msgid "Draw Feature Region"
+msgstr "Draw Feature Region"
+
+msgid "Draw Interaction Region"
+msgstr "Draw Interaction Region"
+
+msgid "Edit"
+msgstr "Edit"
+
+msgid "Edit Interaction Region"
+msgstr "Edit Interaction Region"
+
+msgid "Edit Recognition Feature"
+msgstr "Edit Recognition Feature"
+
+msgid "Expected text (OCR)"
+msgstr "Expected text (OCR)"
+
+msgid "Exploration Action"
+msgstr "Exploration Action"
+
+msgid "Export Library"
+msgstr "Export Library"
+
+msgid "Failed to capture: no frame. Check that a device is connected and that src/config.py matches the game window."
+msgstr "Failed to capture: no frame. Check that a device is connected and that src/config.py matches the game window."
+
+msgid "Failed to create scene: {e}"
+msgstr "Failed to create scene: {e}"
+
+msgid "Features"
+msgstr "Features"
+
+msgid "Flow"
+msgstr "Flow"
+
+msgid "From"
+msgstr "From"
+
+msgid "From Scene"
+msgstr "From Scene"
+
+msgid "Got It"
+msgstr "Got It"
+
+msgid "Hold the executor exclusively so other tasks cannot disturb the path"
+msgstr "Hold the executor exclusively so other tasks cannot disturb the path"
+
+msgid "Identify Current Screen"
+msgstr "Identify Current Screen"
+
+msgid "Import Image"
+msgstr "Import Image"
+
+msgid "Import Library"
+msgstr "Import Library"
+
+msgid "Import failed: cannot read {name}"
+msgstr "Import failed: cannot read {name}"
+
+msgid "Import failed: unsupported image format"
+msgstr "Import failed: unsupported image format"
+
+msgid "Interaction Areas"
+msgstr "Interaction Areas"
+
+msgid "Last Exploration"
+msgstr "Last Exploration"
+
+msgid "Left"
+msgstr "Left"
+
+msgid "Long Press"
+msgstr "Long Press"
+
+msgid "Long Press Duration (s)"
+msgstr "Long Press Duration (s)"
+
+msgid "Mandatory Hits"
+msgstr "Mandatory Hits"
+
+msgid "Mandatory Total"
+msgstr "Mandatory Total"
+
+msgid "Max Clicks Per Scene"
+msgstr "Max Clicks Per Scene"
+
+msgid "Max New Scenes"
+msgstr "Max New Scenes"
+
+msgid "Max Seconds"
+msgstr "Max Seconds"
+
+msgid "Max activations per scene, retries included"
+msgstr "Max activations per scene, retries included"
+
+msgid "Max number of new scenes before stopping"
+msgstr "Max number of new scenes before stopping"
+
+msgid "Max total seconds before stopping"
+msgstr "Max total seconds before stopping"
+
+msgid "Missing Features"
+msgstr "Missing Features"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "Navigate"
+msgstr "Navigate"
+
+msgid "Navigate to the target scene along the scene flow graph"
+msgstr "Navigate to the target scene along the scene flow graph"
+
+msgid "New Interaction Region"
+msgstr "New Interaction Region"
+
+msgid "New Recognition Feature"
+msgstr "New Recognition Feature"
+
+msgid "Next scene (→)"
+msgstr "Next scene (→)"
+
+msgid "No scene matches the search."
+msgstr "No scene matches the search."
+
+msgid "No scenes yet"
+msgstr "No scenes yet"
+
+msgid "Not identified yet"
+msgstr "Not identified yet"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Optional"
+msgstr "Optional"
+
+msgid "Optional Hits"
+msgstr "Optional Hits"
+
+msgid "Overall timeout; abort when exceeded"
+msgstr "Overall timeout; abort when exceeded"
+
+msgid "Overwrite"
+msgstr "Overwrite"
+
+msgid "Preview Path"
+msgstr "Preview Path"
+
+msgid "Previous scene (←)"
+msgstr "Previous scene (←)"
+
+msgid "Probe"
+msgstr "Probe"
+
+msgid "Recognition Features"
+msgstr "Recognition Features"
+
+msgid "Recognition Method"
+msgstr "Recognition Method"
+
+msgid "Refresh"
+msgstr "Refresh"
+
+msgid "Required"
+msgstr "Required"
+
+msgid "Resolution Mismatch"
+msgstr "Resolution Mismatch"
+
+msgid "Right"
+msgstr "Right"
+
+msgid "Right Click"
+msgstr "Right Click"
+
+msgid "Save"
+msgstr "Save"
+
+msgid "Save To assets"
+msgstr "Save To assets"
+
+msgid "Save blocked: resolution mismatch."
+msgstr "Save blocked: resolution mismatch."
+
+msgid "Scene"
+msgstr "Scene"
+
+msgid "Scene Config"
+msgstr "Scene Config"
+
+msgid "Scene Editor"
+msgstr "Scene Editor"
+
+msgid "Scene Manager"
+msgstr "Scene Manager"
+
+msgid "Scene {id} cannot be read"
+msgstr "Scene {id} cannot be read"
+
+msgid "Scenes"
+msgstr "Scenes"
+
+msgid "Screenshot"
+msgstr "Screenshot"
+
+msgid "Screenshot blocked: resolution mismatch."
+msgstr "Screenshot blocked: resolution mismatch."
+
+msgid "Screenshot failed: {e}"
+msgstr "Screenshot failed: {e}"
+
+msgid "Scroll to zoom · Drag empty space to pan · Drag a box to move it, its edges to resize · Double-click to edit"
+msgstr "Scroll to zoom · Drag empty space to pan · Drag a box to move it, its edges to resize · Double-click to edit"
+
+msgid "Search by scene name..."
+msgstr "Search by scene name..."
+
+msgid "Seconds"
+msgstr "Seconds"
+
+msgid "Select"
+msgstr "Select"
+
+msgid "Set Wait"
+msgstr "Set Wait"
+
+msgid "Similarity"
+msgstr "Similarity"
+
+msgid "Single Click"
+msgstr "Single Click"
+
+msgid "Some scenes could not be read: {list}"
+msgstr "Some scenes could not be read: {list}"
+
+msgid "Source"
+msgstr "Source"
+
+msgid "Start Exploration"
+msgstr "Start Exploration"
+
+msgid "Start Live Refresh"
+msgstr "Start Live Refresh"
+
+msgid "Stop Live Refresh"
+msgstr "Stop Live Refresh"
+
+msgid "Swipe"
+msgstr "Swipe"
+
+msgid "Swipe Direction"
+msgstr "Swipe Direction"
+
+msgid "Swipe Distance (0-1)"
+msgstr "Swipe Distance (0-1)"
+
+msgid "Sync the edit library to assets/scenes"
+msgstr "Sync the edit library to assets/scenes"
+
+msgid "Take Screenshot"
+msgstr "Take Screenshot"
+
+msgid "Take a screenshot of the game, then mark up its features and interaction areas."
+msgstr "Take a screenshot of the game, then mark up its features and interaction areas."
+
+msgid "Target Scene"
+msgstr "Target Scene"
+
+msgid "Target scene id (e.g. scene-0001); ignored when called from code"
+msgstr "Target scene id (e.g. scene-0001); ignored when called from code"
+
+msgid "Template"
+msgstr "Template"
+
+msgid "Template Match"
+msgstr "Template Match"
+
+msgid "Text"
+msgstr "Text"
+
+msgid "Text (OCR)"
+msgstr "Text (OCR)"
+
+msgid "Threshold (0-1)"
+msgstr "Threshold (0-1)"
+
+msgid "Timeout Seconds"
+msgstr "Timeout Seconds"
+
+msgid "To"
+msgstr "To"
+
+msgid "Transitions"
+msgstr "Transitions"
+
+msgid "Try One Step"
+msgstr "Try One Step"
+
+msgid "Unsaved changes"
+msgstr "Unsaved changes"
+
+msgid "Unsaved changes to 「{name}」 will be lost. Continue?"
+msgstr "Unsaved changes to 「{name}」 will be lost. Continue?"
+
+msgid "Up"
+msgstr "Up"
+
+msgid "Use Current Frame"
+msgstr "Use Current Frame"
+
+msgid "Use Exclusive"
+msgstr "Use Exclusive"
+
+msgid "Wait After Action"
+msgstr "Wait After Action"
+
+msgid "Wait After Action (s)"
+msgstr "Wait After Action (s)"
+
+msgid "Template Image"
+msgstr "Template Image"
+
+msgid "Detect from Edges"
+msgstr "Detect from Edges"
+
+msgid "Pick on Image"
+msgstr "Pick on Image"
+
+msgid "Click the image..."
+msgstr "Click the image..."
+
+msgid "No Color Filter"
+msgstr "No Color Filter"
+
+msgid "Tolerance"
+msgstr "Tolerance"
+
+msgid "Background Color (B, G, R)"
+msgstr "Background Color (B, G, R)"
+
+msgid "Template image is unavailable"
+msgstr "Template image is unavailable"
+
+msgid "Color must be three numbers: B, G, R"
+msgstr "Color must be three numbers: B, G, R"
+
+msgid "Each channel must be 0-255"
+msgstr "Each channel must be 0-255"
+
+msgid "Save the scene once to generate the template image, then reopen this dialog"
+msgstr "Save the scene once to generate the template image, then reopen this dialog"
+
+msgid "Color filter is off: all pixels take part in matching"
+msgstr "Color filter is off: all pixels take part in matching"
+
+msgid "Too much excluded: the picked color is probably the main content, so matching will fail"
+msgstr "Too much excluded: the picked color is probably the main content, so matching will fail"
+
+msgid "Excluded {pct} of pixels"
+msgstr "Excluded {pct} of pixels"
+
+msgid "Color B={b} G={g} R={r}"
+msgstr "Color B={b} G={g} R={r}"
+
+msgid "Almost nothing excluded: the picked color may not be the background"
+msgstr "Almost nothing excluded: the picked color may not be the background"
+
+msgid "Warning: edge color is not consistent ({pct}); check the preview"
+msgstr "Warning: edge color is not consistent ({pct}); check the preview"
+
+msgid "Pixels matching the background color are excluded from matching. Excluded areas are shown in magenta."
+msgstr "Pixels matching the background color are excluded from matching. Excluded areas are shown in magenta."
+
+msgid "Edit Properties"
+msgstr "Edit Properties"
+
+msgid "BG {color}±{tol}"
+msgstr "BG {color}±{tol}"
+
+msgid "e.g. 48, 48, 48"
+msgstr "e.g. 48, 48, 48"
+
+msgid "Edit Template Image"
+msgstr "Edit Template Image"
+
+msgid "Pixels matching the background color, and pixels outside the mask shape, are excluded from matching. Excluded areas are shown in magenta."
+msgstr "Pixels matching the background color, and pixels outside the mask shape, are excluded from matching. Excluded areas are shown in magenta."
+
+msgid "Mask Shape"
+msgstr "Mask Shape"
+
+msgid "None"
+msgstr "None"
+
+msgid "Rectangle"
+msgstr "Rectangle"
+
+msgid "Circle"
+msgstr "Circle"
+
+msgid "Sector"
+msgstr "Sector"
+
+msgid "Polygon"
+msgstr "Polygon"
+
+msgid "Start angle"
+msgstr "Start angle"
+
+msgid "Sweep angle"
+msgstr "Sweep angle"
+
+msgid "Add Vertex"
+msgstr "Add Vertex"
+
+msgid "Delete Vertex"
+msgstr "Delete Vertex"
+
+msgid "No filtering: all pixels take part in matching"
+msgstr "No filtering: all pixels take part in matching"
+
+msgid "Too much excluded: the filter is probably wrong, so matching will fail"
+msgstr "Too much excluded: the filter is probably wrong, so matching will fail"
+
+msgid "Almost nothing excluded: the filter may not take effect"
+msgstr "Almost nothing excluded: the filter may not take effect"
+
+msgid "Shape: {kind}"
+msgstr "Shape: {kind}"
+
+msgid "Zoom In"
+msgstr "Zoom In"
+
+msgid "Zoom Out"
+msgstr "Zoom Out"
+
+msgid "Fit Window"
+msgstr "Fit Window"
+
+msgid "100%"
+msgstr "100%"
+
+msgid "Rotate angle"
+msgstr "Rotate angle"
+
+msgid "Drag inside to move, edges to resize, center to rotate"
+msgstr "Drag inside to move, edges to resize, center to rotate"
+
+msgid "Radius"
+msgstr "Radius"
+
+msgid "of template width"
+msgstr "of template width"
+
+msgid "rotation"
+msgstr "rotation"
+
+msgid "start edge"
+msgstr "start edge"
+
+msgid "arc span"
+msgstr "arc span"
+
+msgid "Center X"
+msgstr "Center X"
+
+msgid "Center Y"
+msgstr "Center Y"
+
+msgid "Vertices"
+msgstr "Vertices"
+
+msgid "Reset Vertices"
+msgstr "Reset Vertices"
+
+msgid "Reset Parameters"
+msgstr "Reset Parameters"
+
+msgid "Scene Routes"
+msgstr "Scene Routes"
+
+msgid "Exploration"
+msgstr "Exploration"
+
+msgid "Poll Interval"
+msgstr "Poll Interval"
+
+msgid "Settle Timeout"
+msgstr "Settle Timeout"
+
+msgid "How often to check the screen after a click"
+msgstr "How often to check the screen after a click"
+
+msgid "How long to wait for a scene change after a click"
+msgstr "How long to wait for a scene change after a click"
+
+msgid "Apply All New Paths"
+msgstr "Apply All New Paths"
+
+msgid "Dismiss"
+msgstr "Dismiss"
+
+msgid "Inspect Table"
+msgstr "Inspect Table"
+
+msgid "Hide Table"
+msgstr "Hide Table"
+
+msgid "Solid: active    Dashed: pending    Thick orange: new in this run"
+msgstr "Solid: active    Dashed: pending    Thick orange: new in this run"
+
+msgid "Exploration results appear on the Scene Routes canvas"
+msgstr "Exploration results appear on the Scene Routes canvas"
+
+msgid "Solid lines are active routes; click an edge to edit it"
+msgstr "Solid lines are active routes; click an edge to edit it"
+
+msgid "Apply Selected"
+msgstr "Apply Selected"
+
+msgid "Ignore"
+msgstr "Ignore"
+
+msgid "Search Order"
+msgstr "Search Order"
+
+msgid "Breadth First"
+msgstr "Breadth First"
+
+msgid "Depth First"
+msgstr "Depth First"
+
+msgid "Breadth expands the current level first; depth follows one chain to the end"
+msgstr "Breadth expands the current level first; depth follows one chain to the end"
+
+msgid "Exploration Return Region"
+msgstr "Exploration Return Region"
+
+
+msgid "Auto Save"
+msgstr "Auto Save"
+
+msgid "Save changes automatically (new scenes need one manual save first)"
+msgstr "Save changes automatically (new scenes need one manual save first)"
+
+msgid "Save Changes"
+msgstr "Save Changes"
+
+msgid "Revert"
+msgstr "Revert"
+
+msgid "Reset View"
+msgstr "Reset View"
+
+msgid "Reset Layout"
+msgstr "Reset Layout"
+
+msgid "New Connection"
+msgstr "New Connection"
+
+msgid "Reverse Connection"
+msgstr "Reverse Connection"
+
+msgid "Undo Delete"
+msgstr "Undo Delete"
+
+msgid "No interaction regions"
+msgstr "No interaction regions"
+
+msgid "Discard all unsaved route changes?"
+msgstr "Discard all unsaved route changes?"
+
+msgid "Apply All"
+msgstr "Apply All"
+
+msgid "Ignore All"
+msgstr "Ignore All"
+
+msgid "Apply all {count} pending edges?"
+msgstr "Apply all {count} pending edges?"
+
+msgid "Remove all {count} pending edges? Active routes are kept."
+msgstr "Remove all {count} pending edges? Active routes are kept."
+
+msgid "Auto Layout"
+msgstr "Auto Layout"
+
+msgid "Auto Launch Target"
+msgstr "Auto Launch Target"
+
+msgid "Restart On Incomplete"
+msgstr "Restart On Incomplete"
+
+msgid "Max Restarts"
+msgstr "Max Restarts"
+
+msgid "Restart Wait"
+msgstr "Restart Wait"
+
+msgid "Start the target automatically before exploration"
+msgstr "Start the target automatically before exploration"
+
+msgid "Restart the Windows target and retry when exploration stops abnormally"
+msgstr "Restart the Windows target and retry when exploration stops abnormally"
+
+msgid "How many times the target may be restarted in one exploration"
+msgstr "How many times the target may be restarted in one exploration"
+
+msgid "How long to wait for the target to come back after a restart"
+msgstr "How long to wait for the target to come back after a restart"
+
+msgid "Params"
+msgstr "Params"
+
+msgid "Exploration Settings"
+msgstr "Exploration Settings"
+
+msgid "Close"
+msgstr "Close"
+
+msgid "Exploration Finished"
+msgstr "Exploration Finished"
+
+msgid "Exploring"
+msgstr "Exploring"
+
+msgid "Elapsed"
+msgstr "Elapsed"
+
+msgid "Visited"
+msgstr "Visited"
+
+msgid "New Scenes"
+msgstr "New Scenes"
+
+msgid "Edges"
+msgstr "Edges"
+
+msgid "Interrupt"
+msgstr "Interrupt"
+
+msgid "Interrupting..."
+msgstr "Interrupting..."
+
+msgid "Starting exploration..."
+msgstr "Starting exploration..."
+
+msgid "Interrupting, waiting for the current step to finish..."
+msgstr "Interrupting, waiting for the current step to finish..."
+
+msgid "Delete {count} Edges"
+msgstr "Delete {count} Edges"
+
+msgid "Clear All Edges"
+msgstr "Clear All Edges"
+
+msgid "Clear"
+msgstr "Clear"
+
+msgid "Remove all {count} edges from the working copy? Save applies it; Revert restores them."
+msgstr "Remove all {count} edges from the working copy? Save applies it; Revert restores them."
+
+msgid "Prefix Names"
+msgstr "Prefix Names"
+
+msgid "Add the scene name as prefix to new feature/region names"
+msgstr "Add the scene name as prefix to new feature/region names"

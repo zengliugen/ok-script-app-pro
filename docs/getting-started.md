@@ -126,3 +126,23 @@ ok_templates/
 **不要用 Git LFS 存放这些截图。** PyAppify 走 libgit2，不执行 LFS smudge filter：CI 侧 `lfs: true` 能取到真图，但用户侧克隆拿到的是约 130 字节的指针文本，`cv2.imread` 读不出来。这个故障只发生在终端用户机器上，构建期完全不报错。
 
 详见[打包与发布](release.md)。
+
+## 5. 场景库是否入库
+
+「场景管理」能力把采集到的场景存在 `assets/scenes/`，一场景一目录
+（`scene.json` + `preview.png` + `templates/`），库级元数据在 `library.json`。
+
+**模板项目默认忽略这些数据**（`assets/scenes/.gitignore` 只放行 `.gitkeep`、
+`README.md` 与忽略文件本身）。原因：场景是「某台机器上某一刻的画面」，随游戏版本、
+分辨率与个人进度变化；即使 `preview.png` 已按全局截图遮罩脱敏，对其他人也没有意义，
+留在模板仓库里只会随污染增长。
+
+新项目按游戏采集并希望**随项目分发**场景库时：
+
+1. 打开 `assets/scenes/.gitignore`，删掉 `*` 及其后的三条反选规则，只保留注释；
+2. 确认 `library.json` 的 `base_width` / `base_height` 与目标设备的采集分辨率一致；
+3. 场景库入库后，`preview.png` 会随仓库分发。它已走全局遮罩（默认右下角
+   13% × 2.5%），若你的游戏 UID 位置不同，先在「截图遮罩」页调整遮罩再采集。
+
+反过来，若项目已经入库过场景库、后续想改为不入库，先 `git rm -r --cached assets/scenes`
+清掉索引（保留本地文件），再恢复上述忽略规则。

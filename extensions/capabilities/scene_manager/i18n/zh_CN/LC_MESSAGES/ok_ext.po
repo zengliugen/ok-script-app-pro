@@ -1,0 +1,798 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: you@example.com\n"
+"Last-Translator: you@example.com\n"
+"Language-Team: Chinese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+
+msgid "(1) Live Recognition"
+msgstr "① 实时识别"
+
+msgid "(2) Try One Step"
+msgstr "② 单步试走"
+
+msgid "(3) Full Navigation"
+msgstr "③ 完整跳转"
+
+msgid "(No edge)"
+msgstr "（不记录边）"
+
+msgid "Activate And Observe"
+msgstr "点击并观察"
+
+msgid "Allow Exploration Probe"
+msgstr "允许探索探测"
+
+msgid "Area"
+msgstr "区域"
+
+msgid "Areas"
+msgstr "区域数"
+
+msgid "Apply"
+msgstr "应用"
+
+msgid "BFS-explore the screen, collect transition edges, and produce drafts"
+msgstr "BFS 自动探索画面，采集跳转边并产出草稿"
+
+msgid "Base resolution set to {size}."
+msgstr "基准分辨率已设为 {size}。"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Cannot change the base resolution: the library is not empty."
+msgstr "无法修改基准分辨率：场景库中已有场景。"
+
+msgid "Cannot rebase: no frame available."
+msgstr "无法重建基准：取不到画面。"
+
+msgid "Capturing..."
+msgstr "正在截图…"
+
+msgid "Change Target"
+msgstr "更改目标"
+
+msgid "Click a node for details"
+msgstr "点节点查看详情"
+
+msgid "Confirm All"
+msgstr "全部确认"
+
+msgid "Confirm Edge"
+msgstr "确认边"
+
+msgid "Confirm Selected"
+msgstr "确认选中"
+
+msgid "Copy"
+msgstr "复制"
+
+msgid "Created 「{name}」. Double-click the card to configure it."
+msgstr "已创建「{name}」。双击卡片开始配置。"
+
+msgid "Debug"
+msgstr "调试"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Delete Edge"
+msgstr "删除边"
+
+msgid "Delete Scene"
+msgstr "删除场景"
+
+msgid "Delete the edge {area} → {target}? The region itself is kept."
+msgstr "删除边 {area} → {target}？区域本身会保留。"
+
+msgid "Delete 「{name}」 with its preview and templates? This cannot be undone."
+msgstr "将删除「{name}」及其预览图与模板，无法恢复。确定吗？"
+
+msgid "Delete 「{name}」? This cannot be undone."
+msgstr "将删除「{name}」，无法恢复。确定吗？"
+
+msgid "Deleted 「{name}」 from the edit library."
+msgstr "已从编辑区删除「{name}」。"
+
+msgid "Discard"
+msgstr "放弃"
+
+msgid "Discard All"
+msgstr "全部丢弃"
+
+msgid "Discard Selected"
+msgstr "丢弃选中"
+
+msgid "Double Click"
+msgstr "双击"
+
+msgid "Double Click Interval (s)"
+msgstr "双击间隔（秒）"
+
+msgid "Down"
+msgstr "下"
+
+msgid "Draft ID"
+msgstr "草稿 id"
+
+msgid "Drafts"
+msgstr "草稿确认"
+
+msgid "Drafts come from exploration and only join the library after confirmation. Confirming marks edges as confirmed; edges pointing to other drafts are cleared because edges may only target real scenes."
+msgstr "草稿是探索产物，确认后才并入正式场景库。确认时会把边升为「已确认」，指向其它草稿的边会被清空（边只能指向正式场景）。"
+
+msgid "Draw Feature Region"
+msgstr "框选特征区域"
+
+msgid "Draw Interaction Region"
+msgstr "框选交互区域"
+
+msgid "Edit"
+msgstr "编辑"
+
+msgid "Edit Interaction Region"
+msgstr "编辑交互区域"
+
+msgid "Edit Recognition Feature"
+msgstr "编辑识别特征"
+
+msgid "Expected text (OCR)"
+msgstr "期望文本（OCR 用）"
+
+msgid "Exploration Action"
+msgstr "探索动作"
+
+msgid "Export Library"
+msgstr "导出场景库"
+
+msgid "Failed to capture: no frame. Check that a device is connected and that src/config.py matches the game window."
+msgstr "取不到画面。请确认已连接设备，且 src/config.py 的 windows/adb 配置能匹配到游戏窗口。"
+
+msgid "Failed to create scene: {e}"
+msgstr "创建场景失败：{e}"
+
+msgid "Features"
+msgstr "特征数"
+
+msgid "Flow"
+msgstr "界面流转"
+
+msgid "From"
+msgstr "从"
+
+msgid "From Scene"
+msgstr "来源场景"
+
+msgid "Got It"
+msgstr "我知道了"
+
+msgid "Hold the executor exclusively so other tasks cannot disturb the path"
+msgstr "是否独占执行器，防止其他任务同时点击打乱路径"
+
+msgid "Identify Current Screen"
+msgstr "识别当前画面"
+
+msgid "Import Image"
+msgstr "导入图片"
+
+msgid "Import Library"
+msgstr "导入场景库"
+
+msgid "Import failed: cannot read {name}"
+msgstr "导入失败：无法读取 {name}"
+
+msgid "Import failed: unsupported image format"
+msgstr "导入失败：不支持的图片格式"
+
+msgid "Interaction Areas"
+msgstr "交互区域"
+
+msgid "Last Exploration"
+msgstr "上次探索"
+
+msgid "Left"
+msgstr "左"
+
+msgid "Long Press"
+msgstr "长按"
+
+msgid "Long Press Duration (s)"
+msgstr "按住时长（秒）"
+
+msgid "Mandatory Hits"
+msgstr "必需命中"
+
+msgid "Mandatory Total"
+msgstr "必需总数"
+
+msgid "Max Clicks Per Scene"
+msgstr "单场景操作上限"
+
+msgid "Max New Scenes"
+msgstr "新场景数上限"
+
+msgid "Max Seconds"
+msgstr "总时长上限（秒）"
+
+msgid "Max activations per scene, retries included"
+msgstr "单个场景的操作次数上限（含重试）"
+
+msgid "Max number of new scenes before stopping"
+msgstr "新发现场景数上限，达到即停"
+
+msgid "Max total seconds before stopping"
+msgstr "总时长上限（秒），达到即停"
+
+msgid "Missing Features"
+msgstr "缺失特征"
+
+msgid "Name"
+msgstr "名称"
+
+msgid "Navigate"
+msgstr "执行跳转"
+
+msgid "Navigate to the target scene along the scene flow graph"
+msgstr "沿场景流转图跳转到指定场景"
+
+msgid "New Interaction Region"
+msgstr "新增交互区域"
+
+msgid "New Recognition Feature"
+msgstr "新增识别特征"
+
+msgid "Next scene (→)"
+msgstr "下一个场景（→）"
+
+msgid "No scene matches the search."
+msgstr "没有匹配的场景。"
+
+msgid "No scenes yet"
+msgstr "还没有场景"
+
+msgid "Not identified yet"
+msgstr "尚未识别"
+
+msgid "OK"
+msgstr "确定"
+
+msgid "Optional"
+msgstr "可选"
+
+msgid "Optional Hits"
+msgstr "可选命中"
+
+msgid "Overall timeout; abort when exceeded"
+msgstr "整体超时上限，超过则中止"
+
+msgid "Overwrite"
+msgstr "覆盖"
+
+msgid "Preview Path"
+msgstr "预览路径"
+
+msgid "Previous scene (←)"
+msgstr "上一个场景（←）"
+
+msgid "Probe"
+msgstr "探索探测"
+
+msgid "Recognition Features"
+msgstr "识别特征"
+
+msgid "Recognition Method"
+msgstr "识别方式"
+
+msgid "Refresh"
+msgstr "刷新"
+
+msgid "Required"
+msgstr "必需"
+
+msgid "Resolution Mismatch"
+msgstr "分辨率不一致"
+
+msgid "Right"
+msgstr "右"
+
+msgid "Right Click"
+msgstr "右键单击"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Save To assets"
+msgstr "保存到 assets"
+
+msgid "Save blocked: resolution mismatch."
+msgstr "已中止保存：存在分辨率不一致的场景。"
+
+msgid "Scene"
+msgstr "场景"
+
+msgid "Scene Config"
+msgstr "场景配置"
+
+msgid "Scene Editor"
+msgstr "场景编辑"
+
+msgid "Scene Manager"
+msgstr "场景管理"
+
+msgid "Scene {id} cannot be read"
+msgstr "场景 {id} 无法读取"
+
+msgid "Scenes"
+msgstr "场景"
+
+msgid "Screenshot"
+msgstr "截图"
+
+msgid "Screenshot blocked: resolution mismatch."
+msgstr "已禁止截图：画面分辨率与场景库不一致。"
+
+msgid "Screenshot failed: {e}"
+msgstr "截图失败：{e}"
+
+msgid "Scroll to zoom · Drag empty space to pan · Drag a box to move it, its edges to resize · Double-click to edit"
+msgstr "滚轮缩放 · 拖动空白处平移 · 拖动框可移动，拖手柄改大小 · 双击编辑属性"
+
+msgid "Search by scene name..."
+msgstr "按场景名搜索…"
+
+msgid "Seconds"
+msgstr "秒"
+
+msgid "Select"
+msgstr "选择"
+
+msgid "Set Wait"
+msgstr "设置等待"
+
+msgid "Similarity"
+msgstr "相似度"
+
+msgid "Single Click"
+msgstr "单击"
+
+msgid "Some scenes could not be read: {list}"
+msgstr "有场景无法读取：{list}"
+
+msgid "Source"
+msgstr "来源类型"
+
+msgid "Start Exploration"
+msgstr "开始探索"
+
+msgid "Start Live Refresh"
+msgstr "开始实时刷新"
+
+msgid "Stop Live Refresh"
+msgstr "停止实时刷新"
+
+msgid "Swipe"
+msgstr "滑动"
+
+msgid "Swipe Direction"
+msgstr "滑动方向"
+
+msgid "Swipe Distance (0-1)"
+msgstr "滑动距离（0–1）"
+
+msgid "Sync the edit library to assets/scenes"
+msgstr "把编辑区同步到 assets/scenes"
+
+msgid "Take Screenshot"
+msgstr "截图"
+
+msgid "Take a screenshot of the game, then mark up its features and interaction areas."
+msgstr "截一张游戏画面，然后标注识别特征与交互区域。"
+
+msgid "Target Scene"
+msgstr "目标场景"
+
+msgid "Target scene id (e.g. scene-0001); ignored when called from code"
+msgstr "要跳转到的场景 id（形如 scene-0001）；由代码调用时该项被忽略"
+
+msgid "Template"
+msgstr "模板"
+
+msgid "Template Match"
+msgstr "模板匹配"
+
+msgid "Text"
+msgstr "文本"
+
+msgid "Text (OCR)"
+msgstr "文本（OCR）"
+
+msgid "Threshold (0-1)"
+msgstr "阈值（0–1）"
+
+msgid "Timeout Seconds"
+msgstr "超时时间（秒）"
+
+msgid "To"
+msgstr "到"
+
+msgid "Transitions"
+msgstr "跳转边"
+
+msgid "Try One Step"
+msgstr "试走一步"
+
+msgid "Unsaved changes"
+msgstr "有未保存的改动"
+
+msgid "Unsaved changes to 「{name}」 will be lost. Continue?"
+msgstr "「{name}」的未保存改动将丢失。继续吗？"
+
+msgid "Up"
+msgstr "上"
+
+msgid "Use Current Frame"
+msgstr "以当前画面为基准"
+
+msgid "Use Exclusive"
+msgstr "独占执行器"
+
+msgid "Wait After Action"
+msgstr "操作后等待"
+
+msgid "Wait After Action (s)"
+msgstr "操作后等待（秒）"
+
+msgid "Template Image"
+msgstr "模板图"
+
+msgid "Detect from Edges"
+msgstr "从四边识别"
+
+msgid "Pick on Image"
+msgstr "在图上取色"
+
+msgid "Click the image..."
+msgstr "点击图片取色..."
+
+msgid "No Color Filter"
+msgstr "不排除颜色"
+
+msgid "Tolerance"
+msgstr "容差"
+
+msgid "Background Color (B, G, R)"
+msgstr "背景色（B, G, R）"
+
+msgid "Template image is unavailable"
+msgstr "模板图不可用"
+
+msgid "Color must be three numbers: B, G, R"
+msgstr "色值必须是三个数字：B、G、R"
+
+msgid "Each channel must be 0-255"
+msgstr "每个分量必须在 0–255 之间"
+
+msgid "Save the scene once to generate the template image, then reopen this dialog"
+msgstr "请先保存场景以生成模板图，再重新打开本对话框"
+
+msgid "Color filter is off: all pixels take part in matching"
+msgstr "已关闭颜色过滤：所有像素都参与匹配"
+
+msgid "Too much excluded: the picked color is probably the main content, so matching will fail"
+msgstr "排除过多：取到的很可能是主体颜色，匹配将失效"
+
+msgid "Excluded {pct} of pixels"
+msgstr "已排除 {pct} 的像素"
+
+msgid "Color B={b} G={g} R={r}"
+msgstr "颜色 B={b} G={g} R={r}"
+
+msgid "Almost nothing excluded: the picked color may not be the background"
+msgstr "几乎没排除任何像素：取到的颜色可能不是背景"
+
+msgid "Warning: edge color is not consistent ({pct}); check the preview"
+msgstr "警告：四边颜色不一致（{pct}），请核对预览"
+
+msgid "Pixels matching the background color are excluded from matching. Excluded areas are shown in magenta."
+msgstr "与背景色相近的像素不参与匹配，被排除的区域以品红色显示。"
+
+msgid "Edit Properties"
+msgstr "编辑属性"
+
+msgid "BG {color}±{tol}"
+msgstr "背景色 {color}±{tol}"
+
+msgid "e.g. 48, 48, 48"
+msgstr "如 48, 48, 48"
+
+msgid "Edit Template Image"
+msgstr "编辑模板图"
+
+msgid "Pixels matching the background color, and pixels outside the mask shape, are excluded from matching. Excluded areas are shown in magenta."
+msgstr "与背景色相近的像素、以及掩码形状之外的像素都不参与匹配，被排除的区域以品红色显示。"
+
+msgid "Mask Shape"
+msgstr "掩码形状"
+
+msgid "None"
+msgstr "无形状"
+
+msgid "Rectangle"
+msgstr "矩形"
+
+msgid "Circle"
+msgstr "圆形"
+
+msgid "Sector"
+msgstr "扇形"
+
+msgid "Polygon"
+msgstr "多边形"
+
+msgid "Start angle"
+msgstr "起始角"
+
+msgid "Sweep angle"
+msgstr "张角"
+
+msgid "Add Vertex"
+msgstr "增加顶点"
+
+msgid "Delete Vertex"
+msgstr "删除顶点"
+
+msgid "No filtering: all pixels take part in matching"
+msgstr "没有筛选：所有像素都参与匹配"
+
+msgid "Too much excluded: the filter is probably wrong, so matching will fail"
+msgstr "排除过多：筛选条件可能有误，匹配将失效"
+
+msgid "Almost nothing excluded: the filter may not take effect"
+msgstr "几乎没排除任何像素：筛选可能没有生效"
+
+msgid "Shape: {kind}"
+msgstr "形状：{kind}"
+
+msgid "Zoom In"
+msgstr "放大"
+
+msgid "Zoom Out"
+msgstr "缩小"
+
+msgid "Fit Window"
+msgstr "适配窗口"
+
+msgid "100%"
+msgstr "100%"
+
+msgid "Rotate angle"
+msgstr "旋转角"
+
+msgid "Drag inside to move, edges to resize, center to rotate"
+msgstr "内部拖动移动，拖边角调整大小，中心拖动旋转"
+
+msgid "Radius"
+msgstr "半径"
+
+msgid "of template width"
+msgstr "占模板宽度"
+
+msgid "rotation"
+msgstr "绕中心旋转"
+
+msgid "start edge"
+msgstr "起始边方向"
+
+msgid "arc span"
+msgstr "圆弧跨角"
+
+msgid "Center X"
+msgstr "中心 X"
+
+msgid "Center Y"
+msgstr "中心 Y"
+
+msgid "Vertices"
+msgstr "顶点数"
+
+msgid "Reset Vertices"
+msgstr "重置顶点"
+
+msgid "Reset Parameters"
+msgstr "重置参数"
+
+msgid "Scene Routes"
+msgstr "场景路由"
+
+msgid "Exploration"
+msgstr "探索"
+
+msgid "Poll Interval"
+msgstr "轮询间隔"
+
+msgid "Settle Timeout"
+msgstr "等待上限"
+
+msgid "How often to check the screen after a click"
+msgstr "点击后多久检查一次画面"
+
+msgid "How long to wait for a scene change after a click"
+msgstr "点击后最多等待多久让画面发生变化"
+
+msgid "Apply All New Paths"
+msgstr "应用全部新路径"
+
+msgid "Dismiss"
+msgstr "收起"
+
+msgid "Inspect Table"
+msgstr "精确核对"
+
+msgid "Hide Table"
+msgstr "收起表格"
+
+msgid "Solid: active    Dashed: pending    Thick orange: new in this run"
+msgstr "实线＝已生效　虚线＝待确认　橙色加粗＝本次新发现"
+
+msgid "Exploration results appear on the Scene Routes canvas"
+msgstr "探索结果会直接叠加到场景路由画布"
+
+msgid "Solid lines are active routes; click an edge to edit it"
+msgstr "实线为已生效路由，点击边即可编辑"
+
+msgid "Apply Selected"
+msgstr "应用这条"
+
+msgid "Ignore"
+msgstr "忽略"
+
+msgid "Search Order"
+msgstr "搜索顺序"
+
+msgid "Breadth First"
+msgstr "广度优先"
+
+msgid "Depth First"
+msgstr "深度优先"
+
+msgid "Breadth expands the current level first; depth follows one chain to the end"
+msgstr "广度优先先展开当前层的全部场景；深度优先沿一条链路探到底再回头"
+
+msgid "Exploration Return Region"
+msgstr "探索返回区域"
+
+
+msgid "Auto Save"
+msgstr "自动保存"
+
+msgid "Save changes automatically (new scenes need one manual save first)"
+msgstr "修改后自动保存（新建场景需先手动保存一次）"
+
+msgid "Save Changes"
+msgstr "保存修改"
+
+msgid "Revert"
+msgstr "还原"
+
+msgid "Reset View"
+msgstr "重置视图"
+
+msgid "Reset Layout"
+msgstr "重置布局"
+
+msgid "New Connection"
+msgstr "新建连线"
+
+msgid "Reverse Connection"
+msgstr "倒序连线"
+
+msgid "Undo Delete"
+msgstr "撤销删除"
+
+msgid "No interaction regions"
+msgstr "该场景没有交互区域"
+
+msgid "Discard all unsaved route changes?"
+msgstr "放弃所有未保存的路由修改？"
+
+msgid "Apply All"
+msgstr "应用全部"
+
+msgid "Ignore All"
+msgstr "忽略全部"
+
+msgid "Apply all {count} pending edges?"
+msgstr "应用全部 {count} 条待确认边？"
+
+msgid "Remove all {count} pending edges? Active routes are kept."
+msgstr "移除全部 {count} 条待确认边？已生效路由会保留。"
+
+msgid "Auto Layout"
+msgstr "自动布局"
+
+msgid "Auto Launch Target"
+msgstr "自动启动目标"
+
+msgid "Restart On Incomplete"
+msgstr "未完成时重启"
+
+msgid "Max Restarts"
+msgstr "最多重启次数"
+
+msgid "Restart Wait"
+msgstr "重启等待"
+
+msgid "Start the target automatically before exploration"
+msgstr "探索前自动启动目标"
+
+msgid "Restart the Windows target and retry when exploration stops abnormally"
+msgstr "探索异常中断时重启 Windows 目标并重试"
+
+msgid "How many times the target may be restarted in one exploration"
+msgstr "单次探索最多重启目标的次数"
+
+msgid "How long to wait for the target to come back after a restart"
+msgstr "重启后等待目标恢复的时间上限"
+
+msgid "Params"
+msgstr "参数"
+
+msgid "Exploration Settings"
+msgstr "探索参数"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "Exploration Finished"
+msgstr "探索结束"
+
+msgid "Exploring"
+msgstr "正在探索"
+
+msgid "Elapsed"
+msgstr "已用"
+
+msgid "Visited"
+msgstr "访问"
+
+msgid "New Scenes"
+msgstr "新发现"
+
+msgid "Edges"
+msgstr "采集边"
+
+msgid "Interrupt"
+msgstr "中断"
+
+msgid "Interrupting..."
+msgstr "正在中断…"
+
+msgid "Starting exploration..."
+msgstr "正在启动探索…"
+
+msgid "Interrupting, waiting for the current step to finish..."
+msgstr "正在中断，等待当前步骤结束…"
+
+msgid "Delete {count} Edges"
+msgstr "删除选中的 {count} 条连线"
+
+msgid "Clear All Edges"
+msgstr "清除全部连线"
+
+msgid "Clear"
+msgstr "清除"
+
+msgid "Remove all {count} edges from the working copy? Save applies it; Revert restores them."
+msgstr "将清除工作副本里的全部 {count} 条连线，点「保存修改」后生效；点「还原」可恢复。"
+
+msgid "Prefix Names"
+msgstr "名称带场景前缀"
+
+msgid "Add the scene name as prefix to new feature/region names"
+msgstr "新建特征/区域时，默认名称前加上场景名（如「主页-特征1」）"

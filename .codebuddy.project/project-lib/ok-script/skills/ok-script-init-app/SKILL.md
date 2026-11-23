@@ -34,6 +34,7 @@ description: 把一个基于 ok-script-app 模板克隆出来的仓库初始化�
 8. 首个任务：类名、用户可见名称、一次性还是后台触发、一句话描述它做什么。
 9. 是否接 MirrorChyan；接的话要资源 ID 与上传 token 的 secret 名。
 10. 支持的宽高比与最低分辨率、项目/社区链接（已知时提供）。
+11. `assets/scenes/` 下的「场景管理」场景库是否随项目分发（模板默认忽略）。
 
 ### 第二步：先读再改
 
@@ -69,12 +70,20 @@ description: 把一个基于 ok-script-app 模板克隆出来的仓库初始化�
    - 从行为描述或截图实现自动化动作时走 `ok-script-codegen`。
    - 用户可见文案要可翻译；需要译文时走 `ok-script-i18n`。
 6. **模板资源**：按下面「模板资源」一节处理 `ok_templates/`。
-7. **对齐文档站**：
+7. **场景库**：问清楚 `assets/scenes/` 是否随项目分发，不要默认处置。
+   - 模板忽略采集数据：`assets/scenes/.gitignore` 只放行 `.gitkeep`、`README.md`
+     与忽略文件本身。
+   - 要随项目分发时，删掉该文件里的 `*` 与其后三条反选规则，只保留注释。
+   - 顺带确认 `assets/scenes/library.json` 的 `base_width` / `base_height` 与目标
+     设备的采集分辨率一致。
+   - **不要把模板作者的场景库复制进新项目**：别的游戏的场景只是噪声，而
+     `preview.png` 虽然走过全局遮罩，仍然绑定具体机器。
+8. **对齐文档站**：
    - 按初始化后的项目设置 `mkdocs.yml` 的 `site_name`、`site_description`、`repo_name`、`repo_url`、`edit_uri`。
    - 在 `docs/` 与 `docs/en/` 两侧同步更新模板标识、仓库、安装包名、运行目标、链接与安装说明。
    - 两种语言结构保持对齐；页面增删改动时同步更新 `mkdocs.yml` 的导航。
    - 用户需要 GitHub Pages 时保留 `.github/workflows/docs.yml`，否则说明可以删除。
-8. **`README.md` 与 `README_en.md`** 保持为简洁的仓库首页，指向 MkDocs 正式文档。
+9. **`README.md` 与 `README_en.md`** 保持为简洁的仓库首页，指向 MkDocs 正式文档。
 
 ## 模板资源
 
@@ -115,6 +124,29 @@ ok_templates/
 ### 不要用 Git LFS
 
 PyAppify 走 libgit2，不执行 LFS smudge filter。CI 侧 `actions/checkout` 带 `lfs: true` 能取到真图，但用户侧克隆拿到的是约 130 字节的指针文本文件，`cv2.imread` 读不出图像。故障只发生在终端用户机器上，构建期完全不报错。
+
+## 场景库
+
+「场景管理」能力把采集到的场景存在 `assets/scenes/`：一场景一目录（`scene.json` +
+`preview.png` + `templates/`），库级元数据在 `library.json`。
+
+**模板默认忽略这些数据**（`assets/scenes/.gitignore` 只放行 `.gitkeep`、`README.md`
+与忽略文件本身）。原因：场景是「某台机器上某一刻的画面」，随游戏版本、分辨率与个人
+进度变化；即使 `preview.png` 已按全局截图遮罩脱敏，对其他人也没有意义。
+
+### 什么时候入库
+
+按用户是否需要**随项目分发**判断，不要自行决定——它直接决定游戏截图进不进版本库。
+
+入库三步：
+
+1. 删掉 `assets/scenes/.gitignore` 里的 `*` 与其后三条反选规则，只保留注释；
+2. 确认 `library.json` 的 `base_width` / `base_height` 与目标设备的采集分辨率一致；
+3. 提醒用户 `preview.png` 会随仓库分发。它默认遮住右下角 13% × 2.5%，若目标游戏的
+   UID 位置不同，先在「截图遮罩」页调整再采集。
+
+反过来想把已入库的场景库改为不入库时：先 `git rm -r --cached assets/scenes` 清索引
+（保留本地文件），再恢复上述忽略规则。
 
 ## 验证
 

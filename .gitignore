@@ -1,5 +1,8 @@
 my_key.txt
+# 模板编辑区：原始截图 + 手工标注，含游戏 UID，不入库。产物在 assets/templates/
 ok_templates/
+# 场景管理编辑区：原始帧 + 编辑态模板，含游戏 UID，不入库。产物在 assets/scenes/
+ok_scenes/
 updates/
 working/
 update/
