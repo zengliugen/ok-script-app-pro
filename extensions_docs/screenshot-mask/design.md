@@ -208,7 +208,8 @@ self.config_file = get_relative_path(folder, f"{name}.json")
 ## 结论
 
 采用方案 A。处理器走 `screenshot_processor` 覆写，页签走 `custom_tabs` 注册，几何换算独立成
-纯函数模块。页签保持在 Game 分区末位（见探索记录的决定 4）。
+纯函数模块。页签分区在原计划中保持 Game 分区末位（见探索记录的决定 4），后续按用户要求
+改为 Develop 分区并排在「场景管理」之前，见偏差记录 #15。
 
 ## 未解问题
 

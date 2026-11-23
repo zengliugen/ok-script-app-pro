@@ -605,7 +605,7 @@ class PreviewCanvas(QWidget):
             return
         anchor = event.position()
         before = self._view_to_frame(anchor)
-        self._scale = max(MIN_SCALE, min(MAX_SCALE, self._scale * (ZOOM_STEP ** steps)))
+        self._scale = max(MIN_SCALE, min(MAX_SCALE, self._scale * (ZOOM_STEP**steps)))
         after = self._view_to_frame(anchor)
         self._offset = self._clamp_offset(
             QPointF(
@@ -632,9 +632,7 @@ class PreviewCanvas(QWidget):
 
         scale = self.zoom_scale()
         offset = self._geometry_offset()
-        target = QRectF(
-            offset.x(), offset.y(), self._frame.width() * scale, self._frame.height() * scale
-        )
+        target = QRectF(offset.x(), offset.y(), self._frame.width() * scale, self._frame.height() * scale)
         painter.drawImage(target, self._frame)
 
         if self._rect is not None:
@@ -666,6 +664,12 @@ class ScreenshotMaskTab(CustomTab):
     """
 
     icon = "image"
+
+    # 挂到「开发」分组。框架默认把 custom_tabs 全挂到「游戏」分组，而遮罩只在
+    # 配置期调、运行时完全不碰，放在「游戏」会让普通用户误以为它参与日常流程。
+    # 分组内的先后由 `registry.CAPABILITIES` 的注册顺序决定——本能力排在
+    # scene_manager 之前，因此页签落在「场景管理」前面。
+    section = "develop"
 
     def __init__(self):
         """构造页签并装配工具条与画布。"""
@@ -865,7 +869,7 @@ class ScreenshotMaskTab(CustomTab):
         from ok.util.blur import apply_blur_areas, get_blur_algorithm
 
         frame = apply_blur_areas(
-            frame, og.config.get('blur_area'), get_blur_algorithm(getattr(og, 'global_config', None))
+            frame, og.config.get("blur_area"), get_blur_algorithm(getattr(og, "global_config", None))
         )
         image = _to_qimage(frame)
         if image is None:
