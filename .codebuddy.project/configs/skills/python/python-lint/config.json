@@ -18,7 +18,9 @@
   "target_version": "py312",
   "include_patterns": [
     "extensions/**/*.py",
-    "extensions_tests/**/*.py"
+    "extensions_tests/**/*.py",
+    "extensions_testbed/**/*.py",
+    "run_testbed.py"
   ],
   "exclude_patterns": [
     "**/__pycache__/**",

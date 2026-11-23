@@ -40,6 +40,8 @@ site/
 .Python
 test/
 logs/
+# PyInstaller 产物：extensions_testbed 的单文件 EXE 在 dist/，
+# 中间文件在 build/pyinstaller/。两者都不入库。
 build/
 develop-eggs/
 dist/

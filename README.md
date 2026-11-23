@@ -30,6 +30,19 @@ python -m pip install --index-url $PypiIndex --no-deps --upgrade -r requirements
 python main_debug.py
 ```
 
+环境就绪后，也可双击项目根的 `run.cmd` 打开启动菜单，选择启动主应用、
+调试模式、测试靶场源码或测试靶场 EXE：
+
+| 序号 | 入口 | 说明 |
+|---|---|---|
+| 1 | `main.py` | 主应用（正常运行模式） |
+| 2 | `main_debug.py` | 调试模式（显示开发工具） |
+| 3 | `extensions_testbed/main.py` | 测试靶场（支持后台点击） |
+| 4 | `dist/extensions_testbed.exe` | 测试靶场单文件 EXE；不存在时自动打包（产物不入库） |
+
+也可带参数跳过菜单：`run.cmd 2` 直接启动调试模式，`run.cmd 4` 直接启动
+测试靶场 EXE。
+
 直接依赖统一维护在 `pyproject.toml`。`requirements.txt` 是 Qt profile 的锁定
 文件，使用 ok-script `3.0.0b3`，请勿直接编辑生成文件。
 ok-script 3 已移除 Web 界面；`requirements-web.txt`、`web` extra 和 Web 启动器
