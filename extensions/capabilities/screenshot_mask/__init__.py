@@ -42,9 +42,7 @@ def register(config):
     missing = [key for key in ("screenshot_processor", "global_configs") if key not in config]
     if missing:
         raise RuntimeError(
-            "截图遮罩能力装载失败：上游 config 中不存在 "
-            + "、".join(missing)
-            + "，请检查 ok-script 升级后更新 "
+            "截图遮罩能力装载失败：上游 config 中不存在 " + "、".join(missing) + "，请检查 ok-script 升级后更新 "
             "extensions/capabilities/screenshot_mask/__init__.py"
         )
 

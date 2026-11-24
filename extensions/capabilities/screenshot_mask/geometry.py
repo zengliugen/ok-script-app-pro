@@ -223,8 +223,7 @@ def values_from_rect(rect, width, height, base=None):
 
     # 没有任何锚点能逐像素还原（画面极小、百分比精度不够）。退到上一锚点，
     # 让遮罩落在用户拖出的位置附近，而不是跳回默认值。
-    return _trial_values(values, previous if previous in ANCHOR_SIDES else ANCHOR_BOTTOM_RIGHT,
-                         target, width, height)
+    return _trial_values(values, previous if previous in ANCHOR_SIDES else ANCHOR_BOTTOM_RIGHT, target, width, height)
 
 
 def _trial_values(values, anchor, rect, width, height):

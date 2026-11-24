@@ -33,15 +33,15 @@ try:
     from PySide6.QtWidgets import QApplication
 
     from extensions.capabilities.screenshot_mask.tab import (
-        DRAG_PADDING,
+        BACKGROUND_COLOR_NAME,
         HANDLES,
         MIN_RECT_SIZE,
-        PREVIEW_PADDING,
         ZOOM_STEP,
         PreviewCanvas,
         ScreenshotMaskTab,
         _clamp_interval,
         _to_qrect,
+        background_color,
     )
 
     QT_ERROR = None
@@ -128,14 +128,26 @@ class TestResolveRect(unittest.TestCase):
             geometry.ANCHOR_TOP_LEFT: (0, 0, mask_width, mask_height),
             geometry.ANCHOR_TOP: ((width - mask_width) // 2, 0, (width - mask_width) // 2 + mask_width, mask_height),
             geometry.ANCHOR_TOP_RIGHT: (width - mask_width, 0, width, mask_height),
-            geometry.ANCHOR_RIGHT: (width - mask_width, (height - mask_height) // 2, width,
-                                    (height - mask_height) // 2 + mask_height),
+            geometry.ANCHOR_RIGHT: (
+                width - mask_width,
+                (height - mask_height) // 2,
+                width,
+                (height - mask_height) // 2 + mask_height,
+            ),
             geometry.ANCHOR_BOTTOM_RIGHT: (width - mask_width, height - mask_height, width, height),
-            geometry.ANCHOR_BOTTOM: ((width - mask_width) // 2, height - mask_height,
-                                     (width - mask_width) // 2 + mask_width, height),
+            geometry.ANCHOR_BOTTOM: (
+                (width - mask_width) // 2,
+                height - mask_height,
+                (width - mask_width) // 2 + mask_width,
+                height,
+            ),
             geometry.ANCHOR_BOTTOM_LEFT: (0, height - mask_height, mask_width, height),
-            geometry.ANCHOR_LEFT: (0, (height - mask_height) // 2, mask_width,
-                                   (height - mask_height) // 2 + mask_height),
+            geometry.ANCHOR_LEFT: (
+                0,
+                (height - mask_height) // 2,
+                mask_width,
+                (height - mask_height) // 2 + mask_height,
+            ),
         }
         for anchor, rect in expected.items():
             with self.subTest(anchor=anchor):
@@ -347,7 +359,7 @@ class TestProcessor(unittest.TestCase):
         values = _values(**{geometry.KEY_ENABLED: False})
         process = processor.make_processor(lambda: values)
         frame = _frame(1280, 720)
-        self.assertEqual(200, process(frame) .min())
+        self.assertEqual(200, process(frame).min())
         values[geometry.KEY_ENABLED] = True
         self.assertEqual(0, process(_frame(1280, 720))[710, 1200].max())
 
@@ -461,7 +473,7 @@ class TestTabContract(unittest.TestCase):
 
 
 class TestPreviewHandles(unittest.TestCase):
-    """框选手柄：8 个方向都能缩放，预览四周留白。"""
+    """框选手柄：8 个方向都能缩放，画布无平移留白。"""
 
     @classmethod
     def setUpClass(cls):
@@ -530,7 +542,7 @@ class TestPreviewHandles(unittest.TestCase):
     def test_fit_aligns_to_canvas_edge(self):
         """「适应窗口」的画面贴住控件边缘，不再留白。
 
-        留白等于白缩一圈，而贴边手柄的遮挡由平移留白（DRAG_PADDING）在拖拽时接管。
+        画布不再有平移留白：适应窗口按完整控件尺寸算比例，画面直接贴住控件边缘。
 
         注意「贴住」指的是**至少一条轴**顶到边界；另一条轴上的间隔来自画面与控件
         的宽高比不同（1280×720 放进 800×480，宽度撑满后上下各留 15px），不是留白。
@@ -543,11 +555,19 @@ class TestPreviewHandles(unittest.TestCase):
         self.assertTrue(touches_x or touches_y, "适应窗口后画面应至少一条轴贴住控件边缘")
 
     def test_frame_scale_uses_full_canvas(self):
-        """缩放比例按完整控件尺寸计算（`PREVIEW_PADDING` 为 0）。"""
+        """缩放比例按完整控件尺寸计算。"""
         canvas = self._canvas()
         expected = min(800 / 1280, 480 / 720)
         self.assertAlmostEqual(expected, canvas._fit_scale(), places=6)
-        self.assertEqual(0, PREVIEW_PADDING)
+
+    def test_background_follows_theme(self):
+        """画布底色跟随主题 `sidebar`，与场景管理页签的画布同色，不再写死深灰。"""
+        from ok.ui.qt.kit import theme
+
+        expected = theme.color(BACKGROUND_COLOR_NAME)
+        self.assertEqual(background_color().name(), expected.name())
+        # 深灰是改前写死的值，回归时会被这条拦下。
+        self.assertNotEqual(background_color().name(), "#121214")
 
     def test_rect_tuple_converts_with_correct_width(self):
         """`(x1,y1,x2,y2)` 必须换算成宽高，不能把结束坐标当宽高。"""
@@ -768,21 +788,21 @@ class TestCanvasZoom(unittest.TestCase):
                 self.assertAlmostEqual(30, grown, delta=1)
 
     def test_offset_clamped_when_frame_larger_than_canvas(self):
-        """画面大于控件时，偏移被限制在「四周仍留黑色间隔」的范围内。
+        """画面大于控件时，偏移被限制在「画面不露出视口外」的范围内。
 
-        不允许画面边缘正好压在控件边界上：贴边会让画面看起来像被裁掉一块，贴边的遮罩
-        手柄也会跟着切进边界。因此可拖范围是 ``[控件宽 - 画面宽 - 留白, 留白]``。
+        与场景管理页签的画布同一口径：可拖范围是 ``[控件尺寸 - 画面尺寸, 0]``，
+        画面边缘可以贴住控件边界，不再保留 60px 空白。
         """
         canvas = self._canvas()
         canvas._set_scale(2.0)
         offset = canvas._clamp_offset(QPointF(99999, 99999), 2.0)
-        self.assertLessEqual(offset.x(), DRAG_PADDING)
-        self.assertLessEqual(offset.y(), DRAG_PADDING)
-        self.assertGreaterEqual(offset.x(), canvas.width() - 2560 * 2.0 - DRAG_PADDING)
-        self.assertGreaterEqual(offset.y(), canvas.height() - 1440 * 2.0 - DRAG_PADDING)
+        self.assertLessEqual(offset.x(), 0)
+        self.assertLessEqual(offset.y(), 0)
+        self.assertGreaterEqual(offset.x(), canvas.width() - 2560 * 2.0)
+        self.assertGreaterEqual(offset.y(), canvas.height() - 1440 * 2.0)
 
-    def test_frame_edge_never_touches_canvas_edge(self):
-        """拖到极限时，画面「被拖向的那一侧」边缘与控件边界之间仍留着间隔。
+    def test_frame_edge_stops_at_canvas_edge(self):
+        """拖到极限时，画面边缘正好停在控件边界上——两侧都不留空白。
 
         画面比控件大时另一侧本来就在视野外，因此只校验贴在视口内的那条边。
         """
@@ -791,15 +811,15 @@ class TestCanvasZoom(unittest.TestCase):
         width = 2560 * 2.0
         height = 1440 * 2.0
 
-        # 往右下拖到极限：画面左上角停在留白处，不能压到 (0, 0)
+        # 往右下拖到极限：画面左上角停在 (0, 0)，不再保留间隔
         far = canvas._clamp_offset(QPointF(99999, 99999), 2.0)
-        self.assertAlmostEqual(DRAG_PADDING, far.x(), places=6)
-        self.assertAlmostEqual(DRAG_PADDING, far.y(), places=6)
+        self.assertAlmostEqual(0, far.x(), places=6)
+        self.assertAlmostEqual(0, far.y(), places=6)
 
-        # 往左上拖到极限：画面右下角停在「控件尺寸 - 留白」处
+        # 往左上拖到极限：画面右下角停在「控件尺寸」处
         near = canvas._clamp_offset(QPointF(-99999, -99999), 2.0)
-        self.assertAlmostEqual(canvas.width() - DRAG_PADDING, near.x() + width, places=6)
-        self.assertAlmostEqual(canvas.height() - DRAG_PADDING, near.y() + height, places=6)
+        self.assertAlmostEqual(canvas.width(), near.x() + width, places=6)
+        self.assertAlmostEqual(canvas.height(), near.y() + height, places=6)
 
     def test_release_keeps_pan_position(self):
         """松手后不重算偏移：拖到哪儿就停在哪儿，不能弹回去。
@@ -812,28 +832,28 @@ class TestCanvasZoom(unittest.TestCase):
         canvas._set_scale(2.0)
 
         dragged = self._drag_far_corner(canvas)
-        self.assertAlmostEqual(DRAG_PADDING, dragged.x(), delta=1)
-        self.assertAlmostEqual(DRAG_PADDING, dragged.y(), delta=1)
+        self.assertAlmostEqual(0, dragged.x(), delta=1)
+        self.assertAlmostEqual(0, dragged.y(), delta=1)
         # 松手后偏移保持不变
         self.assertAlmostEqual(dragged.x(), canvas._offset.x(), places=6)
         self.assertAlmostEqual(dragged.y(), canvas._offset.y(), places=6)
 
-    def test_buttons_reset_view_without_touching_padding(self):
-        """「适应窗口」/「1:1」重新取景，但平移留白始终保持 DRAG_PADDING。"""
+    def test_buttons_reset_view_keeps_pan_bounds(self):
+        """「适应窗口」/「1:1」重新取景后，平移极限仍是「画面贴住控件边界」。"""
         canvas = self._canvas()
         canvas.set_rect((2100, 1300, 2500, 1400))
         canvas._set_scale(2.0)
         self._drag_far_corner(canvas)
 
-        # 1:1 后仍能往极限方向拖到 DRAG_PADDING，不会因为「按钮把留白改小」而受限
+        # 1:1 后仍能往极限方向拖到边界，不会因为「按钮换了一套夹取判据」而受限
         canvas.zoom_reset()
         canvas._offset = canvas._clamp_offset(QPointF(99999, 99999), canvas.zoom_scale())
-        self.assertAlmostEqual(DRAG_PADDING, canvas._offset.x(), places=6)
+        self.assertAlmostEqual(0, canvas._offset.x(), places=6)
 
         canvas.zoom_fit()
         canvas.zoom_reset()
         canvas._offset = canvas._clamp_offset(QPointF(99999, 99999), canvas.zoom_scale())
-        self.assertAlmostEqual(DRAG_PADDING, canvas._offset.x(), places=6)
+        self.assertAlmostEqual(0, canvas._offset.x(), places=6)
 
     def test_fit_does_not_lock_panning(self):
         """「适应窗口」是一次性取景，不能让后续拖拽失效。
@@ -847,14 +867,16 @@ class TestCanvasZoom(unittest.TestCase):
 
         # 适应后放大，画面超出视口，必须能平移
         canvas.zoom_in()
+        # 先把画面摆到中间，避免一上来就贴着边界、拖拽被判为无效
+        canvas._offset = canvas._clamp_offset(QPointF(-100, -40), canvas.zoom_scale())
         before = QPointF(canvas._offset)
         self._press_empty_area(canvas)
         self.assertEqual("pan", canvas._drag_mode)
-        self._move(canvas, QPointF(canvas.width() / 2 + 120, canvas.height() / 2 + 80))
+        self._move(canvas, QPointF(canvas._drag_origin.x() + 20, canvas._drag_origin.y() + 20))
         self.assertNotEqual((before.x(), before.y()), (canvas._offset.x(), canvas._offset.y()))
 
     def test_press_does_not_change_scale(self):
-        """按下画面不改变比例：适应窗口后直接拖，比例仍是适应算出的那个值。
+        """按下画面不改变比例：放大后直接拖，比例仍是放大后的那个值。
 
         这是「拖动时跳变」的根因用例：早期版本按下时先切模式再取比例，
         基准从推算值换成字段默认值，第一下就跳。
@@ -862,19 +884,20 @@ class TestCanvasZoom(unittest.TestCase):
         canvas = self._canvas()
         canvas.set_rect((2100, 1300, 2500, 1400))
         canvas.zoom_fit()
-        fitted = canvas.zoom_scale()
-        expected = min(canvas.width() / 2560, canvas.height() / 1440)
-        self.assertAlmostEqual(expected, fitted, places=6)
+        self.assertAlmostEqual(min(canvas.width() / 2560, canvas.height() / 1440), canvas.zoom_scale(), places=6)
 
+        # 适应窗口下整幅都在视口里、没有可平移余量，先放大一级再按
+        canvas.zoom_in()
+        scale_before_press = canvas.zoom_scale()
         self._press_empty_area(canvas)
-        self.assertAlmostEqual(fitted, canvas.zoom_scale(), places=6)
+        self.assertAlmostEqual(scale_before_press, canvas.zoom_scale(), places=6)
         self.assertEqual("pan", canvas._drag_mode)
 
     def test_press_does_not_move_frame(self):
         """按下画面本身不移动画面：拖动产生的位移与鼠标位移一致。"""
         canvas = self._canvas()
         canvas.set_rect((2100, 1300, 2500, 1400))
-        # 放大到画面明显超出视口，并把画面摆到中间位置，避免一上来就贴着 60px 边界
+        # 放大到画面明显超出视口，并把画面摆到中间位置，避免一上来就贴着边界
         canvas.zoom_in()
         canvas.zoom_in()
         canvas._offset = canvas._clamp_offset(QPointF(-400, -300), canvas.zoom_scale())
@@ -899,26 +922,29 @@ class TestCanvasZoom(unittest.TestCase):
         self._press_empty_area(canvas)
         self.assertEqual("pan", canvas._drag_mode)
 
-    def test_cursor_shows_grab_whenever_frame_loaded(self):
-        """只要载入画面就显示抓手：画面小时也能挪开露出底色。"""
+    def test_cursor_reflects_pan_ability(self):
+        """光标按「画面是否真能平移」判断：缩到适配时箭头，放大后抓手。
+
+        与场景管理页签的画布同一口径：画面整幅都在视口里时给「开手掌」是误导。
+        """
         canvas = self._canvas()
         canvas.set_rect((2100, 1300, 2500, 1400))
         canvas.zoom_fit()
-        # 适应窗口下画面 800×450，比视口小，但仍可拖动挪开
-        self.assertTrue(canvas._can_pan())
+        # 适应窗口下画面 800×450，比视口小，没有可平移余量
+        self.assertFalse(canvas._can_pan())
         canvas.zoom_in()
         self.assertTrue(canvas._can_pan())
 
     def test_fit_scale_never_exceeds_canvas(self):
-        """适应窗口必须让整幅画面进视口，不能因为留白为 0 就溢出。"""
+        """适应窗口必须让整幅画面进视口，不能因为按完整尺寸算比例就溢出。"""
         canvas = self._canvas()
         canvas.zoom_fit()
         scale = canvas.zoom_scale()
         self.assertLessEqual(2560 * scale, canvas.width() + 1)
         self.assertLessEqual(1440 * scale, canvas.height() + 1)
 
-    def test_padding_takes_effect_on_render(self):
-        """渲染结果里能看到留白：画面边缘与控件边界之间有底色间隔。"""
+    def test_frame_paints_to_canvas_edge(self):
+        """渲染结果里没有留白：画面边缘直接贴住控件边界。"""
         canvas = self._canvas()
         canvas.set_frame(self._white_frame(2560, 1440))
         canvas.set_rect((2100, 1300, 2500, 1400))
@@ -931,9 +957,9 @@ class TestCanvasZoom(unittest.TestCase):
         self._release(canvas)
         release_margin = self._visible_left_margin(canvas)
 
-        self.assertAlmostEqual(DRAG_PADDING, drag_margin, delta=1)
-        # 松手后位置不变，因此间隔也不变——这正是「不弹回去」的可视判据。
-        self.assertAlmostEqual(DRAG_PADDING, release_margin, delta=1)
+        self.assertAlmostEqual(0, drag_margin, delta=1)
+        # 松手后位置不变，因此边界也不变——这正是「不弹回去」的可视判据。
+        self.assertAlmostEqual(0, release_margin, delta=1)
 
     def _white_frame(self, width, height):
         """构造纯白帧，便于从渲染结果里分辨画面与底色。"""
@@ -1041,41 +1067,52 @@ class TestCanvasZoom(unittest.TestCase):
 
         rendered = canvas.grab().toImage().convertToFormat(QImage.Format.Format_RGB888)
         width, height = rendered.width(), rendered.height()
-        buffer = np.frombuffer(rendered.constBits(), np.uint8).reshape(
-            (height, rendered.bytesPerLine())
-        )[:, : width * 3].reshape(height, width, 3)
+        buffer = (
+            np.frombuffer(rendered.constBits(), np.uint8)
+            .reshape((height, rendered.bytesPerLine()))[:, : width * 3]
+            .reshape(height, width, 3)
+        )
         white = buffer[:, :, 0] > 200
         return int(np.where(white.any(axis=0))[0].min())
 
-    def test_single_side_blank_is_capped_for_any_frame_size(self):
-        """不论画面比视口大还是小，单侧空白上限都是 DRAG_PADDING。
+    def test_no_blank_margin_for_any_frame_size(self):
+        """不论画面比视口大还是小，都不留空白：小于视口居中，大于视口贴边。
 
-        这条是为消除「有时能拖很宽、有时只有 60」写的：早期按「画面是否比视口大」分成
-        两套语义（大画面限空白、小画面限可见），同一张画面在不同缩放下可拖幅度相差
-        一个数量级。
+        早期允许任一侧拖出 60px 空白，缩到适配时四周凭空多出可拖动范围，
+        用户会以为「图像没居中」。改为与场景管理页签的画布同一判据。
         """
         for frame_width, frame_height, scale in (
             (2560, 1440, 0.3125),  # 画面 ≈ 视口宽
-            (2560, 1440, 1.0),     # 画面远大于视口
-            (1280, 720, 1.0),      # 画面略大于视口
-            (800, 480, 1.0),       # 画面与视口等宽
-            (720, 480, 1.0),       # 画面略小于视口
+            (2560, 1440, 1.0),  # 画面远大于视口
+            (1280, 720, 1.0),  # 画面略大于视口
+            (800, 480, 1.0),  # 画面与视口等宽
+            (720, 480, 1.0),  # 画面略小于视口
         ):
             canvas = self._canvas(frame_width=frame_width, frame_height=frame_height)
-            size = frame_width * scale
+            width = frame_width * scale
+            height = frame_height * scale
             far = canvas._clamp_offset(QPointF(99999, 99999), scale)
             near = canvas._clamp_offset(QPointF(-99999, -99999), scale)
             with self.subTest(size=(frame_width, frame_height), scale=scale):
-                # 拖到最右下：左侧空白不超过 DRAG_PADDING
-                self.assertLessEqual(far.x(), DRAG_PADDING + 1)
-                # 拖到最左上：右侧空白不超过 DRAG_PADDING
-                self.assertLessEqual(canvas.width() - (near.x() + size), DRAG_PADDING + 1)
+                if width <= canvas.width():
+                    # 画面小于视口：固定居中
+                    self.assertAlmostEqual((canvas.width() - width) / 2, far.x(), delta=1)
+                else:
+                    # 拖到最右下：画面左上角贴住 (0, 0)
+                    self.assertAlmostEqual(0, far.x(), delta=1)
+                    # 拖到最左上：画面右下角贴住控件边界
+                    self.assertAlmostEqual(canvas.width(), near.x() + width, delta=1)
+                if height <= canvas.height():
+                    self.assertAlmostEqual((canvas.height() - height) / 2, far.y(), delta=1)
+                else:
+                    self.assertAlmostEqual(0, far.y(), delta=1)
+                    self.assertAlmostEqual(canvas.height(), near.y() + height, delta=1)
 
     def test_tiny_frame_is_centered(self):
-        """画面小到两侧空白必然超标时居中，两侧对称，不再可拖。
+        """画面小到无法填满视口时居中，两侧对称，不再可拖。
 
-        判据是「两侧空白都 ≤DRAG_PADDING」，画面宽度小于 ``视口 - 2*padding`` 时无解，
-        此时居中让两侧一致——否则会出现「这次能拖很宽、下次拖不动」的漂移感。
+        与场景管理页签的画布同一判据：画面小于视口即固定居中，避免「这次能拖一点、
+        下次拖不动」的漂移感。
         """
         canvas = self._canvas(frame_width=400, frame_height=300)
         far = canvas._clamp_offset(QPointF(99999, 99999), 1.0)
@@ -1084,33 +1121,24 @@ class TestCanvasZoom(unittest.TestCase):
         self.assertAlmostEqual((canvas.width() - 400) / 2, far.x(), delta=1)
         self.assertAlmostEqual((canvas.height() - 300) / 2, far.y(), delta=1)
 
-    def test_small_frame_can_be_dragged_aside(self):
-        """画面略小于视口时也能拖开露底色，且空白上限与大画面一致。"""
+    def test_small_frame_stays_centered(self):
+        """画面略小于视口时固定居中，拖不动——没有可平移的内容。"""
         canvas = self._canvas(frame_width=720, frame_height=480)
 
         far = canvas._clamp_offset(QPointF(99999, 99999), 1.0)
-        # 拖到最右下：画面左侧留出的空白上限是 DRAG_PADDING
-        self.assertAlmostEqual(DRAG_PADDING, far.x(), delta=1)
-        self.assertAlmostEqual(DRAG_PADDING, far.y(), delta=1)
-
         near = canvas._clamp_offset(QPointF(-99999, -99999), 1.0)
-        # 拖到最左上：右侧/下方留出的空白上限同样是 DRAG_PADDING
-        self.assertAlmostEqual(DRAG_PADDING, canvas.width() - (near.x() + 720), delta=1)
-        self.assertAlmostEqual(DRAG_PADDING, canvas.height() - (near.y() + 480), delta=1)
+        self.assertAlmostEqual((canvas.width() - 720) / 2, far.x(), delta=1)
+        self.assertAlmostEqual((canvas.height() - 480) / 2, far.y(), delta=1)
+        self.assertEqual(far.x(), near.x())
+        self.assertEqual(far.y(), near.y())
 
-    def test_small_frame_drag_reveals_background(self):
-        """适应窗口后拖动，画面拉开底色，但空白不会超过 DRAG_PADDING。"""
+    def test_fit_window_cannot_pan(self):
+        """适应窗口后整幅画面都在视口里，没有可平移的东西。"""
         canvas = self._canvas()
         canvas.set_frame(self._white_frame(2560, 1440))
         canvas.set_rect((2100, 1300, 2500, 1400))
         canvas.zoom_fit()
-        self.assertAlmostEqual(0, self._visible_left_margin(canvas), delta=1)
-
-        self._press_empty_area(canvas)
-        origin = canvas._drag_origin
-        # 拖很远，空白应被夹在 DRAG_PADDING
-        self._move(canvas, QPointF(origin.x() + 5000, origin.y()))
-        self.assertAlmostEqual(DRAG_PADDING, self._visible_left_margin(canvas), delta=1)
+        self.assertFalse(canvas._can_pan())
 
     def test_zoom_notification_reports_scale(self):
         """缩放回调只带具体比例，供按钮刷新。"""

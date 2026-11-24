@@ -28,21 +28,21 @@
 | 页签继承 `CustomTab` 且属性齐备 | 属性缺失只在真实启动时暴露 | `TestTabContract` 全组 |
 | 8 手柄各只动自己那条边 | 首版曾一律只动右/下边，表现为「只能往右下变大」 | `TestPreviewHandles.test_each_handle_moves_its_own_edges` |
 | 最小尺寸、越界、平移保尺寸 | 拖过对边会产生负宽高，越界会让遮罩跑出画面 | `test_minimum_size_enforced_on_shrink`、`test_resize_cannot_leave_frame`、`test_move_keeps_size_and_stays_inside` |
-| 手柄画在矩形外侧且命中优先角 | 遮罩常很薄，居中手柄会叠成一团 | `test_hit_handle_prefers_corners`、`test_preview_keeps_padding_around_frame` |
+| 手柄画在矩形外侧且命中优先角 | 遮罩常很薄，居中手柄会叠成一团 | `test_hit_handle_prefers_corners`、`test_fit_aligns_to_canvas_edge` |
 | 缩放比例、锚点保持、坐标互逆 | 「放大后拖遮罩跑偏」的根因是比例改了但换算用旧值 | `TestCanvasZoom` 全组 |
 | 逐像素拖拽的位移与鼠标一致（各缩放级别） | 增量累加会丢小数：200% 时完全拖不动、25% 时拖 100px 只走 95px | `test_small_step_drag_keeps_up_with_mouse`、`test_handle_resize_tracks_mouse_at_any_scale` |
 | 遮罩内部深处走整体平移、贴边仍可抓手柄 | 缩小后手柄几乎盖满整块区域，不区分内部就无法平移 | `test_rect_interior_is_not_a_handle`、`test_handle_still_hit_at_rect_edge` |
-| 平移极限时画面边缘不贴控件边界 | 贴边会让画面像被裁掉一块，贴边手柄也会切进边界抓不到 | `test_frame_edge_never_touches_canvas_edge`、`test_offset_clamped_when_frame_larger_than_canvas` |
-| 平移留白 60px、适应窗口贴边（留白 0） | 平移要留大间隔才看得清边界；适应窗口要尽量看清整幅画面 | `test_padding_takes_effect_on_render`、`test_fit_aligns_to_canvas_edge`、`test_fit_scale_uses_full_canvas` |
-| 松手后画面不弹回 | 留白若随状态收回，松手必然重算偏移，拖到极限的结果当场作废 | `test_release_keeps_pan_position` |
-| 按钮重新取景不改平移留白 | 否则按过「适应窗口」就再也拖不到 60px | `test_buttons_reset_view_without_touching_padding` |
+| 平移极限时画面边缘贴住控件边界 | 与场景管理页签同一判据：小于视口居中、大于视口夹到边界，不留空白间隔 | `test_frame_edge_stops_at_canvas_edge`、`test_offset_clamped_when_frame_larger_than_canvas` |
+| 画布底色跟随主题 `sidebar` | 写死深灰会在浅色主题下露出深色边，与页面底色不匹配 | `test_background_follows_theme` |
+| 松手后画面不弹回 | 松手若重算偏移，拖到极限的结果当场作废 | `test_release_keeps_pan_position` |
+| 按钮重新取景不改平移边界 | 否则按过「适应窗口」就拖不到边界 | `test_buttons_reset_view_keeps_pan_bounds` |
 | 适应窗口后仍可拖拽 | 若把适应建模成状态，按钮一次点击就可能锁死后续平移 | `test_fit_does_not_lock_panning`、`test_one_to_one_can_pan` |
 | 按下画面不改比例、不移动画面 | 早期版本按下时切模式再取比例，基准突变导致画面跳一次 | `test_press_does_not_change_scale`、`test_press_does_not_move_frame` |
 | 适应窗口只算具体值、无持续状态 | 「Fit 显示 + 拖动时重算」既藏起已知比例，又让拖拽基准不稳 | `test_zoom_fit_sets_concrete_scale`、`test_zoom_fit_has_no_lasting_state` |
 | 比例标签永远显示百分比 | 显示「Fit」会让用户以为拖拽时比例还会变 | `test_zoom_label_always_shows_percentage` |
-| 光标只要有画面就显示抓手 | 画面小时也能挪开露底色，不该显示箭头让人以为拖不动 | `test_cursor_shows_grab_whenever_frame_loaded` |
-| 单侧空白上限恒为 60px，与画面大小无关 | 按画面大小分两套语义会让可拖幅度相差一个数量级，同一画面换个缩放就「拖不动了」 | `test_single_side_blank_is_capped_for_any_frame_size`、`test_small_frame_can_be_dragged_aside`、`test_small_frame_drag_reveals_background` |
-| 画面太窄时居中且两侧对称 | 两侧空白必然超标时无解，居中避免「这次能拖一点、下次拖不动」的漂移 | `test_tiny_frame_is_centered` |
+| 光标按画面是否真能平移切换 | 画面整幅都在视口里时给「开手掌」是误导 | `test_cursor_reflects_pan_ability` |
+| 任何画面尺寸都没有留白间隔 | 小于视口居中、大于视口贴边，避免「图像没居中」的错觉 | `test_no_blank_margin_for_any_frame_size`、`test_small_frame_stays_centered`、`test_fit_window_cannot_pan` |
+| 画面太窄时居中且两侧对称 | 画面小于视口即固定居中，避免「这次能拖一点、下次拖不动」的漂移 | `test_tiny_frame_is_centered` |
 | 拖动不写配置、保存才落盘、重置丢弃 | 编辑即落盘会让重置按钮失去意义 | `TestTabEditing.test_drag_does_not_write_config`、`test_save_writes_config`、`test_reset_discards_pending` |
 | 三个按钮按「点了有无变化」灰化 | 可点却无反应会被当成失灵；按钮状态必须与实际可操作性一致 | `test_reset_to_saved_disabled_without_pending`、`test_reset_to_saved_disabled_after_save`、`test_reset_to_saved_disabled_after_drag_back_to_saved`、`test_reset_to_default_disabled_when_already_default` |
 | 开关即时落盘且关闭时隐藏编辑框 | 开关不参与分离机制，关掉后不应留一个不可编辑的框 | `test_switch_writes_immediately`、`test_disabling_hides_edit_box`、`test_reenabling_restores_edit_box` |
@@ -61,6 +61,7 @@
 
 | 日期 | 测试根 | 用例数 | 结论 | 环境 |
 |---|---|---|---|---|
+| 2026-11-24 | `extensions_tests`（本能力，画布对齐场景管理） | 89 | 通过 | Windows 10 / Python 3.12 / ok-script 3.0.0b3 |
 | 2026-11-04 | `extensions_tests`（本能力） | 88 | 通过 | Windows 10 / Python 3.12 / ok-script 3.0.0b3 |
 | 2026-11-04 | `extensions_tests`（全量，6 个文件） | 142 | 通过 | 同上 |
 | 2026-11-04 | `tests`（上游基线） | 10 | 通过 | 同上 |

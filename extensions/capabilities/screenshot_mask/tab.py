@@ -23,13 +23,14 @@ from PySide6.QtWidgets import QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget
 
 from extensions.capabilities.screenshot_mask import geometry, processor
 
-# 「适应窗口」显示留白。为 0 表示画面直接贴住控件边缘——这两个动作的语义是
-# 「尽量看清整幅画面」，留白只会白缩一圈，而贴边手柄的遮挡由下面的平移留白接管。
-PREVIEW_PADDING = 0
+# 画布底色跟随主题的 `sidebar`，与场景管理页签的两块画布同一口径。
+#
+# 写死一个深灰会在浅色主题下露出一圈深色边——用户看到的是「画布背后有一块黑色
+# 背景」，而实际那只是画布自己的底色，与页面底色不匹配。
+BACKGROUND_COLOR_NAME = "sidebar"
 
-# 手动平移时的留白。拖拽时用间隔，用户才能明确看到「画面到此为止」，
-# 而不是靠一条紧贴控件边缘的线去猜；同时给贴边的手柄留出抓取空间。
-DRAG_PADDING = 60
+# 主题不可用时的兜底色（浅灰，与浅色主题的 sidebar 接近）。
+_FALLBACK_BG = QColor(239, 239, 241)
 
 # 手柄边长与命中容差（像素，控件坐标）。
 HANDLE_SIZE = 10
@@ -57,6 +58,21 @@ HANDLE_CURSORS = {
     "e": Qt.CursorShape.SizeHorCursor,
     "w": Qt.CursorShape.SizeHorCursor,
 }
+
+
+def background_color():
+    """返回画布底色，跟随主题。
+
+    延迟取色而不是在模块加载时读一次：主题可能在运行期切换（设置页可改），
+    缓存住会把旧主题的颜色固定下来。
+
+    Returns：
+        ``QColor``。主题不可用时返回兜底浅灰。
+    """
+    try:
+        return QColor(theme.color(BACKGROUND_COLOR_NAME))
+    except Exception:  # noqa: BLE001 — 主题名不存在时用兜底色，不崩画布
+        return QColor(_FALLBACK_BG)
 
 
 def _to_qrect(rect):
@@ -222,13 +238,14 @@ class PreviewCanvas(QWidget):
     def _fit_scale(self):
         """算出「整幅画面进视口」所需的比例。
 
-        `PREVIEW_PADDING` 为 0 时画面正好占满视口的一边，另一边居中留黑边。
+        按完整控件尺寸计算：画面正好占满视口的一边，另一边居中留黑边。
         """
         if self._frame is None or self._frame.isNull():
             return 1.0
-        available_width = max(1, self.width() - 2 * PREVIEW_PADDING)
-        available_height = max(1, self.height() - 2 * PREVIEW_PADDING)
-        return min(available_width / self._frame.width(), available_height / self._frame.height())
+        return min(
+            max(1, self.width()) / self._frame.width(),
+            max(1, self.height()) / self._frame.height(),
+        )
 
     def _centered_offset(self, scale):
         """让画面在控件中居中的偏移。"""
@@ -238,61 +255,42 @@ class PreviewCanvas(QWidget):
         height = self._frame.height() * scale
         return QPointF((self.width() - width) / 2, (self.height() - height) / 2)
 
-    def _clamp_offset(self, offset, scale, padding=None):
-        """把偏移夹到「任一侧空白不超过 padding 像素」的范围。
+    def _clamp_offset(self, offset, scale):
+        """把偏移夹到「画面不出视口边界」。
 
-        判据只有一条：**画面两侧各自最多拖出 padding 像素空白**。不按「画面比视口大还是小」
-        分情况——那样会得到两套语义（大画面限「空白」、小画面限「可见」），同一张画面在
-        不同缩放下可拖幅度相差一个数量级，用户看到的就是「有时能拖很宽，有时只能拖 60」。
+        与场景管理页签的画布（`scene_manager/pages/canvas.py` 的 `_clamp_offset`）
+        同一口径：画面小于视口时固定居中，大于视口时夹到 ``[total - size, 0]``
+        ——两侧都不留空白。
 
         Args：
             offset：期望偏移。
             scale：当前比例。
-            padding：单侧最大空白；缺省取 :data:`DRAG_PADDING`。
 
         Returns：
             夹取后的偏移。
         """
         if self._frame is None or self._frame.isNull():
             return QPointF(0, 0)
-        if padding is None:
-            padding = DRAG_PADDING
-        width = self._frame.width() * scale
-        height = self._frame.height() * scale
         return QPointF(
-            self._clamp_axis(offset.x(), width, self.width(), padding),
-            self._clamp_axis(offset.y(), height, self.height(), padding),
+            self._clamp_axis(offset.x(), self._frame.width() * scale, self.width()),
+            self._clamp_axis(offset.y(), self._frame.height() * scale, self.height()),
         )
 
-    def _clamp_axis(self, value, size, total, padding):
-        """在一条轴上把偏移夹到「两侧空白各不超过 padding」的范围。
-
-        设偏移为 ``o``、画面尺寸为 ``size``、视口为 ``total``，则左侧空白是 ``o``、
-        右侧空白是 ``total - size - o``。两者都不超过 ``padding`` 即：
-
-        ``o ∈ [total - size - padding, padding]``
-
-        画面比视口小时这个区间仍然成立（此时下限为负），意味着允许画面离开边界、露出底色。
-
-        **画面太小导致区间倒置时（``size < total - 2*padding``），固定居中**：此时不可能
-        让两侧空白都 ≤padding，任何位置都违反判据。居中至少左右对称，不会出现「这次能拖
-        很宽、下次拖不动」的漂移感。
+    @staticmethod
+    def _clamp_axis(value, size, total):
+        """在一条轴上夹取偏移。
 
         Args：
             value：期望偏移。
             size：画面在该轴上的显示尺寸。
             total：视口在该轴上的长度。
-            padding：单侧最大空白。
 
         Returns：
-            夹取后的偏移。
+            夹取后的偏移；画面小于视口时返回居中位置。
         """
-        low = total - size - padding
-        high = padding
-        if low > high:
-            # 画面太小，两侧空白必然超过 padding：居中，两侧一致
+        if size <= total:
             return (total - size) / 2
-        return min(max(value, low), high)
+        return min(0.0, max(total - size, value))
 
     def _offset_for_rect(self, rect, scale):
         """算出让给定矩形进入视野的偏移（把它移到视口中央）。"""
@@ -497,7 +495,7 @@ class PreviewCanvas(QWidget):
         elif self._rect_contains(point):
             self._drag_mode = "move"
             self._drag_handle = None
-        else:
+        elif self._can_pan():
             self._drag_mode = "pan"
             self._drag_handle = None
             # 平移以按下瞬间的偏移为基准，后续位移全部相对它计算。
@@ -548,7 +546,7 @@ class PreviewCanvas(QWidget):
     def mouseReleaseEvent(self, event):
         """结束拖拽。
 
-        **不重算偏移**：拖到哪儿就停在哪儿。松手时若再夹一次（例如把留白收小后重夹），
+        **不重算偏移**：拖到哪儿就停在哪儿。松手时若再夹一次（例如换一套夹取判据），
         画面会当场弹回去，用户拖了半天等于白拖——这是必须避免的。
         """
         self._drag_mode = None
@@ -584,15 +582,17 @@ class PreviewCanvas(QWidget):
             self.setCursor(Qt.CursorShape.ArrowCursor)
 
     def _can_pan(self):
-        """判断画面是否可以被拖动。
+        """返回画面是否超出视口（即可平移）。
 
-        只要载入了画面就能拖：画面比视口大时是「平移看别处」，比视口小时是「挪开露底色」，
-        两种情况都允许，因此不必再按尺寸分支。
+        与场景管理页签的画布同一判据：缩到适配时整幅都在视野里，没有可平移的东西，
+        此时给「开手掌」光标是误导。
 
         Returns：
             True 表示可以拖动。
         """
-        return self._frame is not None and not self._frame.isNull()
+        if self._frame is None or self._frame.isNull():
+            return False
+        return self._frame.width() * self._scale > self.width() or self._frame.height() * self._scale > self.height()
 
     def wheelEvent(self, event):
         """滚轮围绕指针缩放。"""
@@ -624,7 +624,7 @@ class PreviewCanvas(QWidget):
         """绘制背景、画面、遮罩与手柄。"""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.fillRect(self.rect(), QColor(18, 18, 20))
+        painter.fillRect(self.rect(), background_color())
 
         if self._frame is None or self._frame.isNull():
             painter.end()
