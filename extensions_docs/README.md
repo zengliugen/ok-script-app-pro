@@ -100,7 +100,8 @@ D=.codebuddy/lib/devflow/skills/devflow-guard/scripts/devflow_guard.py
 
 # 1. 需求探索（确认前可反复改写）
 python $D explore <主题名>
-#    填写「要解决的问题」「已确认的决定」「未定项」「结论」，把状态推进一档
+#    先查既有方案（联网检索 / 上游与框架文档 / 本地依赖）填「## 既有方案调研」，
+#    再填写「要解决的问题」「已确认的决定」「未定项」「结论」，把状态推进一档
 
 # 2. 生成四份骨架并登记（--from-explore 必填）
 python $D new <能力名> --from-explore <主题名>
