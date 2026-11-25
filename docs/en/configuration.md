@@ -54,7 +54,7 @@ Both profiles in `pyappify.yml` point at the dedicated update repository
 `https://github.com/zengliugen/ok-script-app-pro-update.git`, which the installer's auto-update pulls from.
 
 - The update repository is produced by the CI `Synchronize repositories` step from the `deploy.txt` whitelist; the source repository only triggers builds and hosts releases.
-- `keep_releases: 30` bounds the number of release tags kept in the update repository, so a first clone does not fetch the entire history.
+- The update repository is about 10 MB, so **`keep_releases` is not enabled yet**: with only prerelease tags, `pyappify-action v1.2.3` fails in `trimRepo` at `rev-parse HEAD` (git 128 in testing). Re-evaluate after the action/launcher is fixed.
 - Downstream apps built from this template **must switch to their own update repository and `OK_GH` secret** instead of reusing this project's address.
 
 ## Checks After Syncing Upstream

@@ -1,8 +1,9 @@
 name: "ok-script-app-pro"
 uac: true
 icon: "icons/icon.png"
-# 只保留最近 30 个发行 tag：更新库按 tag 浅克隆，历史过大会拖慢首次安装与更新。
-keep_releases: 30
+# 暂不启用 keep_releases：pyappify-action v1.2.3 的 trimRepo 在更新库只有预发布
+# tag、clone 后没有分支 HEAD 时会 rev-parse HEAD 失败（实测 git 128）；更新库
+# 目前只有约 10 MB，暂不需要裁剪。等动作/启动器版本修复后再评估。
 # 更新库：用户安装与自动更新从这里拉取，只含 deploy.txt 白名单内的运行文件。
 # 源码仓库只负责触发构建与托管 Release，不再作为更新源。
 # 下游应用使用本模板时，必须把两个 profile 的 git_url 换成自己的更新库。

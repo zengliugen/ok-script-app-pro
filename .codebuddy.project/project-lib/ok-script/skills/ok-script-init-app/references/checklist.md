@@ -48,7 +48,7 @@
 | `build.yml` 加同步步骤 | `ok-oldking/partial-sync-repo`，`sync_list: 'deploy.txt'`，`gitignore_file: '.update_repo_gitignore'` |
 | `pyappify.yml` 各 profile 的 `git_url` | **指向更新库**，不是源码仓库 |
 | `deploy.txt` | 正向列举要同步的条目；确认 `ok_templates`、`tests`、`docs`、`.github` **不在**清单里 |
-| `keep_releases` | 建议设 `30` 之类的上限，避免更新库历史无限膨胀 |
+| `keep_releases` | 建议设 `30` 之类的上限；但 pyappify-action v1.2.3 在更新库仅有预发布 tag 时会因 `trimRepo` 的 `rev-parse HEAD` 失败（git 128），先确认版本再启用 |
 
 ### 策略 B：直接用源码仓库（早期测试阶段）
 

@@ -50,7 +50,7 @@
 |---|---|
 | `pyproject.toml` | 项目名改为 `ok-script-app-pro`，打包与依赖安装均依赖该名称 |
 | `requirements.txt` | 由 `pyproject.toml` 编出的锁定文件，随场景管理能力新增 `networkx` |
-| `pyappify.yml` | 打包配置指向本项目仓库与产物名；两个 profile 的 `git_url` 指向独立更新库，并用 `keep_releases: 30` 限制更新库历史 |
+| `pyappify.yml` | 打包配置指向本项目仓库与产物名；两个 profile 的 `git_url` 指向独立更新库；暂不启用 `keep_releases`（v1.2.3 在仅有预发布 tag 时 `trimRepo` 会 `rev-parse HEAD` 失败） |
 | `deploy.txt` | 新增 `extensions`：本项目的运行时代码在该目录，沿用上游清单会打出启动即 `ImportError` 的包 |
 | `.github/workflows/build.yml` | Release 需 `contents: write`；作者改为本项目；下载链接与产物名改本项目；按 `deploy.txt` 白名单把运行文件同步到更新库；测试步骤复用 `run_tests.ps1` |
 | `.github/workflows/docs.yml` | 文档站部署配置对齐本项目仓库 |

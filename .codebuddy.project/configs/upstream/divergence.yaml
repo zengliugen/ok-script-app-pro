@@ -37,7 +37,7 @@ entries:
 
   - path: pyappify.yml
     kind: M
-    reason: 打包配置指向本项目仓库与项目名；两个 profile 的 git_url 指向独立更新库 ok-script-app-pro-update——用户只克隆 deploy.txt 白名单内容，不再拉源码树与 .codebuddy 子模块；并用 keep_releases 30 限制更新库保留的发行 tag 数量，避免首次克隆拉取全部历史
+    reason: 打包配置指向本项目仓库与项目名；两个 profile 的 git_url 指向独立更新库 ok-script-app-pro-update——用户只克隆 deploy.txt 白名单内容，不再拉源码树与 .codebuddy 子模块；暂不启用 keep_releases（v1.2.3 的 trimRepo 在更新库仅有预发布 tag 时会 rev-parse HEAD 失败，实测 git 128）
     method: necessary
     authorization: 用户明确授权
 
@@ -116,7 +116,7 @@ entries:
 
   - path: docs/configuration.md
     kind: M
-    reason: 配置说明中的项目名与链接对齐本项目；「更新仓库」一节改为独立更新库模式（git_url、keep_releases 与下游替换要求）
+    reason: 配置说明中的项目名与链接对齐本项目；「更新仓库」一节改为独立更新库模式（git_url、下游替换要求，以及暂不启用 keep_releases 的原因）
     method: doc
     authorization: 用户明确授权
 

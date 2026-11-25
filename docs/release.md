@@ -52,6 +52,13 @@ PyAppify 用 libgit2 克隆指定 tag 的**完整 tree** 再打包，`.gitignore
 
 四者缺任一项，过滤都不成立。白名单之所以可靠，是因为它是**列举式**的：新增目录默认被排除，漏写只会导致「少带」，不会导致「多带」。
 
+### 为什么暂不启用 `keep_releases`
+
+`keep_releases` 会让启动器只克隆 tag、不拉分支。更新库首次发布只有预发布 tag 时，
+PyAppify action `v1.2.3` 的 `trimRepo` 会在 `git rev-parse HEAD` 上失败（退出码 128），
+打包步骤在发布说明生成后中止。更新库目前约 10 MB，暂不裁剪；等动作或启动器版本
+修复后再启用。
+
 ### 下游应用要做什么
 
 本模板已经把过滤链路接好，下游应用要做的是**换成自己的归属**，不要沿用本项目的更新库：
@@ -60,7 +67,7 @@ PyAppify 用 libgit2 克隆指定 tag 的**完整 tree** 再打包，`.gitignore
 2. 新建自己的更新库（如 `xxx-update`），把 `build.yml` 的 `repos` 与 secret 名换成自己的（`OK_GH` 存自己的 PAT）；
 3. 把 `pyappify.yml` 各 profile 的 `git_url` 改成同一个更新库；
 4. 确认 `deploy.txt` **不写** `ok_templates`、`ok_scenes`、`ok_tasks`（同时确认 `tests`、`docs`、`.github`、`.codebuddy*` 也不在清单内），并包含全部运行时代码——本项目新增了 `extensions`，删除该行会打出启动即 `ImportError` 的包；
-5. 保留 `pyappify.yml` 的 `keep_releases: 30`，避免更新库历史无限膨胀。
+5. 暂不启用 `keep_releases`（见上一节）；更新库体积明显增长后再评估。
 
 **不要把截图放进 Git LFS。** PyAppify 走 libgit2，不执行 LFS smudge filter：CI 侧 `actions/checkout` 带 `lfs: true` 能取到真图，但用户侧克隆拿到的是约 130 字节的指针文本，`cv2.imread` 读不出来。故障只发生在终端用户机器上，构建期不报错。
 

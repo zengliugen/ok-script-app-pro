@@ -50,6 +50,10 @@ source repo --(deploy.txt whitelist)--> update repo --(git_url)--> PyAppify pack
 
 All four are required; missing any one breaks the filtering. The whitelist is reliable precisely because it enumerates: new directories are excluded by default, so an omission causes under-inclusion, never over-inclusion.
 
+### Why `keep_releases` Is Not Enabled Yet
+
+`keep_releases` makes the launcher clone tags only, without branches. When the update repository has just a prerelease tag, `trimRepo` in PyAppify action `v1.2.3` fails at `git rev-parse HEAD` (exit code 128) right after release notes are generated. The update repository is about 10 MB, so it needs no trimming yet; re-enable after the action or launcher is fixed.
+
 ### What downstream apps must do
 
 The template already wires the filtering chain. Downstream apps must **switch it to their own ownership**, not reuse this project's update repository:
@@ -58,7 +62,7 @@ The template already wires the filtering chain. Downstream apps must **switch it
 2. Create your own update repository (e.g. `xxx-update`) and replace the `repos` entry and secret name in `build.yml` with your own (`OK_GH` holds your PAT).
 3. Point every profile's `git_url` in `pyappify.yml` at that update repository.
 4. Keep `ok_templates`, `ok_scenes`, and `ok_tasks` **out of** `deploy.txt` (and confirm `tests`, `docs`, `.github`, `.codebuddy*` are absent too), while keeping every runtime directory in it. This project adds `extensions`; dropping that line ships a package that fails at startup with `ImportError`.
-5. Keep `keep_releases: 30` in `pyappify.yml` so update-repository history does not grow without limit.
+5. Leave `keep_releases` off for now (see the previous section); re-evaluate once the update repository grows noticeably.
 
 **Do not put the screenshots in Git LFS.** PyAppify goes through libgit2, which does not run the LFS smudge filter: CI with `actions/checkout` and `lfs: true` gets real images, but an end-user clone receives ~130-byte pointer text files that `cv2.imread` cannot decode. The failure occurs only on user machines and is silent during the build.
 
