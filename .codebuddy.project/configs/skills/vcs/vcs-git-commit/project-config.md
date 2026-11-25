@@ -140,9 +140,11 @@ VCS 互斥锁、暂存区校验、计划外文件核对。
 
 ## 5. 项目专有检查说明
 
-- **运行时目录不入库**：`configs/`、`cache/`、`logs/`、`screenshots/`、`ok_tasks/`、
-  `ok_templates/`、`site/`、`.venv/` 已被 `.gitignore` 忽略（`git check-ignore` 实测确认），
-  提交前核对计划外文件时无需再将这些目录列入白名单。
+- **运行时目录不入库**：`configs/`、`cache/`、`logs/`、`screenshots/`、`site/`、`.venv/`
+  已被 `.gitignore` 忽略（`git check-ignore` 实测确认），提交前核对计划外文件时无需再将这些目录列入白名单。
+- **协作区已入库**：`ok_templates/`、`ok_scenes/`、`ok_tasks/`、`assets/scenes/` 已取消忽略，
+  属正式内容，提交时按普通文件处理；是否进安装包由 `deploy.txt` 决定
+  （前三者不在清单内，`assets/scenes/` 随 `assets` 分发）。
 - **依赖文件为生成物**：`requirements.txt` 与 `requirements-web.txt` 是 pip 编译锁定文件，
   由 `pyproject.toml` 的直接依赖生成。**修改依赖应改 `pyproject.toml` 后重新编译锁定文件**，
   不得直接手改锁定文件内容。

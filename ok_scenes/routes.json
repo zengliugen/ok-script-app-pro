@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "routes": [
+    {
+      "from": "scene-0002",
+      "area": "帮助",
+      "to": "scene-0009",
+      "after_wait": 0.25,
+      "source": "confirmed",
+      "observations": 1
+    },
+    {
+      "from": "scene-0002",
+      "area": "开始",
+      "to": "scene-0010",
+      "after_wait": 0.33,
+      "source": "confirmed",
+      "observations": 1
+    },
+    {
+      "from": "scene-0002",
+      "area": "设置",
+      "to": "scene-0007",
+      "after_wait": 0.28,
+      "source": "confirmed",
+      "observations": 1
+    },
+    {
+      "from": "scene-0004",
+      "area": "返回",
+      "to": "scene-0010",
+      "after_wait": 0.33,
+      "source": "confirmed",
+      "observations": 1
+    },
+    {
+      "from": "scene-0004",
+      "area": "进入战斗",
+      "to": "scene-0005",
+      "after_wait": 0.23,
+      "source": "confirmed",
+      "observations": 1
+    },
+    {
+      "from": "scene-0005",
+      "area": "结束战斗",
+      "to": "scene-0006",
+      "after_wait": 0.27,
+      "source": "confirmed",
+      "observations": 1
+    },
+    {
+      "from": "scene-0005",
+      "area": "返回",
+      "to": "scene-0004",
+      "after_wait": 1.41,
+      "source": "confirmed",
+      "observations": 1
+    },
+    {
+      "from": "scene-0006",
+      "area": "确定",
+      "to": "scene-0010",
+      "after_wait": 0.31,
+      "source": "confirmed",
+      "observations": 1
+    },
+    {
+      "from": "scene-0007",
+      "area": "设置菜单-区域1",
+      "to": "scene-0002",
+      "after_wait": 1.36,
+      "source": "confirmed",
+      "observations": 1
+    },
+    {
+      "from": "scene-0009",
+      "area": "返回",
+      "to": "scene-0002",
+      "after_wait": 0.2,
+      "source": "confirmed",
+      "observations": 1
+    },
+    {
+      "from": "scene-0010",
+      "area": "返回",
+      "to": "scene-0002",
+      "after_wait": 1.49,
+      "source": "confirmed",
+      "observations": 1
+    },
+    {
+      "from": "scene-0010",
+      "area": "进入关卡",
+      "to": "scene-0004",
+      "after_wait": 0.38,
+      "source": "confirmed",
+      "observations": 1
+    }
+  ]
+}

@@ -12,18 +12,15 @@
 | `logs/` | 运行日志 | 运行时自动重建 |
 | `screenshots/` | 截图输出（每次启动清空） | 运行时自动重建 |
 | `ok/` | `ok-script` 源码内联产物（`inline_ok_requirements` 生成） | CI 打包时由 `python -m ok.update.inline_ok_requirements` 生成 |
-| `ok_templates/` | **模板编辑区**：原始截图 + 手工标注 `coco_annotations.json`（**不是**切图产物） | **不可再生**——由界面「模板」页签人工标注产生。本模板仓库按上游约定忽略；**下游真实应用必须入库**，详见 `docs/getting-started.md` |
 | `site/` | MkDocs 构建产物 | `python -m mkdocs build` |
 | `.venv/`、`venv/`、`__pycache__/`、`*.pyc`、`*.egg-info/`、`build/`、`dist/` | Python 环境与打包产物 | 重新创建虚拟环境 / 重新构建 |
 | `models`、`fonts`、`paddle_model/`、`tesseract` | 模型与字体资源（体积大） | 运行时按需下载或手工放置 |
 | `working/`、`working_images/`、`click_screenshots/`、`data/`、`data2`、`data_export`、`data_import` | 开发期临时数据 | 按需重建 |
 | `updates/`、`update/`、`update.bat`、`md5.txt` | 更新流程临时产物 | 由发布/更新脚本生成 |
 | `my_key.txt` | 本地凭据（**不得入库**） | 用户自备 |
-| `*.bat`、`*.dat`、`*.msgpack`、`*.so`、`*.manifest`、`thread_dumps.txt`、`pip-log.txt`、`autohelper` | 各类本地/生成文件 | 按需重建 |
-| `ok_tasks/` | GUI 中创建的自定义任务脚本 | 无自动重建，属本地用户数据 |
-| `assets/scenes/` 下的采集数据 | 「场景管理」能力采集的场景库（`library.json`、`scene-NNNN/`、`_drafts/`），由 `assets/scenes/.gitignore` 忽略 | 由「场景管理」页签重新采集；**模板项目不入库**，正式项目按需删除该忽略文件的 `*` 与三条反选 |
+| `*.bat`、`*.dat`、`*.msgpack`、`*.so`、`*.manifest`、`*.bak`、`thread_dumps.txt`、`pip-log.txt`、`autohelper` | 各类本地/生成文件 | 按需重建 |
 
-**规则存在但目录未创建**：`.gitignore` 中的 `test/`（第 37 行）与 `test_scripts/`（第 27 行）
+**规则存在但目录未创建**：`.gitignore` 中的 `test/` 与 `test_scripts/`
 是上游模板遗留条目，两个目录当前**均不存在**。正式测试目录是 `tests/`（复数，**未被忽略**），
 勿混淆。若日后创建 `test/` 或 `test_scripts/`，其内容会被忽略。
 
@@ -36,6 +33,10 @@
 | `tests/` | 正式测试目录（`test/` 单数形式才被忽略） |
 | `tests/images/` | 测试固定输入图片，测试依赖 |
 | `assets/coco_annotations.json`、`assets/images/` | 模板匹配标注与切图源，随发布包分发 |
+| `ok_templates/` | 模板编辑区：原始截图 + 手工标注，**不可再生**；入库供协作，但不在 `deploy.txt`，不进安装包 |
+| `ok_scenes/` | 场景编辑区：原始帧 + 编辑态模板；入库供协作，但不在 `deploy.txt`，不进安装包 |
+| `ok_tasks/` | GUI 中创建的自定义任务脚本；入库（`.gitkeep` 占位），当前未加入 `deploy.txt` |
+| `assets/scenes/` | 场景库正式区（`library.json`、`scene-NNNN/`）；随 `assets` 进安装包，仅 `_drafts/` 仍被忽略 |
 | `i18n/{zh_CN,en_US}/LC_MESSAGES/` | 已编译的 `.po`/`.mo` 翻译，随包分发 |
 | `icons/`、`docs/`、`src/` | 应用图标、文档源、源码，均为正式内容 |
 

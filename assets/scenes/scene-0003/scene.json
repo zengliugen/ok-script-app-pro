@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "id": "scene-0003",
+  "name": "关卡选择",
+  "features": [
+    {
+      "name": "关卡选择",
+      "kind": "ocr",
+      "mandatory": true,
+      "shape": {
+        "kind": "rect",
+        "points": [
+          [
+            0.19375,
+            0.101389
+          ],
+          [
+            0.321875,
+            0.183333
+          ]
+        ],
+        "angle": 0.0
+      },
+      "threshold": 0.8,
+      "text": "关卡选择",
+      "template_file": "templates/关卡选择.png",
+      "mask_file": "templates/关卡选择_mask.png",
+      "bg_color": null,
+      "bg_tolerance": 0,
+      "mask_shape": {
+        "kind": "none"
+      },
+      "hit_count": 0,
+      "attempt_count": 0
+    }
+  ],
+  "areas": [
+    {
+      "name": "关卡选择-区域1",
+      "rect": [
+        0.091406,
+        0.284722,
+        0.180469,
+        0.372222
+      ],
+      "target_scene": "",
+      "after_wait": 1.0,
+      "edge_source": "manual",
+      "observations": 1,
+      "explore_probe": true,
+      "explore_action": "double_click",
+      "explore_params": {
+        "interval": 0.08
+      }
+    },
+    {
+      "name": "关卡选择-区域2",
+      "rect": [
+        0.402344,
+        0.383333,
+        0.601562,
+        0.480556
+      ],
+      "target_scene": "",
+      "after_wait": 1.0,
+      "edge_source": "manual",
+      "observations": 1,
+      "explore_probe": true,
+      "explore_action": "click",
+      "explore_params": {}
+    }
+  ],
+  "return_area": "",
+  "created_at": "",
+  "updated_at": ""
+}

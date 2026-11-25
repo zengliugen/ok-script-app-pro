@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "id": "scene-0008",
+  "name": "帮助",
+  "features": [
+    {
+      "name": "帮助-特征1",
+      "kind": "ocr",
+      "mandatory": true,
+      "shape": {
+        "kind": "rect",
+        "points": [
+          [
+            0.223438,
+            0.098611
+          ],
+          [
+            0.295312,
+            0.180556
+          ]
+        ],
+        "angle": 0.0
+      },
+      "threshold": 0.8,
+      "text": "帮助",
+      "template_file": "",
+      "mask_file": "",
+      "bg_color": null,
+      "bg_tolerance": 0,
+      "mask_shape": {
+        "kind": "none"
+      },
+      "hit_count": 0,
+      "attempt_count": 0
+    }
+  ],
+  "areas": [
+    {
+      "name": "帮助-区域1",
+      "rect": [
+        0.4,
+        0.377778,
+        0.6,
+        0.488889
+      ],
+      "explore_probe": true,
+      "explore_action": "click",
+      "explore_params": {}
+    }
+  ],
+  "return_area": "",
+  "created_at": "",
+  "updated_at": ""
+}

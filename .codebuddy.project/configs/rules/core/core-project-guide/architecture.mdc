@@ -37,11 +37,13 @@ ok-script-app-pro/
 │   └── images/              # 测试用图片
 ├── docs/                    # MkDocs 文档源（中英双语，en/ 为英文）
 ├── i18n/{zh_CN,en_US}/LC_MESSAGES/   # 翻译文件
-├── assets/                  # coco_annotations.json + images/（模板匹配资源）
+├── assets/                  # coco_annotations.json + images/ + scenes/（模板匹配与场景库）
 ├── icons/                   # 应用图标（icon.png）
 ├── configs/                 # 运行时用户配置（git 忽略）
-├── cache/ logs/ screenshots/ ok_tasks/   # 运行时产物（git 忽略）
-├── ok_templates/            # 模板编辑区：原始截图 + 手工标注（本模板仓库 git 忽略；下游真实应用必须入库）
+├── cache/ logs/ screenshots/   # 运行时产物（git 忽略）
+├── ok_templates/            # 模板编辑区：原始截图 + 手工标注（入库；不在 deploy.txt，不进安装包）
+├── ok_scenes/               # 场景编辑区：原始帧 + 编辑态模板（入库；不在 deploy.txt，不进安装包）
+├── ok_tasks/                # 自定义任务脚本（入库；当前未加入 deploy.txt）
 ├── .github/workflows/       # CI：build.yml / docs.yml / mirrorchyan_*.yml
 ├── .codebuddy/              # 引擎（独立 Git submodule，不属本项目仓库）
 ├── .codebuddy.project/      # 引擎项目侧配置（入库）

@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "scene-0010",
+  "name": "关卡选择",
+  "features": [
+    {
+      "name": "关卡选择",
+      "kind": "ocr",
+      "mandatory": true,
+      "shape": {
+        "kind": "rect",
+        "points": [
+          [
+            0.192188,
+            0.102778
+          ],
+          [
+            0.325,
+            0.179167
+          ]
+        ],
+        "angle": 0.0
+      },
+      "threshold": 0.8,
+      "text": "关卡选择",
+      "template_file": "",
+      "mask_file": "",
+      "bg_color": null,
+      "bg_tolerance": 0,
+      "mask_shape": {
+        "kind": "none"
+      }
+    }
+  ],
+  "areas": [
+    {
+      "name": "返回",
+      "rect": [
+        0.403906,
+        0.384722,
+        0.598437,
+        0.479167
+      ],
+      "explore_probe": true,
+      "explore_return": true,
+      "explore_action": "click",
+      "explore_params": {}
+    },
+    {
+      "name": "进入关卡",
+      "rect": [
+        0.095312,
+        0.261111,
+        0.179688,
+        0.325
+      ],
+      "explore_probe": true,
+      "explore_return": false,
+      "explore_action": "double_click",
+      "explore_params": {
+        "interval": 0.08
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "images": [
+    {
+      "id": 1,
+      "file_name": "0.png",
+      "width": 1140,
+      "height": 801
+    }
+  ],
+  "annotations": [],
+  "categories": []
+}

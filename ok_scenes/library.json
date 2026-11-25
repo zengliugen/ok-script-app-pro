@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "base_width": 1280,
+  "base_height": 720,
+  "next_scene_seq": 10,
+  "next_draft_seq": 1,
+  "probe_interval": 0.1,
+  "settle_timeout": 5.0,
+  "search_order": "bfs",
+  "auto_save": true,
+  "name_with_scene_prefix": false,
+  "auto_launch": true,
+  "restart_on_incomplete": true,
+  "max_restarts": 3,
+  "restart_wait": 8.0
+}

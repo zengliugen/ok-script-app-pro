@@ -73,7 +73,7 @@
 
 | 步骤 | 命令/落点 | 校验 |
 |---|---|---|
-| 从 `.gitignore` 删掉 `ok_templates/` 整行 | `.gitignore` | `git check-ignore -v ok_templates/coco_annotations.json` 应无输出 |
+| 从 `.gitignore` 删掉 `ok_templates/` 整行（本模板已删除；旧版模板创建的项目照此处理） | `.gitignore` | `git check-ignore -v ok_templates/coco_annotations.json` 应无输出 |
 | 确认文件进入索引 | `git add ok_templates` | `git ls-files ok_templates \| wc -l` 大于 0 |
 | 确认不进发布包 | `deploy.txt` | `grep -c ok_templates deploy.txt` 应为 0 |
 | 打测试 tag 后核对更新库 | 更新库顶层结构 | 不应出现 `ok_templates` 目录 |

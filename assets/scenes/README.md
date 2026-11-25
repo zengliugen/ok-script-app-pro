@@ -6,7 +6,7 @@
 ## 两区结构
 
 ```text
-ok_scenes/                    # 编辑区（不入库，只在本机）
+ok_scenes/                    # 编辑区（入库，供协作；不进安装包）
 └── scene-0001/
     ├── scene.json            # 场景定义
     ├── preview.png           # 遮罩后的基准截图
