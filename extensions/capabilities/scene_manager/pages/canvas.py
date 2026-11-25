@@ -334,6 +334,7 @@ class SceneCanvas(QWidget):
             默认取景为「整幅进视口」。弹窗改完一个框会重画底图，那种情况必须传
             `keep_view=True`——底图没换，没有理由重置视图。
         """
+        had_image = self._image is not None and not self._image.isNull()
         self._image = image
         self._items = {}
         self._order = []
@@ -347,7 +348,10 @@ class SceneCanvas(QWidget):
             self._offset = QPointF(0, 0)
         else:
             self._recalc_fit_scale()
-            if keep_view and self._scale > 0:
+            # keep_view 只在「已有底图」时有意义：首次载入时 _scale 还是初始 1.0，
+            # 而布局可能先于底图完成（CI 上稳定如此），必须按当前 fit 初始化，
+            # 否则 _scale 停在 1.0、图像铺出视口。
+            if keep_view and had_image and self._scale > 0:
                 self._offset = self._clamp_offset(self._offset, self._scale)
             else:
                 self._scale = self._fit_scale

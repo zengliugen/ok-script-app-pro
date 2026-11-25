@@ -886,6 +886,14 @@ class TestSceneEditorDialog(unittest.TestCase):
         self.assertLessEqual(canvas._image.width() * canvas.zoom_scale(), canvas.width() + 1)
         self.assertLessEqual(canvas._image.height() * canvas.zoom_scale(), canvas.height() + 1)
 
+        # 覆盖 CI 上的真实时序：resize 已处理完（此时还没有底图），底图随后以
+        # keep_view=True 载入。首次载入没有旧视图可保留，必须按当前 fit 初始化，
+        # 不能停在 1.0。
+        image = canvas._image
+        canvas.set_image(None)
+        canvas.set_image(image, keep_view=True)
+        self.assertAlmostEqual(canvas.zoom_scale(), canvas.fit_scale(), places=6)
+
     def test_hover_box_uses_size_all_cursor(self):
         """悬停在框体上光标是四向箭头，与标注编辑器一致。
 
