@@ -791,10 +791,19 @@ class SceneCanvas(QWidget):
         super().resizeEvent(event)
         if self._image is None or self._image.isNull():
             return
+        previous_fit = self._fit_scale
         self._recalc_fit_scale()
-        if self._scale < self._fit_scale:
+        # 两种情况都回到「适配」：
+        #   1. resize 前正处于适配（含 set_image 早于布局、旧 fit 与 scale 同为 1.0）——
+        #      视口变小时 fit 会下降，只判 `scale < fit` 会让图铺出视口；
+        #   2. scale 低于 fit——`keep_view=True` 的首次载入会留下初始 1.0，
+        #      低于 fit 属非法状态，必须抬到 fit。
+        # 其余情况（用户已手动放大）保持倍率，只重夹偏移。
+        if abs(self._scale - previous_fit) < 1e-6 or self._scale < self._fit_scale:
             self._scale = self._fit_scale
-        self._offset = self._clamp_offset(self._offset, self._scale)
+            self._offset = self._centered_offset(self._scale)
+        else:
+            self._offset = self._clamp_offset(self._offset, self._scale)
         self.update()
         self.zoom_changed.emit(self._scale)
 

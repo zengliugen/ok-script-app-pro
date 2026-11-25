@@ -2051,8 +2051,18 @@ class TestSceneEditorDialog(unittest.TestCase):
         for _ in range(6):
             self.app.processEvents()
         list_widget = dialog.feature_list
-        # 造一条必然超出单行宽度的摘要（与真实最长摘要同构）
-        long_summary = "Template · Required · 0,69→34,76 · BG 48,48,48±4"
+        metrics = list_widget.fontMetrics()
+        viewport = list_widget.viewport().width()
+        self.assertGreater(viewport, 0, "测试环境异常：视口宽度为 0")
+        # 造一条必然超出单行宽度的摘要（与真实最长摘要同构）。不能写死一段文本：
+        # 不同字体的字宽差异足以让同一段文字在 CI 上比视口窄（实测 255px vs
+        # 276px），断言会变成「测试数据不够长」而不是验证折行。按实际字体度量补足。
+        base = "Template · Required · 0,69→34,76 · BG 48,48,48±4"
+        long_summary = base
+        for _ in range(10):
+            if metrics.horizontalAdvance(long_summary) > viewport:
+                break
+            long_summary += " · " + base
         list_widget.clear()
         dialog._append_item(list_widget, "靶场入口-色卡", long_summary)
         dialog._fit_list_heights()
@@ -2060,8 +2070,6 @@ class TestSceneEditorDialog(unittest.TestCase):
             self.app.processEvents()
 
         item = list_widget.item(0)
-        metrics = list_widget.fontMetrics()
-        viewport = list_widget.viewport().width()
         single_line_width = metrics.horizontalAdvance(long_summary)
         self.assertGreater(
             single_line_width,
