@@ -38,7 +38,8 @@ def _apply_patches():
     """装载 extensions/patches/ 下的全部 patch。
 
     每个 patch 模块需提供 apply() 函数，且内部必须断言目标符号存在。
-    当前无 patch——优先使用扩展点，patch 是最后手段。
+    新增 patch 后在此按需 import 并调用——patch 是最后手段，优先使用扩展点。
     """
-    # 无 patch 时为空实现；新增 patch 后在此按需 import 并调用
-    return
+    from extensions.patches import main_window_tab_section
+
+    main_window_tab_section.apply()

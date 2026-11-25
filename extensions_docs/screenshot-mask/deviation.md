@@ -516,9 +516,10 @@ Game 分区」，跨分区不存在「模板之下」的位置。
 （`registry.CAPABILITIES` 中 screenshot_mask 排在 scene_manager 之前），分组内按注册
 顺序排列，因此页签落在「场景管理」前面。
 
-**原因**：上游 `MainWindow._tab_section` 已支持页签用 `section` 属性自选分组
-（场景管理页签即按此挂到 Develop 分区），「自定义页签只能落在 Game 分区」这个前提
-已不成立。语义上遮罩只在配置期调、运行时完全不碰，与场景管理同属工具类页面，
+**原因**：分组改写由项目 patch `extensions/patches/main_window_tab_section.py` 提供——上游
+`MainWindow` 把 `custom_tabs` 硬编码到 Game 分区，没有声明式分组；「自定义页签只能落在
+Game 分区」的前提之所以不成立，是因为项目自己接管了这一处（详见 #17 对「上游已支持」这一
+错误前提的更正）。语义上遮罩只在配置期调、运行时完全不碰，与场景管理同属工具类页面，
 放「开发」比放「游戏」更贴合实际用法。
 
 **影响**：
@@ -566,3 +567,41 @@ Game 分区」，跨分区不存在「模板之下」的位置。
   `test_frame_paints_to_canvas_edge`、`test_buttons_reset_view_keeps_pan_bounds`；
   新增 `test_background_follows_theme` 兜住底色回归（深灰 `#121214`）。
 - 只改画布与预览层，不碰几何层、处理器与配置项。
+
+---
+
+## #17 页签分组改由项目 patch 提供，修正「上游已支持」的错误前提
+
+| 字段 | 值 |
+|---|---|
+| 日期 | 2026-11-25 |
+| 类型 | 问题修复 |
+
+**触发场景**：发布 `v0.0.2-alpha.5` 后走安装路径，截图遮罩与场景管理页签都落在「游戏」分组，
+开发环境却正常。
+
+**原计划**：见 #15——`ScreenshotMaskTab` / `SceneManagerTab` 声明 `section = "develop"`，
+认为上游 `MainWindow._tab_section` 会读取该属性。
+
+**实际做法**：
+
+1. 新增 `extensions/patches/main_window_tab_section.py`，包装 `MainWindow.add_page`：
+   页面声明了合法 `section` 时改写传入的分组，未声明或声明非法值时保持原值；
+2. 在 `extensions/bootstrap.py` 的 `_apply_patches()` 中接线；
+3. 恢复 `.venv` 中被手工改过的 `ok/ui/qt/MainWindow.py`（删去 `_tab_section`），
+   让开发环境与发布环境走同一条路径。
+
+**原因**：#15 的判断依据不成立。上游 `ok-script` 3.0.0b3 与主分支的 `MainWindow`
+都没有 `_tab_section`，`custom_tabs` 的装配循环把分区硬编码为 `SECTION_GAME`；
+开发环境的「正常」来自 `.venv` 里针对该文件的手工改动（`inline_ok_requirements`
+只内联 PyPI 包原文，见 `.github/workflows/build.yml`），这个改动从未进入发布链。
+逐文件比对后，开发环境与安装版的 `ok` 库唯一差异恰好就是这一个文件。
+
+**影响**：
+
+- 页签分组不再依赖 site-packages 是否被手工改过，安装版与源码运行行为一致。
+- 上游若在未来版本原生支持 `_tab_section`，patch 自动让位，不重复包装。
+- 新增 `extensions_tests/TestMainWindowTabSection.py` 覆盖分组判据、参数透传、
+  真实框架替换、幂等与让位分支。
+- 后续升级 `ok-script` 时若 `MainWindow.add_page` 改名，patch 会在启动时抛错并指名，
+  不会静默退回「全挂游戏分组」。

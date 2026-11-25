@@ -64,9 +64,9 @@ class SceneManagerTab(CustomTab):
         self._explore_task = None
         self._build_ui()
 
-    # 挂到「开发」分组。框架默认把 custom_tabs 全挂到「游戏」分组，而
-    # `ok.ui.qt.MainWindow._tab_section` 支持页签自己声明分组——场景配置只在
-    # 配置期用、运行时完全不碰，放在「游戏」会让普通用户误以为它参与日常流程。
+    # 挂到「开发」分组。框架默认把 custom_tabs 全挂到「游戏」分组，分组由项目的
+    # `extensions/patches/main_window_tab_section.py` 按页签的 `section` 属性改写——
+    # 场景配置只在配置期用、运行时完全不碰，放在「游戏」会让普通用户误以为它参与日常流程。
     section = "develop"
 
     @property

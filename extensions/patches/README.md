@@ -17,4 +17,9 @@ patch 是最后手段。新增 patch 前必须确认规则 `project-extension-ca
 
 ## 当前状态
 
-无 patch。
+| 文件 | 目标 | 为什么要 patch |
+|---|---|---|
+| `main_window_tab_section.py` | `ok.ui.qt.MainWindow.add_page` | `custom_tabs` 的装配循环把分区硬编码为 `SECTION_GAME`，config 无可注册的分组字段；`MainWindow` 由框架内部构造，无法子类化替换；`add_page` 不派发钩子。四条路径只剩 patch 可行，详见模块 docstring |
+
+`main_window_tab_section.py` 在上游原生支持（模块出现 `_tab_section`）时自动让位，
+`ok-script` 升级后若 `add_page` 改名会在启动时抛错并指名，不会静默退回「全挂游戏分组」。

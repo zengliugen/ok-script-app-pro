@@ -665,8 +665,9 @@ class ScreenshotMaskTab(CustomTab):
 
     icon = "image"
 
-    # 挂到「开发」分组。框架默认把 custom_tabs 全挂到「游戏」分组，而遮罩只在
-    # 配置期调、运行时完全不碰，放在「游戏」会让普通用户误以为它参与日常流程。
+    # 挂到「开发」分组。框架默认把 custom_tabs 全挂到「游戏」分组，分组由项目的
+    # `extensions/patches/main_window_tab_section.py` 按页签的 `section` 属性改写——
+    # 遮罩只在配置期调、运行时完全不碰，放在「游戏」会让普通用户误以为它参与日常流程。
     # 分组内的先后由 `registry.CAPABILITIES` 的注册顺序决定——本能力排在
     # scene_manager 之前，因此页签落在「场景管理」前面。
     section = "develop"
