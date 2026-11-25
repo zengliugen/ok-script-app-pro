@@ -21,6 +21,7 @@
 - 声明 `permissions: contents: write`，否则默认只读的 `GITHUB_TOKEN` 无法创建 Release（报 403 `Resource not accessible by integration`）。
 - 产物共 4 个：两个 profile 安装包（`China`/`Global`，名称带版本号如 `ok-script-app-pro-win32-China-setup-1.1.3.exe`）、`ok-script-app-pro-win32-online-setup-<版本>.exe`（在线安装包）与 `ok-script-app-pro-win32.zip`（免安装压缩包）。ok-script 3 移除了 Web 前端，`pyappify.yml` 不再有 `Web` profile。
 - 更新日志使用本次 tag 的简要说明，不依赖同步步骤的输出。
+- 预发布 tag（`-alpha` / `-beta` / `-rc`）会自动标记为 GitHub **Pre-release**，不占用仓库首页的 Latest。
 
 构建约需 20 分钟，主要耗时在 PyAppify 的 Tauri/Rust 全量编译（约 18 分钟），GitHub Actions 未对该过程做缓存。如需加速，可以在 `pyappify-action` 步骤加 `use_release` 输入复用已构建的 launcher，但前提是本项目未改动图标与 `pyappify.yml`。
 

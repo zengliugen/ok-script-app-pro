@@ -43,7 +43,7 @@ entries:
 
   - path: .github/workflows/build.yml
     kind: M
-    reason: 需 contents write 权限创建 Release；作者改为本项目；下载链接与产物名改本项目；保留并配置上游 partial-sync-repo 步骤（repos 指向本项目更新库、sync_list 为 deploy.txt、gitignore_file 为 .update_repo_gitignore），由 CI 在更新库创建同名 tag；测试步骤改为调用 run_tests.ps1（统一收集逻辑，避免 CI 与本地漂移）
+    reason: 需 contents write 权限创建 Release；作者改为本项目；下载链接与产物名改本项目；保留并配置上游 partial-sync-repo 步骤（repos 指向本项目更新库、sync_list 为 deploy.txt、gitignore_file 为 .update_repo_gitignore），由 CI 在更新库创建同名 tag；预发布 tag 自动标记 Pre-release，避免占用 Latest；测试步骤改为调用 run_tests.ps1（统一收集逻辑，避免 CI 与本地漂移）
     method: necessary
     authorization: 用户明确授权
 

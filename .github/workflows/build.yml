@@ -127,6 +127,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           draft: false
+          # 预发布 tag（alpha/beta/rc）标记为 Pre-release：GitHub 的 Latest 只指向正式版，
+          # 避免用户在仓库首页被引导到不稳定的测试包。
+          prerelease: ${{ contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
           body: |
             ###  更新日志
               本次发布 ${{ github.ref_name }}

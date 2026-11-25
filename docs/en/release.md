@@ -19,6 +19,7 @@
 - `permissions: contents: write` is declared; without it the default read-only `GITHUB_TOKEN` cannot create a release and fails with 403 `Resource not accessible by integration`.
 - Four artifacts are produced: one installer per profile (`China`/`Global`, named with the version such as `ok-script-app-pro-win32-China-setup-1.1.3.exe`), `ok-script-app-pro-win32-online-setup-<version>.exe`, and `ok-script-app-pro-win32.zip`. ok-script 3 removed the web frontend, so `pyappify.yml` no longer has a `Web` profile.
 - The release body uses a short note for the pushed tag rather than sync-step outputs.
+- Prerelease tags (`-alpha` / `-beta` / `-rc`) are automatically marked as GitHub **Pre-release** and never take the repository's Latest slot.
 
 A build takes roughly 20 minutes, dominated by PyAppify's full Tauri/Rust compilation (~18 minutes), which GitHub Actions does not cache. To speed it up, add the `use_release` input to the `pyappify-action` step to reuse a prebuilt launcher, provided the project has not changed its icons or `pyappify.yml`.
 
