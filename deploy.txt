@@ -1,4 +1,5 @@
 src
+extensions
 ok
 main.py
 main_debug.py

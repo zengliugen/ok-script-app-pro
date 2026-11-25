@@ -82,18 +82,18 @@ python -m unittest tests.TestMain
 
 ## 4. 模板资源的处理（下游应用必读）
 
-本节只对**基于本模板开发的下游真实应用**适用。当前模板仓库自身保持 `ok_templates/` 不入库，下游应用则必须把它纳入版本库。
+本节适用于**基于本模板开发的下游真实应用**。本仓库已把 `ok_templates/` 入库（供协作），但 `deploy.txt` 不含它，因此不会进安装包；下游应用若基于旧版模板（仍忽略该目录），按下面的方法入库。
 
 ### 两组目录，性质完全不同
 
-| 目录 | 内容 | 可否再生 | 下游是否入库 |
+| 目录 | 内容 | 可否再生 | 是否入库 |
 |---|---|---|---|
-| `ok_templates/` | 原始截图 + 手工标注 `coco_annotations.json` | **不可再生** | **必须入库** |
+| `ok_templates/` | 原始截图 + 手工标注 `coco_annotations.json` | **不可再生** | **必须入库**（本仓库已入库） |
 | `assets/templates/` | 由标注裁剪出的特征图（Split 模式产物） | 可由源图重新生成 | 建议入库 |
 
 `ok_templates/` 是编辑区：在界面「模板」页签里从这张原始截图框选区域、命名特征、反复调整。`assets/templates/` 是产物区：点「保存」后生成的裁剪图，运行时由 `config['template_matching']['template_folder']` 加载。
 
-### 为什么下游必须把 `ok_templates/` 入库
+### 为什么必须把 `ok_templates/` 入库
 
 - **标注不可再生**：`coco_annotations.json` 里的每个类名和 bbox 都是人工框选的结果，丢失后只能重做。
 - **截图不可再生**：`generate_templates` 需要读取原始截图才能裁剪，源图缺失时直接抛 `ValueError`（`ok/feature/FeatureSet.py`）。换一台机器或换一个协作者，没有源图就永远无法重新导出。
@@ -101,7 +101,7 @@ python -m unittest tests.TestMain
 
 ### 入库方法
 
-删除 `.gitignore` 中的 `ok_templates/` 整行即可。
+本仓库已删除根 `.gitignore` 中的 `ok_templates/` 整行；从旧版模板创建的项目照此删除即可。
 
 **不要**改成 `ok_templates/*` 再加 `!ok_templates/xxx` 反选——目录级忽略会让 git 停止遍历该目录，深层反选实测无效：
 
@@ -110,16 +110,17 @@ ok_templates/
 !ok_templates/coco_annotations.json    # 无效：文件仍被忽略
 ```
 
-### 入库后必须配置发布过滤
+### 入库后必须确认发布过滤
 
 `ok_templates/` 入库是为了协作，不是为了分发。用户安装包里不需要原始截图，而且体积可观（成熟项目可达数百 MB）。
 
 **关键事实：PyAppify 不读 `.gitignore`。** 它用 libgit2 克隆指定 tag 的完整 tree 再打包，`gitignore` 只影响 `git add`，不影响已提交内容的检出。其 Rust 源码中没有任何忽略规则处理逻辑，全链路唯一的排除项是 `__pycache__`。
 
-所以下游应用发布前必须做两件事：
+本模板已经接好过滤链路（`build.yml` 的 `Synchronize repositories` + `deploy.txt` 白名单 + 指向更新库的 `git_url`）。下游应用要做的是**换成自己的归属**，不要沿用本项目的更新库：
 
-1. **建立独立更新仓库**，在 `build.yml` 用 `ok-oldking/partial-sync-repo` 按 `deploy.txt` 白名单同步；
-2. **把 `pyappify.yml` 各 profile 的 `git_url` 指向更新库**，而不是源码仓库。
+1. 新建自己的更新库，把 `build.yml` 的 `repos` 与 secret 换成自己的；
+2. 把 `pyappify.yml` 各 profile 的 `git_url` 改成同一个更新库；
+3. 确认 `deploy.txt` 不含 `ok_templates`、`ok_scenes`、`ok_tasks`（以及 `tests`、`docs`、`.github`），且包含本应用的全部运行时代码。
 
 白名单是正向列举，`deploy.txt` 里没有 `ok_templates` 就天然被挡在包外。同时用 `.update_repo_gitignore` 兜住构建产物与日志。
 
@@ -132,17 +133,19 @@ ok_templates/
 「场景管理」能力把采集到的场景存在 `assets/scenes/`，一场景一目录
 （`scene.json` + `preview.png` + `templates/`），库级元数据在 `library.json`。
 
-**模板项目默认忽略这些数据**（`assets/scenes/.gitignore` 只放行 `.gitkeep`、
-`README.md` 与忽略文件本身）。原因：场景是「某台机器上某一刻的画面」，随游戏版本、
-分辨率与个人进度变化；即使 `preview.png` 已按全局截图遮罩脱敏，对其他人也没有意义，
-留在模板仓库里只会随污染增长。
+本仓库已按**随项目分发**处理：`assets/scenes/` 的正式区（`library.json`、
+`scene-*/`）随仓库提交，并随安装包分发（`assets` 在 `deploy.txt` 白名单内）。
+截图已按全局遮罩脱敏，模板只覆盖特征所在的小块。
 
-新项目按游戏采集并希望**随项目分发**场景库时：
+唯一仍忽略的是 `_drafts/`：自动探索产生的中间产物，人工确认后才进正式区，
+不入库。
 
-1. 打开 `assets/scenes/.gitignore`，删掉 `*` 及其后的三条反选规则，只保留注释；
+如果从旧版模板创建、场景库仍处于忽略状态，按以下步骤开启：
+
+1. 打开 `assets/scenes/.gitignore`，删掉 `*` 及其后的三条反选规则，改为只保留 `_drafts/`；
 2. 确认 `library.json` 的 `base_width` / `base_height` 与目标设备的采集分辨率一致；
 3. 场景库入库后，`preview.png` 会随仓库分发。它已走全局遮罩（默认右下角
    13% × 2.5%），若你的游戏 UID 位置不同，先在「截图遮罩」页调整遮罩再采集。
 
 反过来，若项目已经入库过场景库、后续想改为不入库，先 `git rm -r --cached assets/scenes`
-清掉索引（保留本地文件），再恢复上述忽略规则。
+清掉索引（保留本地文件），再恢复整目录忽略规则。

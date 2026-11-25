@@ -55,10 +55,10 @@ The output is written to `site/`. `.github/workflows/docs.yml` can publish it au
 
 - Upstream template: [ok-oldking/ok-script-app](https://github.com/ok-oldking/ok-script-app)
 - This project: extensions are developed on top of the template and track upstream through the `upstream` remote
-- Release and updates: installers and the update source point at this repository
+- Release and updates: installers are published from this repository, and the update source points at the dedicated `ok-script-app-pro-update` repository
 
 For what this repository changes relative to upstream, why each change is needed, and how the change
-surface is kept from growing, see **[Upstream change notes](UPSTREAM_CHANGES.md)** (22 files modified,
+surface is kept from growing, see **[Upstream change notes](UPSTREAM_CHANGES.md)** (26 files modified,
 0 deleted).
 
 ## Credits

@@ -50,11 +50,12 @@ profile，然后重新编译对应的 `requirements.txt` 或 `requirements-web.t
 
 ## 更新仓库
 
-本项目已将 `pyappify.yml` 的三个 profile 全部指向源码仓库 `https://github.com/zengliugen/ok-script-app-pro.git`，早期开发阶段无需维护独立更新仓库。
+`pyappify.yml` 的两个 profile 均指向独立更新库
+`https://github.com/zengliugen/ok-script-app-pro-update.git`，安装包的自动更新从这里拉取。
 
-- 应用名称：`ok-script-app-pro`。
-- `git_url`：源码仓库，安装包的自动更新直接从这里拉取。
-- 后续如需减轻用户更新体积，可以另建轻量更新仓库，并同步修改 `.github/workflows/build.yml` 的同步步骤。
+- 更新库由 CI 的 `Synchronize repositories` 步骤按 `deploy.txt` 白名单生成，源码仓库只负责触发构建与托管 Release。
+- `keep_releases: 30` 限制更新库保留的发行 tag 数量，避免用户首次克隆拉取全部历史。
+- 下游应用使用本模板时，**必须换成自己的更新库地址与 `OK_GH` secret**，不要沿用本项目地址。
 
 ## 上游同步后的检查
 

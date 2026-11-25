@@ -68,10 +68,10 @@ python -m mkdocs build --strict
 
 - 上游模板：[ok-oldking/ok-script-app](https://github.com/ok-oldking/ok-script-app)
 - 本项目：扩展能力在模板之上开发，通过 GitHub `upstream` 远端同步上游更新
-- 发布与更新：安装包与更新源均指向本项目仓库
+- 发布与更新：安装包发布在本项目仓库，更新源指向独立的更新库 `ok-script-app-pro-update`
 
 本项目对上游做了哪些修改、每处为什么改、怎样防止修改面扩大，见
-**[本仓库对上游的修改说明](UPSTREAM_CHANGES.md)**（共 22 个文件被修改，0 个被删除）。
+**[本仓库对上游的修改说明](UPSTREAM_CHANGES.md)**（共 26 个文件被修改，0 个被删除）。
 
 ### 首次检出
 

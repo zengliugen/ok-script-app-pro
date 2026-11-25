@@ -50,11 +50,12 @@ Replace `icons/icon.png` and `icons/icon.ico`. Keeping the filenames avoids extr
 
 ## Update Repositories
 
-All three profiles in `pyappify.yml` point at the source repository `https://github.com/zengliugen/ok-script-app-pro.git`, so no separate update repository is needed during early development.
+Both profiles in `pyappify.yml` point at the dedicated update repository
+`https://github.com/zengliugen/ok-script-app-pro-update.git`, which the installer's auto-update pulls from.
 
-- Application name: `ok-script-app-pro`.
-- `git_url`: the source repository, which the installer's auto-update pulls from.
-- To reduce update download size later, create a lightweight update repository and adjust the sync step in `.github/workflows/build.yml`.
+- The update repository is produced by the CI `Synchronize repositories` step from the `deploy.txt` whitelist; the source repository only triggers builds and hosts releases.
+- `keep_releases: 30` bounds the number of release tags kept in the update repository, so a first clone does not fetch the entire history.
+- Downstream apps built from this template **must switch to their own update repository and `OK_GH` secret** instead of reusing this project's address.
 
 ## Checks After Syncing Upstream
 

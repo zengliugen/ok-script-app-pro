@@ -15,7 +15,7 @@ It is not a finished automation tool for a specific game. It keeps the upstream 
 
 ## Relationship to Upstream
 
-This project tracks [ok-script-app](https://github.com/ok-oldking/ok-script-app) through the `upstream` remote: upstream provides the template skeleton and shared capabilities, while extensions are developed here and the installers and update source point at this repository.
+This project tracks [ok-script-app](https://github.com/ok-oldking/ok-script-app) through the `upstream` remote: upstream provides the template skeleton and shared capabilities, while extensions are developed here; installers are released from this repository and the update source points at a dedicated update repository.
 
 ## Demo
 

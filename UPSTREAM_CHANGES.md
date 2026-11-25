@@ -15,13 +15,13 @@
 
 ## 修改面总览
 
-相对上游锚点 `f134d07`，共 **22 个文件被修改、0 个被删除**，全部为 `M`（修改）状态。
+相对上游锚点 `c3f9e193`，共 **26 个文件被修改、0 个被删除**，全部为 `M`（修改）状态。
 
 | 类别 | 数量 | 代表文件 | 性质 |
 |---|---|---|---|
 | 接线点 | 1 | `src/config.py` | 唯一侵入代码逻辑处，只有一行 |
-| 构建与发布必需 | 8 | `pyproject.toml`、`pyappify.yml`、`run_tests.ps1`、4 个 workflow、`.gitignore` | 不改就无法以本项目名义构建/发布 |
-| 文档与站点 | 13 | `README.md`、`README_en.md`、`mkdocs.yml`、`docs/**` | 项目名与仓库地址对齐，无代码行为 |
+| 构建与发布必需 | 10 | `pyproject.toml`、`requirements.txt`、`pyappify.yml`、`deploy.txt`、`run_tests.ps1`、4 个 workflow、`.gitignore` | 不改就无法以本项目名义构建/发布 |
+| 文档与站点 | 15 | `README.md`、`README_en.md`、`mkdocs.yml`、`docs/**` | 项目名与仓库地址对齐，无代码行为 |
 
 ### 唯一的接线点
 

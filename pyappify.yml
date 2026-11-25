@@ -1,9 +1,14 @@
 name: "ok-script-app-pro"
 uac: true
 icon: "icons/icon.png"
+# 只保留最近 30 个发行 tag：更新库按 tag 浅克隆，历史过大会拖慢首次安装与更新。
+keep_releases: 30
+# 更新库：用户安装与自动更新从这里拉取，只含 deploy.txt 白名单内的运行文件。
+# 源码仓库只负责触发构建与托管 Release，不再作为更新源。
+# 下游应用使用本模板时，必须把两个 profile 的 git_url 换成自己的更新库。
 profiles:
   - name: "China"
-    git_url: "https://github.com/zengliugen/ok-script-app-pro.git"
+    git_url: "https://github.com/zengliugen/ok-script-app-pro-update.git"
     admin: true
     main_script: "main.py"
     requires_python: "3.12"
@@ -14,7 +19,7 @@ profiles:
     # PYTHONPATH: "your/default/path" # Optional, will be "" if missing
 
   - name: "Global"
-    git_url: "https://github.com/zengliugen/ok-script-app-pro.git"
+    git_url: "https://github.com/zengliugen/ok-script-app-pro-update.git"
     main_script: "main.py"
     requirements: "requirements.txt"
     pip_args: "--no-deps"

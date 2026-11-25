@@ -19,14 +19,14 @@
 
 ## 当前修改面
 
-相对上游锚点 `f134d07`，共 **22 个文件被修改、0 个被删除**，全部为 `M`（修改）状态。
+相对上游锚点 `c3f9e193`，共 **26 个文件被修改、0 个被删除**，全部为 `M`（修改）状态。
 按性质分三类：
 
 | 类别 | 数量 | 含义 |
 |---|---|---|
 | 接线点 | 1 | 扩展生效的唯一入口，改动只有一行 |
-| 构建与发布必需 | 8 | 不改就无法以本项目名义构建/发布 |
-| 文档与站点 | 13 | 项目名、仓库地址、链接对齐 |
+| 构建与发布必需 | 10 | 不改就无法以本项目名义构建/发布 |
+| 文档与站点 | 15 | 项目名、仓库地址、链接对齐 |
 
 ### 一、接线点（1 个）
 
@@ -42,27 +42,29 @@
 **该文件相对上游只允许这一行差异。** 任何其他 `config` 改动都必须迁到
 `extensions/overrides.py`，否则会持续侵蚀这一底线。
 
-### 二、构建与发布必需（8 个）
+### 二、构建与发布必需（10 个）
 
 不改就无法以「ok-script-app-pro」的身份安装与发布。
 
 | 文件 | 改动原因 |
 |---|---|
 | `pyproject.toml` | 项目名改为 `ok-script-app-pro`，打包与依赖安装均依赖该名称 |
-| `pyappify.yml` | 打包配置指向本项目仓库与产物名，新增 Web profile |
-| `.github/workflows/build.yml` | Release 需 `contents: write`；作者改为本项目；下载链接与产物名改本项目；测试步骤复用 `run_tests.ps1` |
+| `requirements.txt` | 由 `pyproject.toml` 编出的锁定文件，随场景管理能力新增 `networkx` |
+| `pyappify.yml` | 打包配置指向本项目仓库与产物名；两个 profile 的 `git_url` 指向独立更新库，并用 `keep_releases: 30` 限制更新库历史 |
+| `deploy.txt` | 新增 `extensions`：本项目的运行时代码在该目录，沿用上游清单会打出启动即 `ImportError` 的包 |
+| `.github/workflows/build.yml` | Release 需 `contents: write`；作者改为本项目；下载链接与产物名改本项目；按 `deploy.txt` 白名单把运行文件同步到更新库；测试步骤复用 `run_tests.ps1` |
 | `.github/workflows/docs.yml` | 文档站部署配置对齐本项目仓库 |
 | `.github/workflows/mirrorchyan_release_note.yml` | Mirror酱渠道配置对齐本项目 |
 | `.github/workflows/mirrorchyan_uploading.yml` | Mirror酱上传配置对齐本项目，改为按仓库变量开关 |
 | `run_tests.ps1` | 上游只收集 `tests/*.py` 一层；本项目有 `tests/` 与 `extensions_tests/` 两个测试根，改为遍历多根递归收集 |
-| `.gitignore` | 补充忽略运行时缓存目录 |
+| `.gitignore` | 补充忽略运行时缓存与 `*.bak`；取消 `ok_templates/`、`ok_scenes/`、`ok_tasks/` 的整目录忽略，协作资源入库但不在 `deploy.txt` |
 
-### 三、文档与站点（13 个）
+### 三、文档与站点（15 个）
 
-纯文案对齐：项目名、仓库地址、链接、导航条目。不涉及代码行为。
+纯文案对齐：项目名、仓库地址、链接、导航条目与发布模式说明。不涉及代码行为。
 
 - `mkdocs.yml`、`README.md`、`README_en.md`
-- `docs/` 下 5 个中文页 + `docs/en/` 下 5 个英文页
+- `docs/` 与 `docs/en/` 下的对应页面（更新源已拆分为独立更新库）
 
 改动内容统一为：把上游的项目名与仓库链接替换为本项目，并在导航中加入扩展开发指南条目。
 
@@ -74,7 +76,6 @@
 |---|---|
 | `src/tasks/`、`src/ui/`、`src/globals.py` | 上游代码区，不新增文件、不修改。项目新增代码写 `extensions/` |
 | `tests/TestMain.py` | 上游行为基线测试，**不得修改**，用于判断上游行为是否被破坏 |
-| `docs/tasks.md` | 上游任务开发文档，未改动 |
 | `.codebuddy/` | 独立 Git 仓库（submodule），不属于上游，改动走引擎仓库 |
 | `.codebuddy.project/` | 本项目自有配置，上游不存在 |
 | `extensions/`、`extensions_tests/` | 本项目自有代码与测试，上游不存在 |

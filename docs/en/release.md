@@ -14,27 +14,27 @@
 `.github/workflows/build.yml` has been adapted for this project:
 
 - Git identity is `zengliugen`.
-- The CNB and dedicated update-repository `Sync Repositories` step was removed, so builds no longer need template secrets such as `CNB_TOKEN` or `OK_GH`.
+- The `Synchronize repositories` step is kept: it syncs runtime files to the dedicated update repository `ok-script-app-pro-update` per the `deploy.txt` whitelist and creates the same tag there. It requires the `OK_GH` secret (a PAT with `contents: write` on the update repository); missing or insufficient credentials fail the step, so the build turns red.
 - `pyappify-action` is pinned to `version: v1.2.3` to keep build results stable against upstream changes, and `add_version_name: true` appends the release version to installer filenames.
 - `permissions: contents: write` is declared; without it the default read-only `GITHUB_TOKEN` cannot create a release and fails with 403 `Resource not accessible by integration`.
 - Four artifacts are produced: one installer per profile (`China`/`Global`, named with the version such as `ok-script-app-pro-win32-China-setup-1.1.3.exe`), `ok-script-app-pro-win32-online-setup-<version>.exe`, and `ok-script-app-pro-win32.zip`. ok-script 3 removed the web frontend, so `pyappify.yml` no longer has a `Web` profile.
-- The release body uses a short note for the pushed tag instead of sync-step outputs.
+- The release body uses a short note for the pushed tag rather than sync-step outputs.
 
 A build takes roughly 20 minutes, dominated by PyAppify's full Tauri/Rust compilation (~18 minutes), which GitHub Actions does not cache. To speed it up, add the `use_release` input to the `pyappify-action` step to reuse a prebuilt launcher, provided the project has not changed its icons or `pyappify.yml`.
 
-## Release Package Filtering (required for downstream apps)
+## Release Package Filtering
 
-This template repository enables **no** release filtering: `build.yml` has no `Synchronize repositories` step, and all three profiles in `pyappify.yml` point straight at the source repository. That leads to a fact worth understanding first.
+This repository enables release filtering: the `Synchronize repositories` step in `build.yml` copies runtime files to the dedicated update repository per the `deploy.txt` whitelist and creates the same tag there; both profiles in `pyappify.yml` point at that update repository. Filtering is required because of a fact that is easy to miss:
 
 ### PyAppify does not read `.gitignore`
 
 PyAppify clones the **full tree** of the target tag with libgit2 and packages it. `.gitignore` only affects `git add`, not the checkout of already-committed content. Its Rust sources contain no ignore-rule handling; the only exclusion in the entire pipeline is `__pycache__`.
 
-As a result, **anything committed reaches the installer**, regardless of what `.gitignore` says. The template repository is fine on this point (`ok_templates/` is ignored), but once a downstream app commits `ok_templates/` as described in [Quick Start](getting-started.md), the source screenshots go directly into the installer.
+As a result, **anything committed reaches the installer**, regardless of what `.gitignore` says. This repository commits `ok_templates/`, `ok_scenes/`, and `ok_tasks/` for collaboration but keeps them out of `deploy.txt`, so they never reach the installer; `assets/scenes/` is the runtime product area and ships with `assets`.
 
 ### Filtering relies on a whitelist, not on ignore rules
 
-`deploy.txt` and `.update_repo_gitignore` are a paired mechanism, but they only take effect once `partial-sync-repo` is wired in:
+`deploy.txt` and `.update_repo_gitignore` are a paired mechanism, and `partial-sync-repo` is wired in here:
 
 ```
 source repo --(deploy.txt whitelist)--> update repo --(git_url)--> PyAppify packaging
@@ -49,27 +49,28 @@ source repo --(deploy.txt whitelist)--> update repo --(git_url)--> PyAppify pack
 
 All four are required; missing any one breaks the filtering. The whitelist is reliable precisely because it enumerates: new directories are excluded by default, so an omission causes under-inclusion, never over-inclusion.
 
-### Downstream checklist
+### What downstream apps must do
 
-Mature apps (such as ok-wuthering-waves) provide a directly reusable pattern:
+The template already wires the filtering chain. Downstream apps must **switch it to their own ownership**, not reuse this project's update repository:
 
-1. Remove `ok_templates/` from `.gitignore` and commit it.
-2. Keep `ok_templates` **out of** `deploy.txt` (and confirm `tests`, `docs`, `.github` are absent too).
-3. Create a dedicated update repository (e.g. `xxx-update`) and configure the `CNB_TOKEN` / `OK_GH` secrets.
-4. Restore the `Synchronize repositories` step in `build.yml` with the update repository in `repos`, `sync_list: 'deploy.txt'`, and `gitignore_file: '.update_repo_gitignore'`.
-5. Point every profile's `git_url` in `pyappify.yml` at the update repository.
-6. Add a bound such as `keep_releases: 30` in `pyappify.yml` so update-repository history does not grow without limit.
+1. Confirm `ok_templates/`, `ok_scenes/`, and `ok_tasks/` are committed (already true here).
+2. Create your own update repository (e.g. `xxx-update`) and replace the `repos` entry and secret name in `build.yml` with your own (`OK_GH` holds your PAT).
+3. Point every profile's `git_url` in `pyappify.yml` at that update repository.
+4. Keep `ok_templates`, `ok_scenes`, and `ok_tasks` **out of** `deploy.txt` (and confirm `tests`, `docs`, `.github`, `.codebuddy*` are absent too), while keeping every runtime directory in it. This project adds `extensions`; dropping that line ships a package that fails at startup with `ImportError`.
+5. Keep `keep_releases: 30` in `pyappify.yml` so update-repository history does not grow without limit.
 
 **Do not put the screenshots in Git LFS.** PyAppify goes through libgit2, which does not run the LFS smudge filter: CI with `actions/checkout` and `lfs: true` gets real images, but an end-user clone receives ~130-byte pointer text files that `cv2.imread` cannot decode. The failure occurs only on user machines and is silent during the build.
 
 ### Size reference
 
-| Repository | Size | Notes |
+| Content | Size | Notes |
 |---|---|---|
-| Source repository | ~1.2 GB | Includes `ok_templates` (~900 MB), `tests`, `docs`, git history |
-| Update repository | ~145 MB | Post-whitelist, runtime content only |
+| Source repository `.git` | ~60 MB | Includes upstream history; users no longer clone it |
+| Whitelisted runtime files | ~2.2 MB / 104 files | Current `deploy.txt` list (including `assets/scenes`) |
+| Inlined ok-script + pyappify | ~8 MB | Produced by `inline_ok_requirements` during CI |
+| One update-repository snapshot | ~10 MB | Whitelist plus inlined content |
 
-A gap of more than 8x, driven mainly by source screenshots and test fixtures.
+`tests/`, `docs/`, `extensions_docs/`, the `.codebuddy` submodule, and the source history never enter the installer.
 
 ## MirrorChyan
 

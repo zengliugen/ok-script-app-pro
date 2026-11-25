@@ -1,8 +1,8 @@
 my_key.txt
-# 模板编辑区：原始截图 + 手工标注，含游戏 UID，不入库。产物在 assets/templates/
-ok_templates/
-# 场景管理编辑区：原始帧 + 编辑态模板，含游戏 UID，不入库。产物在 assets/scenes/
-ok_scenes/
+# 模板编辑区：原始截图 + 手工标注（落盘前走全局遮罩）。入库供协作，但 deploy.txt
+# 不含它，因此不会进入安装包。产物在 assets/templates/。
+# 场景管理编辑区：原始帧 + 编辑态模板（base.png 落盘前走全局遮罩）。入库供协作，
+# 但 deploy.txt 不含它，因此不会进入安装包。产物在 assets/scenes/。
 updates/
 working/
 update/
@@ -18,8 +18,9 @@ data_import
 __pycache__/
 *.msgpack
 data/
-ok_tasks/
+# 自定义任务脚本目录：随仓库入库；当前未加入 deploy.txt。
 *$py.class
+*.bak
 # 锚定到仓库根：未锚定时会匹配 .codebuddy.project/configs/（项目侧入库配置）。
 # 该目录一旦被目录级规则命中，PyAppify 复制时会整目录跳过，
 # 深层 .gitignore 的 !configs/ 反选来不及生效（不会遍历进被排除的目录）。

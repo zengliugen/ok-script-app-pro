@@ -84,18 +84,18 @@ python -m unittest tests.TestMain
 
 ## 4. Handling Template Assets (required for downstream apps)
 
-This section applies to **downstream applications built from this template**. The template repository itself keeps `ok_templates/` untracked; downstream apps must commit it.
+This section applies to **downstream applications built from this template**. This repository already commits `ok_templates/` for collaboration, but `deploy.txt` does not list it, so it never reaches the installer. Downstream apps built from an older template that still ignores the directory should commit it as described below.
 
 ### Two directories with different natures
 
-| Directory | Contents | Regenerable | Commit downstream |
+| Directory | Contents | Regenerable | Commit |
 |---|---|---|---|
-| `ok_templates/` | Original screenshots + hand-made annotations `coco_annotations.json` | **No** | **Required** |
+| `ok_templates/` | Original screenshots + hand-made annotations `coco_annotations.json` | **No** | **Required** (already committed here) |
 | `assets/templates/` | Feature crops produced from annotations (Split mode) | Yes, from source images | Recommended |
 
 `ok_templates/` is the editing area: you open the Template tab, draw boxes on a full screenshot, and name features. `assets/templates/` is the output area: the crops generated after clicking Save, loaded at runtime through `config['template_matching']['template_folder']`.
 
-### Why downstream apps must commit `ok_templates/`
+### Why `ok_templates/` must be committed
 
 - **Annotations are not regenerable.** Every category name and bbox in `coco_annotations.json` is the result of manual work.
 - **Screenshots are not regenerable.** `generate_templates` reads the source screenshot to produce crops and raises `ValueError` when it is missing (`ok/feature/FeatureSet.py`). Without committed sources, no one can re-export features.
@@ -103,7 +103,7 @@ This section applies to **downstream applications built from this template**. Th
 
 ### How to commit
 
-Delete the entire `ok_templates/` line from `.gitignore`.
+This repository has already removed the `ok_templates/` line from the root `.gitignore`; older downstream projects can do the same.
 
 Do **not** rewrite it as `ok_templates/*` plus a `!ok_templates/xxx` negation — a directory-level ignore stops git from descending into the directory, so the negation has no effect:
 
@@ -112,16 +112,17 @@ ok_templates/
 !ok_templates/coco_annotations.json    # ineffective: the file stays ignored
 ```
 
-### Configure release filtering after committing
+### Confirm release filtering after committing
 
 Committing `ok_templates/` serves collaboration, not distribution. End users do not need the source screenshots, and their size is substantial (hundreds of MB for mature projects).
 
 **Critical: PyAppify does not read `.gitignore`.** It clones the full tree of the target tag with libgit2 and packages it. `gitignore` only affects `git add`, not the checkout of already-committed content. Its Rust sources contain no ignore-rule handling at all; the only exclusion in the whole pipeline is `__pycache__`.
 
-Downstream apps therefore must do two things before releasing:
+The template already wires the filtering chain (`Synchronize repositories` in `build.yml`, the `deploy.txt` whitelist, and a `git_url` pointing at the update repository). Downstream apps must **switch it to their own ownership**, not reuse this project's update repository:
 
-1. **Create a dedicated update repository** and sync into it through `ok-oldking/partial-sync-repo` with the `deploy.txt` whitelist in `build.yml`;
-2. **Point every profile's `git_url` in `pyappify.yml` at the update repository**, not the source repository.
+1. Create your own update repository and replace the `repos` entry and secret in `build.yml` with your own;
+2. Point every profile's `git_url` in `pyappify.yml` at that update repository;
+3. Keep `ok_templates`, `ok_scenes`, and `ok_tasks` (and `tests`, `docs`, `.github`) out of `deploy.txt`, while keeping every runtime directory in it.
 
 The whitelist is a positive enumeration: anything absent from `deploy.txt` never reaches the update repository. Use `.update_repo_gitignore` to cover build outputs and logs as well.
 
@@ -135,17 +136,18 @@ The Scene Manager capability stores captured scenes under `assets/scenes/`, one
 directory per scene (`scene.json` + `preview.png` + `templates/`), with
 library-level metadata in `library.json`.
 
-**The template ignores this data by default** (`assets/scenes/.gitignore` only
-allows `.gitkeep`, `README.md`, and the ignore file itself). A scene is a
-snapshot of one machine at one moment: it varies with game version, resolution,
-and personal progress, and even though `preview.png` is masked by the global
-screenshot mask, it is meaningless to anyone else. Committing it to the template
-only makes the repository grow.
+This repository treats the library as **shipped with the project**: the formal
+area under `assets/scenes/` (`library.json`, `scene-*/`) is committed and also
+ships in the installer (the `assets` entry is in the `deploy.txt` whitelist).
+Screenshots are masked globally, and templates cover only the feature regions.
 
-To capture scenes for your own game and **ship the library with the project**:
+Only `_drafts/` stays ignored: it holds intermediate output from automatic
+exploration and is promoted to the formal area only after manual confirmation.
+
+To enable this in an older project whose scene library is still ignored:
 
 1. Open `assets/scenes/.gitignore`, delete the `*` rule and the three negation
-   rules after it, and keep only the comments.
+   rules after it, and keep only `_drafts/`.
 2. Make sure `base_width` / `base_height` in `library.json` match the capture
    resolution of your target device.
 3. Once the library is committed, `preview.png` ships with the repository. It is
@@ -154,4 +156,4 @@ To capture scenes for your own game and **ship the library with the project**:
 
 To go the other way — stop committing a library that is already tracked — run
 `git rm -r --cached assets/scenes` first (this keeps your local files), then
-restore the ignore rules above.
+restore a directory-level ignore rule.

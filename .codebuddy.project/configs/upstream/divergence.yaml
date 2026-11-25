@@ -37,13 +37,19 @@ entries:
 
   - path: pyappify.yml
     kind: M
-    reason: 打包配置指向本项目仓库与项目名，并新增 Web profile
+    reason: 打包配置指向本项目仓库与项目名；两个 profile 的 git_url 指向独立更新库 ok-script-app-pro-update——用户只克隆 deploy.txt 白名单内容，不再拉源码树与 .codebuddy 子模块；并用 keep_releases 30 限制更新库保留的发行 tag 数量，避免首次克隆拉取全部历史
     method: necessary
     authorization: 用户明确授权
 
   - path: .github/workflows/build.yml
     kind: M
-    reason: 需 contents write 权限创建 Release；作者改为本项目；下载链接与产物名改本项目；移除上游 partial-sync-repo 步骤；测试步骤改为调用 run_tests.ps1（统一收集逻辑，避免 CI 与本地漂移）
+    reason: 需 contents write 权限创建 Release；作者改为本项目；下载链接与产物名改本项目；保留并配置上游 partial-sync-repo 步骤（repos 指向本项目更新库、sync_list 为 deploy.txt、gitignore_file 为 .update_repo_gitignore），由 CI 在更新库创建同名 tag；测试步骤改为调用 run_tests.ps1（统一收集逻辑，避免 CI 与本地漂移）
+    method: necessary
+    authorization: 用户明确授权
+
+  - path: deploy.txt
+    kind: M
+    reason: 新增 extensions 条目。本项目的运行时代码在 extensions/ 下（src/config.py 末尾依赖它启动），上游模板没有该目录，沿用上游清单会打出启动即 ImportError 的包；白名单是正向列举，漏写不会在构建期报错
     method: necessary
     authorization: 用户明确授权
 
@@ -73,7 +79,7 @@ entries:
 
   - path: .gitignore
     kind: M
-    reason: 补充忽略运行时缓存目录 cache/
+    reason: 两处差异。① 补充忽略运行时缓存目录 cache/ 与通用备份文件 *.bak；② 取消 ok_templates/、ok_scenes/、ok_tasks/ 的整目录忽略——这些是协作资源，需随仓库入库，但它们不在 deploy.txt 中，不会进安装包
     method: necessary
     authorization: 用户明确授权
 
@@ -86,31 +92,31 @@ entries:
 
   - path: README.md
     kind: M
-    reason: 项目定位为上游派生的扩展项目，需说明来源与扩展约定，并引用 UPSTREAM_CHANGES.md 说明修改面
+    reason: 项目定位为上游派生的扩展项目，需说明来源与扩展约定，并引用 UPSTREAM_CHANGES.md 说明修改面；发布与更新拆分为「安装包在本仓库、更新源在独立更新库」
     method: doc
     authorization: 用户明确授权
 
   - path: README_en.md
     kind: M
-    reason: 与 README.md 保持一致的英文版本
+    reason: 与 README.md 保持一致的英文版本（含安装包与更新源的归属拆分）
     method: doc
     authorization: 用户明确授权
 
   - path: docs/index.md
     kind: M
-    reason: 首页内容对齐本项目定位
+    reason: 首页内容对齐本项目定位，并说明安装包与更新源的归属拆分
     method: doc
     authorization: 用户明确授权
 
   - path: docs/getting-started.md
     kind: M
-    reason: 三处差异。① 快速开始中的项目名与仓库链接对齐本项目；② 新增第 4 节「模板资源的处理（下游应用必读）」——说明 ok_templates 是编辑区而非产物区、为何下游必须入库、目录级忽略会使深层反选失效、入库后必须配白名单过滤、不得用 Git LFS；③ 新增第 5 节「场景库是否入库」——说明 assets/scenes/ 采集数据的归属判断与入库/恢复步骤
+    reason: 五处差异。① 快速开始中的项目名与仓库链接对齐本项目；② 新增第 4 节「模板资源的处理（下游应用必读）」——说明 ok_templates 是编辑区而非产物区、为何必须入库、目录级忽略会使深层反选失效、不得用 Git LFS；③ 该节的发布过滤要求改为「模板已接好链路，下游替换更新库归属」；④ 新增第 5 节「场景库是否入库」——说明 assets/scenes/ 的归属判断与入库/恢复步骤；⑤ 第 4/5 节改为本仓库已入库 ok_templates 与 assets/scenes，ok_scenes/ok_tasks 也不进安装包
     method: doc
     authorization: 用户明确授权
 
   - path: docs/configuration.md
     kind: M
-    reason: 配置说明中的项目名与链接对齐本项目
+    reason: 配置说明中的项目名与链接对齐本项目；「更新仓库」一节改为独立更新库模式（git_url、keep_releases 与下游替换要求）
     method: doc
     authorization: 用户明确授权
 
@@ -122,25 +128,25 @@ entries:
 
   - path: docs/release.md
     kind: M
-    reason: 两处差异。① 发布流程对齐本项目仓库与打包产物名；② 新增「发布包的过滤机制（下游应用必读）」——记录 PyAppify 不读 .gitignore、过滤只能靠 deploy.txt 白名单 + partial-sync-repo + 更新库地址三者配套，并给出下游落地清单与体积参考
+    reason: 三处差异。① 发布流程对齐本项目仓库与打包产物名；② 记录构建工作流现状（含 partial-sync-repo 启用后的 OK_GH 依赖）；③ 记录已启用的发布包过滤机制——PyAppify 不读 .gitignore、deploy.txt 白名单四要素、ok_templates/ok_scenes/ok_tasks 不入包而 assets/scenes 随包分发、下游替换清单与体积参考
     method: doc
     authorization: 用户明确授权
 
   - path: docs/en/index.md
     kind: M
-    reason: 英文首页对齐本项目定位
+    reason: 英文首页对齐本项目定位（含安装包与更新源的归属拆分）
     method: doc
     authorization: 用户明确授权
 
   - path: docs/en/getting-started.md
     kind: M
-    reason: 三处差异。① 英文快速开始对齐本项目；② 与中文版同步新增第 4 节「Handling Template Assets」，内容为下游 ok_templates 入库与发布过滤要求；③ 与中文版同步新增第 5 节「Whether the Scene Library Should Be Committed」，两语言结构保持对齐
+    reason: 五处差异。① 英文快速开始对齐本项目；② 与中文版同步新增第 4 节「Handling Template Assets」，内容为 ok_templates 入库要求；③ 该节的发布过滤要求改为「模板已接好链路，下游替换更新库归属」；④ 与中文版同步新增第 5 节「Whether the Scene Library Should Be Committed」，两语言结构保持对齐；⑤ 第 4/5 节改为本仓库已入库 ok_templates 与 assets/scenes，ok_scenes/ok_tasks 也不进安装包
     method: doc
     authorization: 用户明确授权
 
   - path: docs/en/configuration.md
     kind: M
-    reason: 英文配置说明对齐本项目
+    reason: 英文配置说明对齐本项目（含独立更新库模式）
     method: doc
     authorization: 用户明确授权
 
@@ -152,7 +158,7 @@ entries:
 
   - path: docs/en/release.md
     kind: M
-    reason: 两处差异。① 英文发布流程对齐本项目；② 与中文版同步新增「Release Package Filtering」，说明 libgit2 不读 .gitignore、白名单四要素及下游落地清单
+    reason: 三处差异。① 英文发布流程对齐本项目；② 记录构建工作流现状（含 partial-sync-repo 启用后的 OK_GH 依赖）；③ 记录已启用的「Release Package Filtering」，说明 libgit2 不读 .gitignore、白名单四要素、ok_templates/ok_scenes/ok_tasks 不入包而 assets/scenes 随包分发、下游替换清单与体积参考
     method: doc
     authorization: 用户明确授权
 
@@ -166,10 +172,4 @@ entries:
     kind: M
     reason: 中文版 docs/tasks.md 的英文对应页，旧技能名同步改为 ok-script-* 并补上技能落位路径
     method: doc
-    authorization: 用户明确授权
-
-  - path: ok/ui/qt/MainWindow.py
-    kind: M
-    reason: custom_tabs 原先硬编码挂到 SECTION_GAME，页签无法声明自己的分组。新增 _tab_section()，读页签的 section 属性（默认 game，未知值回退 game）。场景管理是配置期工具，放在「游戏」分组会让普通用户误以为它参与日常流程
-    method: necessary
     authorization: 用户明确授权
