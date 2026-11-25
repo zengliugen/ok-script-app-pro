@@ -17,7 +17,7 @@
 - The `Synchronize repositories` step is kept: it syncs runtime files to the dedicated update repository `ok-script-app-pro-update` per the `deploy.txt` whitelist and creates the same tag there. It requires the `OK_GH` secret (a PAT with `contents: write` on the update repository); missing or insufficient credentials fail the step, so the build turns red.
 - `pyappify-action` is pinned to `version: v1.2.3` to keep build results stable against upstream changes, and `add_version_name: true` appends the release version to installer filenames.
 - `permissions: contents: write` is declared; without it the default read-only `GITHUB_TOKEN` cannot create a release and fails with 403 `Resource not accessible by integration`.
-- Four artifacts are produced: one installer per profile (`China`/`Global`, named with the version such as `ok-script-app-pro-win32-China-setup-1.1.3.exe`), `ok-script-app-pro-win32-online-setup-<version>.exe`, and `ok-script-app-pro-win32.zip`. ok-script 3 removed the web frontend, so `pyappify.yml` no longer has a `Web` profile.
+- Five artifacts are produced: one installer per profile (`China`/`Global`, named with the version such as `ok-script-app-pro-win32-China-setup-1.1.3.exe`), `ok-script-app-pro-win32-online-setup-<version>.exe`, and two per-profile portable archives `ok-script-app-pro-win32-<China|Global>-<version>.zip` (with the Python environment). ok-script 3 removed the web frontend, so `pyappify.yml` no longer has a `Web` profile.
 - The release body uses a short note for the pushed tag rather than sync-step outputs.
 - Prerelease tags (`-alpha` / `-beta` / `-rc`) are automatically marked as GitHub **Pre-release** and never take the repository's Latest slot.
 

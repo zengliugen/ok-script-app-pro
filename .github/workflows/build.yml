@@ -121,6 +121,10 @@ jobs:
           version: 'v1.2.3'
           # 安装包文件名带版本后缀（上游 1.1.3 起），与 Release 下载链接一致
           add_version_name: true
+          # 显式开启免安装压缩包并固定为 zip：action 默认 package_zip=false、
+          # 格式为 7z；@master 的默认值曾导致 v0.0.1 → alpha.4 资产数量漂移。
+          package_zip: true
+          package_zip_format: 'zip'
 
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -137,7 +141,8 @@ jobs:
               * [ok-script-app-pro-win32-China-setup-${{ env.APP_VERSION }}.exe](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32-China-setup-${{ env.APP_VERSION }}.exe) 完整安装包（China profile）
               * [ok-script-app-pro-win32-Global-setup-${{ env.APP_VERSION }}.exe](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32-Global-setup-${{ env.APP_VERSION }}.exe) full package with dependencies (Global profile)
               * [ok-script-app-pro-win32-online-setup-${{ env.APP_VERSION }}.exe](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32-online-setup-${{ env.APP_VERSION }}.exe) 在线安装包, 首次启动时拉取源码与依赖
-              * [ok-script-app-pro-win32.zip](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32.zip) 免安装压缩包
+              * [ok-script-app-pro-win32-China-${{ env.APP_VERSION }}.zip](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32-China-${{ env.APP_VERSION }}.zip) China profile 免安装压缩包（含 Python 环境）
+              * [ok-script-app-pro-win32-Global-${{ env.APP_VERSION }}.zip](https://github.com/zengliugen/ok-script-app-pro/releases/download/${{ github.ref_name }}/ok-script-app-pro-win32-Global-${{ env.APP_VERSION }}.zip) Global profile 免安装压缩包（含 Python 环境）
           files: pyappify_dist/*
 
       # 默认关闭，需要在仓库 Variables 中设置 MIRRORCHYAN_ENABLED=true 才会触发上传

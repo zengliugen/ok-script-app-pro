@@ -19,7 +19,7 @@
   （对更新库有 `contents: write` 权限的 PAT）；未配置或权限不足时该步骤失败，构建会红。
 - `pyappify-action` 固定 `version: v1.2.3`，避免上游更新导致构建结果漂移；同时开启 `add_version_name: true`，安装包文件名带发布版本号。
 - 声明 `permissions: contents: write`，否则默认只读的 `GITHUB_TOKEN` 无法创建 Release（报 403 `Resource not accessible by integration`）。
-- 产物共 4 个：两个 profile 安装包（`China`/`Global`，名称带版本号如 `ok-script-app-pro-win32-China-setup-1.1.3.exe`）、`ok-script-app-pro-win32-online-setup-<版本>.exe`（在线安装包）与 `ok-script-app-pro-win32.zip`（免安装压缩包）。ok-script 3 移除了 Web 前端，`pyappify.yml` 不再有 `Web` profile。
+- 产物共 5 个：两个 profile 安装包（`China`/`Global`，名称带版本号如 `ok-script-app-pro-win32-China-setup-1.1.3.exe`）、`ok-script-app-pro-win32-online-setup-<版本>.exe`（在线安装包），以及两个按 profile 命名的免安装压缩包 `ok-script-app-pro-win32-<China|Global>-<版本>.zip`（含 Python 环境）。ok-script 3 移除了 Web 前端，`pyappify.yml` 不再有 `Web` profile。
 - 更新日志使用本次 tag 的简要说明，不依赖同步步骤的输出。
 - 预发布 tag（`-alpha` / `-beta` / `-rc`）会自动标记为 GitHub **Pre-release**，不占用仓库首页的 Latest。
 
