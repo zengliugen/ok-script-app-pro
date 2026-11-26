@@ -1,8 +1,8 @@
 {
   "name": "extension-capability-guard",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "owner": "Yao Team",
-  "updated_at": "2026-10-29",
+  "updated_at": "2026-11-26",
   "status": "active",
   "maturity_tier": "production",
   "lifecycle_stage": "production",
@@ -22,7 +22,7 @@
     "evals",
     "reports"
   ],
-  "output_contract": "单命令 audit：委托 devflow-guard 体检文档契约，再体检 extensions/ 代码落位，合并三档输出与退出码",
+  "output_contract": "先意图确认再执行：体检走单命令 audit（委托 devflow-guard 体检文档契约 + 本技能体检 extensions/ 代码落位，合并三档输出与退出码）；新增/改动能力与文档结构维护转 devflow-guard",
   "rollback_boundary": "本技能只读检查，不写任何文件；回滚即还原脚本与文档",
   "input_files": [
     "extensions/ 下的 Python 源码",

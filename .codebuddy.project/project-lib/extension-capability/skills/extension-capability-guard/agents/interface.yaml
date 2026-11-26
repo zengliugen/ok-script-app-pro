@@ -1,7 +1,7 @@
 interface:
   display_name: "扩展能力守卫"
   short_description: "体检扩展代码落位并委托 devflow-guard 体检文档契约，按三档报缺口"
-  default_prompt: "使用 $extension-capability-guard audit 体检扩展代码落位（文档契约体检委托 devflow-guard）；新建能力文档请用 devflow-guard 的 explore/new。"
+  default_prompt: "唤起后先确认意图：只跑体检用 $extension-capability-guard audit（文档契约体检委托 devflow-guard）；新增/改动能力与状态/归档/ADR 用 devflow-guard 的 explore/new/status/archive/adr。"
 compatibility:
   canonical_format: "agent-skills"
   adapter_targets:

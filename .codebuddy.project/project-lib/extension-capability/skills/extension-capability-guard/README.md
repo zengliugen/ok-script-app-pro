@@ -19,6 +19,9 @@
 
 ## 怎么用
 
+技能被唤起后**先确认意图**（体检 / 新增能力 / 改动能力 / 维护文档结构），不会直接开跑；
+四类去向与完整判据见 `references/intake.md`。
+
 ```bash
 S=.codebuddy.project/project-lib/extension-capability/skills/extension-capability-guard/scripts/extension_capability_guard.py
 
@@ -77,8 +80,10 @@ python $D archive <能力名>
 
 | 文件 | 内容 |
 |---|---|
-| `SKILL.md` | 触发条件、职责分工、检查项清单、边界 |
-| `scripts/extension_capability_guard.py` | 脚本本体（单命令 `audit`：委托文档体检 + 四项代码检查）|
+| `SKILL.md` | 触发条件、意图确认、职责分工、检查项清单、边界 |
+| `references/intake.md` | 唤起后的意图确认：四类去向与完整判据 |
+| `references/checks.md` | 代码落位九项检查、能力分包判据与脚本判断边界 |
+| `scripts/extension_capability_guard.py` | 脚本本体（单命令 `audit`：委托文档体检 + 九项代码检查）|
 | `evals/` | 触发评测用例与语义配置 |
 | `reports/output-risk-profile.md` | 输出风险与自查清单 |
 | `agents/interface.yaml` | 平台适配元数据 |
